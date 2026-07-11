@@ -102,3 +102,15 @@ if user_input and behavior_clicked:
 
 elif behavior_clicked and not user_input:
     st.warning("请先输入提示词，再点击行为按钮哦！")
+
+
+
+# 数据下载功能
+if os.path.exists(CSV_FILE):
+    with open(CSV_FILE, "rb") as f:
+        st.download_button(
+            label="📥 下载所有交互数据",
+            data=f,
+            file_name="research_logs.csv",
+            mime="text/csv"
+        )
