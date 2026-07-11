@@ -12,7 +12,7 @@ DEEPSEEK_API_KEY = "sk-a51cfbe73d4a4fbb80db49277df9f0e2"
 client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
 
 # 定义保存数据的文件名
-CSV_FILE = "research_interaction_logs.csv"
+CSV_FILE = r"D:\AI_Research_Agent\research_interaction_logs.csv"
 
 # ================= 2. 智能体系统提示词 (System Prompt) =================
 SYSTEM_PROMPT = """你是一个名为“全栈式教育研究学术助理”的高级AI。你的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。你需要展现出教育研究的专业性、批判性和逻辑性。
