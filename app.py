@@ -6,7 +6,7 @@ import os
 
 # ================= 1. 核心配置区 =================
 # 替换为你刚刚在DeepSeek官网生成的 API Key (sk-开头)
-DEEPSEEK_API_KEY = st.secrets["DEEPSEEK_API_KEY"]
+DEEPSEEK_API_KEY = "sk-a51cfbe73d4a4fbb80db49277df9f0e2"
 
 # 初始化 DeepSeek 客户端 (调用格式与OpenAI完全一致)
 client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
