@@ -106,11 +106,28 @@ elif behavior_clicked and not user_input:
 
 
 # 数据下载功能
-if os.path.exists(CSV_FILE):
-    with open(CSV_FILE, "rb") as f:
-        st.download_button(
-            label="📥 下载所有交互数据",
-            data=f,
-            file_name="research_logs.csv",
-            mime="text/csv"
-        )
+# ================= 5. 研究员专用数据下载（侧边栏密码保护） =================
+with st.sidebar:
+    st.markdown("### 🔐 研究者数据导出")
+    password = st.text_input("请输入数据导出密码", type="password")
+    
+    # 设置一个只有你知道的密码（建议稍后改用 st.secrets 管理）
+    RESEARCHER_PASSWORD = "MyPassword123"  # 请修改为你自己的密码
+    
+    if password:
+        if password == RESEARCHER_PASSWORD:
+            st.success("密码正确，可以下载数据")
+            if os.path.exists(CSV_FILE):
+                with open(CSV_FILE, "rb") as f:
+                    st.download_button(
+                        label="📥 下载全部交互数据",
+                        data=f,
+                        file_name="research_logs.csv",
+                        mime="text/csv"
+                    )
+            else:
+                st.info("暂无数据文件，请等待被试完成交互。")
+        else:
+            st.error("密码错误，无权限下载")
+    else:
+        st.info("请输入密码以导出数据")
