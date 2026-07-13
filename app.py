@@ -146,10 +146,11 @@ else:
                 st.markdown(ai_reply)
         st.session_state.messages.append({"role": "assistant", "content": ai_reply})
 
-        # 记录数据（包含 Participant_ID）
+        # 记录数据（包含 Participant_ID + Round）
         new_data = pd.DataFrame([{
             "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "Participant_ID": st.session_state.participant_id,
+            "Round": st.session_state.round_count + 1,  # 当前轮次
             "User_Prompt": user_input,
             "Behavior_Button": behavior_clicked,
             "AI_Response": ai_reply
