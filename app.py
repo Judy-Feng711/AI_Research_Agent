@@ -55,11 +55,11 @@ st.markdown("👇 **请点击以下按钮提交你的提示词（请选择最符
 col1, col2, col3, col4, col5 = st.columns(5)
 behavior_clicked = None
 
-if col1.button("直接获取"): behavior_clicked = "直接获取"
-if col2.button("语病排版"): behavior_clicked = "语病排版"
-if col3.button("微调逻辑"): behavior_clicked = "微调逻辑"
-if col4.button("大幅改写"): behavior_clicked = "大幅改写"
-if col5.button("深层追问"): behavior_clicked = "深层追问"
+if col1.button("获取基础信息"): behavior_clicked = "获取基础信息"
+if col2.button("规范语言/格式"): behavior_clicked = "规范语言/格式"
+if col3.button("微调研究逻辑"): behavior_clicked = "微调研究逻辑"
+if col4.button("重构研究方案"): behavior_clicked = "重构研究方案"
+if col5.button("拓展研究思路"): behavior_clicked = "拓展研究思路"
 
 # 如果用户输入了文字，并且点击了任意一个行为按钮
 if user_input and behavior_clicked:
