@@ -35,6 +35,9 @@ if "prompt_value" not in st.session_state:
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 st.markdown("欢迎！请输入你的科研提示词，并**选择最符合你当前行为意图的按钮**提交。")
 
+if "participant_id" not in st.session_state:
+    st.session_state.participant_id = ""
+
 # 显示当前被试编号（如果已设置）
 if st.session_state.participant_id:
     st.caption(f"👤 当前被试：{st.session_state.participant_id}")
