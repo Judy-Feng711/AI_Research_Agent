@@ -35,6 +35,12 @@ if "prompt_value" not in st.session_state:
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 st.markdown("欢迎！请输入你的科研提示词，并**选择最符合你当前行为意图的按钮**提交。")
 
+# 显示当前被试编号（如果已设置）
+if st.session_state.participant_id:
+    st.caption(f"👤 当前被试：{st.session_state.participant_id}")
+
+
+
 # 初始化对话历史记录
 if "messages" not in st.session_state:
     st.session_state.messages = [
@@ -48,6 +54,10 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
+# 初始化被试编号
+if "participant_id" not in st.session_state:
+    st.session_state.participant_id = ""
+    
 # ================= 4. 核心交互与数据记录模块 =================
 # 使用文本框接收用户输入
 user_input = st.text_area(
@@ -67,6 +77,12 @@ if col2.button("规范语言/格式"): behavior_clicked = "规范语言/格式"
 if col3.button("微调研究逻辑"): behavior_clicked = "微调研究逻辑"
 if col4.button("重构研究方案"): behavior_clicked = "重构研究方案"
 if col5.button("拓展研究思路"): behavior_clicked = "拓展研究思路"
+
+# 检查编号是否已填写
+if st.session_state.participant_id == "":
+    st.warning("⚠️ 请先在左侧边栏输入你的被试编号！")
+    # 阻止后续执行，可以使用 st.stop()
+    st.stop()
 
 # 如果用户输入了文字，并且点击了任意一个行为按钮
 if user_input and behavior_clicked:
@@ -93,6 +109,7 @@ if user_input and behavior_clicked:
     # 3. 核心：将交互数据偷偷存入本地 CSV 文件！
     new_data = pd.DataFrame([{
         "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "Participant_ID": st.session_state.participant_id,  # 新增
         "User_Prompt": user_input,
         "Behavior_Button": behavior_clicked,
         "AI_Response": ai_reply
@@ -116,6 +133,8 @@ elif behavior_clicked and not user_input:
 
 # 数据下载功能
 # ================= 5. 研究员专用数据下载（侧边栏密码保护） =================
+
+
 with st.sidebar:
     st.markdown("### 🔐 研究者数据导出")
     password = st.text_input("请输入数据导出密码", type="password")
@@ -140,3 +159,20 @@ with st.sidebar:
             st.error("密码错误，无权限下载")
     else:
         st.info("请输入密码以导出数据")
+# ================= 6. 被试身份识别（侧边栏） =================
+with st.sidebar:
+    st.markdown("### 👤 被试身份")
+    # 如果尚未输入编号，显示输入框；否则显示已确认的编号
+    if st.session_state.participant_id == "":
+        pid_input = st.text_input("请输入你的被试编号（如 P001）：", key="pid_input")
+        if pid_input:
+            # 编号非空时，保存到 session_state
+            st.session_state.participant_id = pid_input.strip()
+            st.success(f"编号已记录：{st.session_state.participant_id}")
+            st.rerun()  # 刷新页面以清除输入框并显示确认信息
+    else:
+        st.success(f"当前被试：{st.session_state.participant_id}")
+        # 提供一个“重置”按钮，方便测试（但正式实验建议隐藏或删除）
+        if st.button("重新输入编号（仅测试用）"):
+            st.session_state.participant_id = ""
+            st.rerun()
