@@ -47,7 +47,7 @@ for msg in st.session_state.messages:
 
 # ================= 4. 核心交互与数据记录模块 =================
 # 使用文本框接收用户输入
-user_input = st.text_area("在这里输入你的提示词 (Prompt)：", height=100)
+user_input = st.text_area("在这里输入你的提示词 (Prompt)：", height=100, key="prompt_input")
 
 st.markdown("👇 **请点击以下按钮提交你的提示词（请选择最符合你当前意图的行为）：**")
 
