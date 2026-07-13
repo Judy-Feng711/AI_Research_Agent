@@ -97,7 +97,9 @@ if user_input and behavior_clicked:
     else:
         new_data.to_csv(CSV_FILE, mode='a', header=False, index=False, encoding='utf-8-sig')
     
-    # 刷新页面以清空输入框
+    # 清空输入框的值
+    st.session_state.prompt_input = ""
+    # 刷新页面以显示新消息并清空输入框
     st.rerun()
 
 elif behavior_clicked and not user_input:
