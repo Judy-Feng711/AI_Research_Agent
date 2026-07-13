@@ -35,8 +35,10 @@ if "messages" not in st.session_state:
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "assistant", "content": "你好！我是你的教育研究全栈助理。无论你目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为你挑刺，我都在这里。请详细告诉我：你目前正在推进哪一项具体的教育学研究任务？"}
     ]
+if "round_count" not in st.session_state:
+    st.session_state.round_count = 0
 
-# ================= 4. 侧边栏（被试编号 + 研究者下载） =================
+# ================= 4. 侧边栏（被试编号 + 对话进度 + 研究者下载） =================
 with st.sidebar:
     # ----- 被试编号输入（输入后锁定，无重置按钮） -----
     st.markdown("### 👤 被试身份")
@@ -48,7 +50,18 @@ with st.sidebar:
             st.rerun()
     else:
         st.success(f"当前被试：{st.session_state.participant_id}")
-        # 注意：无“重新输入”按钮，防止被试误操作
+
+    st.divider()
+
+    # ----- 对话进度显示 -----
+    st.markdown("### 📊 对话进度")
+    st.metric(label="已完成的对话轮数", value=st.session_state.round_count)
+    if st.session_state.round_count >= 10:
+        st.success("✅ 已达成建议轮数（10轮），如仍有新问题可继续深入。")
+    elif st.session_state.round_count >= 8:
+        st.info("💡 已接近建议轮数（8-12轮），可以继续深入或总结。")
+    else:
+        st.caption("建议完成 8-12 轮对话")
 
     st.divider()
 
@@ -146,6 +159,9 @@ else:
             new_data.to_csv(CSV_FILE, index=False, encoding='utf-8-sig')
         else:
             new_data.to_csv(CSV_FILE, mode='a', header=False, index=False, encoding='utf-8-sig')
+
+        # 累加对话轮数
+        st.session_state.round_count += 1
 
         # 清空输入框并刷新页面
         st.session_state.prompt_value = ""
