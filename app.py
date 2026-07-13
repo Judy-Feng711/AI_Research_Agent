@@ -179,3 +179,46 @@ with st.sidebar:
         if st.button("重新输入编号（仅测试用）"):
             st.session_state.participant_id = ""
             st.rerun()
+# ================= 研究员专用数据下载（侧边栏密码保护） =================
+with st.sidebar:
+    st.markdown("### 🔐 研究者数据导出")
+    password = st.text_input("请输入数据导出密码", type="password")
+    
+    # 设置你的密码
+    RESEARCHER_PASSWORD = "你的密码"  # 请修改为你自己的密码
+    
+    if password:
+        if password == RESEARCHER_PASSWORD:
+            st.success("密码正确，可以下载数据")
+            if os.path.exists(CSV_FILE):
+                with open(CSV_FILE, "rb") as f:
+                    st.download_button(
+                        label="📥 下载全部交互数据",
+                        data=f,
+                        file_name="research_logs.csv",
+                        mime="text/csv"
+                    )
+            else:
+                st.info("暂无数据文件，请等待被试完成交互。")
+        else:
+            st.error("密码错误，无权限下载")
+    else:
+        st.info("请输入密码以导出数据")
+# ================= 侧边栏（被试编号 + 研究者下载） =================
+with st.sidebar:
+    # ----- 被试编号输入 -----
+    st.markdown("### 👤 被试身份")
+    
+    if st.session_state.participant_id == "":
+        pid_input = st.text_input("请输入你的被试编号（如 P001）：", key="pid_input")
+        if pid_input:
+            st.session_state.participant_id = pid_input.strip()
+            st.success(f"编号已记录：{st.session_state.participant_id}")
+            st.rerun()
+    else:
+        st.success(f"当前被试：{st.session_state.participant_id}")
+        if st.button("重新输入编号（仅测试用）"):
+            st.session_state.participant_id = ""
+            st.rerun()
+    
+    st.divider()  # 分割线  
