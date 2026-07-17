@@ -75,6 +75,9 @@ if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "state_loaded" not in st.session_state:
     st.session_state.state_loaded = False
+# 新增：确保 prompt_input 键始终存在，避免手动赋值时报错
+if "prompt_input" not in st.session_state:
+    st.session_state.prompt_input = ""
 
 # ================= 5. 侧边栏 =================
 with st.sidebar:
@@ -246,8 +249,7 @@ else:
             if not save_success:
                 st.warning("⚠️ 状态保存失败，但对话已生成。请截图保存本轮内容。")
 
-            # 清空输入框（因为 clear_on_submit 不会清除 session_state 中的 key）
-            if "prompt_input" in st.session_state:
-                st.session_state.prompt_input = ""
+            # 注意：此处不再手动清空 st.session_state.prompt_input，
+            # 因为 clear_on_submit=True 已经自动重置了输入框的值。
             
             st.rerun()
