@@ -3,3 +3,5 @@ openai
 pandas
 supabase
 python-dotenv
+pypdf
+python-docx
