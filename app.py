@@ -31,7 +31,6 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
-    """从 Supabase 加载被试状态，返回 (messages, round_count) 或 (None, None)"""
     try:
         response = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
         if response.data:
@@ -44,7 +43,6 @@ def load_participant_state(pid):
     return None, None
 
 def save_participant_state(pid, messages, round_count):
-    """保存被试状态到 Supabase（upsert）"""
     data = {
         "participant_id": pid,
         "current_round": round_count,
@@ -59,7 +57,6 @@ def save_participant_state(pid, messages, round_count):
         return False
 
 def get_initial_messages():
-    """返回初始对话消息（包含 system 和欢迎语）"""
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我：您目前正在推进哪一项具体的教育学研究任务？"}
@@ -68,7 +65,6 @@ def get_initial_messages():
 # ================= 4. 页面初始化 =================
 st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="centered")
 
-# 初始化会话状态
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
 if "messages" not in st.session_state:
@@ -163,7 +159,6 @@ st.markdown("欢迎！请输入您的科研提示词，并**选择最符合您�
 if st.session_state.participant_id:
     st.caption(f"👤 当前被试：{st.session_state.participant_id}")
 
-# 显示历史消息
 for msg in st.session_state.messages:
     if msg["role"] != "system":
         with st.chat_message(msg["role"]):
@@ -174,23 +169,24 @@ if not st.session_state.participant_id:
     st.warning("⚠️ 请先在左侧边栏输入您的被试编号！")
 else:
     with st.form(key="prompt_form", clear_on_submit=True):
-        # ---- 输入框与附件按钮并排 ----
-        col_input, col_upload = st.columns([6, 1])
+        # ---- 输入框与附件按钮并排（优化布局） ----
+        col_input, col_upload = st.columns([6, 1])  # 6:1 比例
+        
         with col_input:
             user_input = st.text_area(
                 "在这里输入您的提示词 (Prompt)：",
                 height=100,
                 key="prompt_input",
-                label_visibility="collapsed"
+                label_visibility="collapsed"  # 隐藏标签，节省空间
             )
+        
         with col_upload:
-            # 占位将按钮对齐到底部
-            st.write("")
-            st.write("")
+            # 使用空元素把上传器推到底部（与输入框底部对齐）
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)  # 占位高度
             uploaded_file = st.file_uploader(
-                label="📎 附件",
+                label="📎",  # 只显示图标，更简洁
                 type=["pdf", "docx"],
-                label_visibility="collapsed",
+                label_visibility="visible",  # 必须可见，help 才会显示
                 help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
                 key="file_uploader_in_form"
             )
