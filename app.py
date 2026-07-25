@@ -1,3 +1,5 @@
+from pypdf import PdfReader
+import docx
 import streamlit as st
 from openai import OpenAI
 import pandas as pd
@@ -75,7 +77,6 @@ if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "state_loaded" not in st.session_state:
     st.session_state.state_loaded = False
-# 新增：确保 prompt_input 键始终存在，避免手动赋值时报错
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
@@ -88,11 +89,9 @@ with st.sidebar:
         loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
         if loaded_msgs is not None:
             # 确保 system 在最前面，避免重复
-            # 如果加载的消息已经包含 system，则直接使用；否则在前面插入 system
             if loaded_msgs and loaded_msgs[0].get("role") == "system":
                 st.session_state.messages = loaded_msgs
             else:
-                # 如果加载的消息不含 system（兼容旧版本），则合并
                 st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}] + loaded_msgs
             st.session_state.round_count = loaded_round
             st.session_state.state_loaded = True
@@ -166,6 +165,46 @@ with st.sidebar:
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 st.markdown("欢迎！请输入您的科研提示词，并**选择最符合您当前行为意图的按钮**提交。")
 
+# ---------- 文件上传区（放在表单外部，状态独立） ----------
+uploaded_file = st.file_uploader(
+    "📄 上传您的 PDF 或 Word 文档（作为研究背景或数据）",
+    type=["pdf", "docx"],
+    key="doc_uploader"
+)
+
+if uploaded_file is not None:
+    file_content = ""
+    file_name = uploaded_file.name
+    if file_name.endswith(".pdf"):
+        try:
+            reader = PdfReader(uploaded_file)
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    file_content += text + "\n"
+        except Exception as e:
+            st.error(f"PDF 解析失败：{e} (可能为扫描件，暂不支持 OCR)")
+            file_content = ""
+    elif file_name.endswith(".docx"):
+        try:
+            doc = docx.Document(uploaded_file)
+            for para in doc.paragraphs:
+                file_content += para.text + "\n"
+        except Exception as e:
+            st.error(f"Word 解析失败：{e}")
+            file_content = ""
+
+    if file_content:
+        if len(file_content) > 5000:
+            file_content = file_content[:5000] + "\n...[内容已截断]"
+        st.session_state.uploaded_content = file_content
+        st.success(f"✅ 已成功读取：{file_name}（共 {len(file_content)} 字符）")
+    else:
+        st.warning("未能提取文本，请确认文档包含可识别的文字。")
+else:
+    if "uploaded_content" in st.session_state:
+        del st.session_state.uploaded_content
+
 if st.session_state.participant_id:
     st.caption(f"👤 当前被试：{st.session_state.participant_id}")
 
@@ -183,7 +222,7 @@ else:
         user_input = st.text_area(
             "在这里输入您的提示词 (Prompt)：",
             height=100,
-            key="prompt_input"  # 保留 key 以便访问
+            key="prompt_input"
         )
         st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
         col1, col2, col3, col4, col5 = st.columns(5)
@@ -204,12 +243,23 @@ else:
                 st.warning("⚠️ 请先输入提示词！")
                 st.stop()
             
-            # 显示用户消息
-            with st.chat_message("user"):
-                st.markdown(f"**[{clicked_behavior}]** {user_input}")
-            st.session_state.messages.append({"role": "user", "content": user_input})
+            # ---- 构建完整用户消息（附带文档内容） ----
+            if "uploaded_content" in st.session_state:
+                full_user_message = f"【上传文档内容】\n{st.session_state.uploaded_content}\n\n【我的问题】\n{user_input}"
+            else:
+                full_user_message = user_input
 
-            # 调用 AI
+            # ---- 在界面上显示用户消息（只显示问题，简洁） ----
+            with st.chat_message("user"):
+                if "uploaded_content" in st.session_state:
+                    st.markdown(f"📎 **已附加文档**，提问：{user_input}")
+                else:
+                    st.markdown(f"**[{clicked_behavior}]** {user_input}")
+
+            # ---- 将完整消息（含文档）存入对话历史 ----
+            st.session_state.messages.append({"role": "user", "content": full_user_message})
+
+            # ---- 调用 AI ----
             with st.chat_message("assistant"):
                 with st.spinner("思考中..."):
                     try:
@@ -231,7 +281,7 @@ else:
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "participant_id": st.session_state.participant_id,
                 "round": st.session_state.round_count,
-                "user_prompt": user_input,
+                "user_prompt": user_input,          # 只存原始问题，不含文档内容
                 "behavior_button": clicked_behavior,
                 "ai_response": ai_reply
             }
@@ -248,8 +298,5 @@ else:
             )
             if not save_success:
                 st.warning("⚠️ 状态保存失败，但对话已生成。请截图保存本轮内容。")
-
-            # 注意：此处不再手动清空 st.session_state.prompt_input，
-            # 因为 clear_on_submit=True 已经自动重置了输入框的值。
             
             st.rerun()
