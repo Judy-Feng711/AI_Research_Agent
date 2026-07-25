@@ -88,7 +88,6 @@ with st.sidebar:
     if st.session_state.participant_id and not st.session_state.state_loaded:
         loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
         if loaded_msgs is not None:
-            # 确保 system 在最前面，避免重复
             if loaded_msgs and loaded_msgs[0].get("role") == "system":
                 st.session_state.messages = loaded_msgs
             else:
@@ -97,7 +96,6 @@ with st.sidebar:
             st.session_state.state_loaded = True
             st.success(f"✅ 已恢复历史进度（第 {st.session_state.round_count} 轮）")
         else:
-            # 没有历史记录，使用初始消息并立即保存一次
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
             st.session_state.state_loaded = True
@@ -112,7 +110,6 @@ with st.sidebar:
     )
     
     if pid_input and pid_input.strip() != st.session_state.participant_id:
-        # 编号发生变化，重新加载
         new_pid = pid_input.strip()
         st.session_state.participant_id = new_pid
         st.session_state.state_loaded = False
@@ -165,16 +162,25 @@ with st.sidebar:
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 st.markdown("欢迎！请输入您的科研提示词，并**选择最符合您当前行为意图的按钮**提交。")
 
-# ---------- 文件上传区（放在表单外部，状态独立） ----------
+# ---------- 文件上传区（自定义中文界面） ----------
+st.markdown("### 📄 上传研究文档")
+st.caption("支持上传 PDF 或 Word 格式的论文、访谈记录、数据报告等，作为 AI 回答的背景资料。")
+
 uploaded_file = st.file_uploader(
-    "📄 上传您的 PDF 或 Word 文档（作为研究背景或数据）",
+    label="",  # 空标签，显示更简洁
     type=["pdf", "docx"],
-    key="doc_uploader"
+    key="doc_uploader",
+    help="支持 PDF 和 DOCX 格式，单个文件不超过 200MB"
 )
 
 if uploaded_file is not None:
+    # 显示文件已选择
+    st.info(f"📎 已选择文件：**{uploaded_file.name}**（正在解析...）")
+    
     file_content = ""
     file_name = uploaded_file.name
+    
+    # 解析 PDF
     if file_name.endswith(".pdf"):
         try:
             reader = PdfReader(uploaded_file)
@@ -182,26 +188,32 @@ if uploaded_file is not None:
                 text = page.extract_text()
                 if text:
                     file_content += text + "\n"
+            st.success(f"✅ PDF 解析成功，共 {len(reader.pages)} 页")
         except Exception as e:
-            st.error(f"PDF 解析失败：{e} (可能为扫描件，暂不支持 OCR)")
+            st.error(f"❌ PDF 解析失败：{e}（可能为扫描件，暂不支持 OCR）")
             file_content = ""
+    
+    # 解析 Word
     elif file_name.endswith(".docx"):
         try:
             doc = docx.Document(uploaded_file)
             for para in doc.paragraphs:
                 file_content += para.text + "\n"
+            st.success(f"✅ Word 文档解析成功，共 {len(doc.paragraphs)} 段")
         except Exception as e:
-            st.error(f"Word 解析失败：{e}")
+            st.error(f"❌ Word 解析失败：{e}")
             file_content = ""
 
+    # 处理解析结果
     if file_content:
         if len(file_content) > 5000:
-            file_content = file_content[:5000] + "\n...[内容已截断]"
+            file_content = file_content[:5000] + "\n...[内容已截断，仅保留前5000字符]"
         st.session_state.uploaded_content = file_content
-        st.success(f"✅ 已成功读取：{file_name}（共 {len(file_content)} 字符）")
+        st.success(f"📄 已读取内容：**{file_name}**（共 {len(file_content)} 字符）")
     else:
-        st.warning("未能提取文本，请确认文档包含可识别的文字。")
+        st.warning("⚠️ 未能提取文本，请确认文档包含可识别的文字内容。")
 else:
+    # 当用户删除上传时清除缓存
     if "uploaded_content" in st.session_state:
         del st.session_state.uploaded_content
 
