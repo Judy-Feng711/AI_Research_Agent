@@ -15,7 +15,7 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= 2. 系统提示词 =================
-SYSTEM_PROMPT = """你是一个名为“全栈式教育研究学术助理”的高级AI。你的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。你需要展现出教育研究的专业性、批判性和逻辑性。
+SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的高级AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
 核心能力与任务模块：
 1. 选题与文献发现： 辅助梳理文献脉络，对比不同教育理论（如建构主义与行为主义），精准分析研究空白。
 2. 研究规划与设计： 从教育心理学、课程论等多重视角构建分析框架，对比个案研究、行动研究等方法的适用性。
@@ -60,7 +60,7 @@ def get_initial_messages():
     """返回初始对话消息（包含 system 和欢迎语）"""
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "assistant", "content": "你好！我是你的教育研究全栈助理。无论你目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为你挑刺，我都在这里。请详细告诉我：你目前正在推进哪一项具体的教育学研究任务？"}
+        {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为你挑刺，我都在这里。请详细告诉我：您目前正在推进哪一项具体的教育学研究任务？"}
     ]
 
 # ================= 4. 页面初始化 =================
@@ -164,7 +164,7 @@ with st.sidebar:
 
 # ================= 6. 主页面 =================
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
-st.markdown("欢迎！请输入你的科研提示词，并**选择最符合你当前行为意图的按钮**提交。")
+st.markdown("欢迎！请输入您的科研提示词，并**选择最符合您当前行为意图的按钮**提交。")
 
 if st.session_state.participant_id:
     st.caption(f"👤 当前被试：{st.session_state.participant_id}")
@@ -177,15 +177,15 @@ for msg in st.session_state.messages:
 
 # ================= 7. 核心交互模块（使用表单） =================
 if not st.session_state.participant_id:
-    st.warning("⚠️ 请先在左侧边栏输入你的被试编号！")
+    st.warning("⚠️ 请先在左侧边栏输入您的被试编号！")
 else:
     with st.form(key="prompt_form", clear_on_submit=True):
         user_input = st.text_area(
-            "在这里输入你的提示词 (Prompt)：",
+            "在这里输入您的提示词 (Prompt)：",
             height=100,
             key="prompt_input"  # 保留 key 以便访问
         )
-        st.markdown("👇 **请点击以下按钮提交你的提示词（请选择最符合你当前意图的行为）：**")
+        st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
         col1, col2, col3, col4, col5 = st.columns(5)
         clicked_behavior = None
         if col1.form_submit_button("获取基础信息"):
