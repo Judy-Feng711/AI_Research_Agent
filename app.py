@@ -60,7 +60,7 @@ def get_initial_messages():
     """返回初始对话消息（包含 system 和欢迎语）"""
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为你挑刺，我都在这里。请详细告诉我：您目前正在推进哪一项具体的教育学研究任务？"}
+        {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我：您目前正在推进哪一项具体的教育学研究任务？"}
     ]
 
 # ================= 4. 页面初始化 =================
@@ -107,7 +107,7 @@ with st.sidebar:
     
     # 编号输入框
     pid_input = st.text_input(
-        "请输入你的被试编号（如 P001）：",
+        "请输入您的被试编号（如 P001）：",
         value=st.session_state.participant_id if st.session_state.participant_id else "",
         key="pid_input"
     )
