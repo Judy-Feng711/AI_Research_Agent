@@ -169,29 +169,23 @@ if not st.session_state.participant_id:
     st.warning("⚠️ 请先在左侧边栏输入您的被试编号！")
 else:
     with st.form(key="prompt_form", clear_on_submit=True):
-        # ---- 输入框与附件按钮并排（优化布局） ----
-        col_input, col_upload = st.columns([6, 1])  # 6:1 比例
-        
-        with col_input:
-            user_input = st.text_area(
-                "在这里输入您的提示词 (Prompt)：",
-                height=100,
-                key="prompt_input",
-                label_visibility="collapsed"  # 隐藏标签，节省空间
-            )
-        
-        with col_upload:
-            # 使用空元素把上传器推到底部（与输入框底部对齐）
-            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)  # 占位高度
-            uploaded_file = st.file_uploader(
-                label="📎",  # 只显示图标，更简洁
-                type=["pdf", "docx"],
-                label_visibility="visible",  # 必须可见，help 才会显示
-                help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
-                key="file_uploader_in_form"
-            )
-            if uploaded_file is not None:
-                st.caption(uploaded_file.name[:10] + "..." if len(uploaded_file.name) > 10 else uploaded_file.name)
+        # ---- 输入框 ----
+        user_input = st.text_area(
+            "在这里输入您的提示词 (Prompt)：",
+            height=100,
+            key="prompt_input",
+            label_visibility="collapsed"
+        )
+
+        # ---- 上传文档按钮（独立一行） ----
+        uploaded_file = st.file_uploader(
+            "上传文档",  # 中文 label
+            type=["pdf", "docx"],
+            help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",  # 悬停提示
+            key="file_uploader_simple"
+        )
+        if uploaded_file is not None:
+            st.caption(f"已选择：{uploaded_file.name}")
 
         st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
         col1, col2, col3, col4, col5 = st.columns(5)
