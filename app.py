@@ -68,11 +68,11 @@ def get_initial_messages():
 # ================= 4. 页面初始化 =================
 st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="centered")
 
-# 初始化会话状态（临时存储，用于界面展示）
+# 初始化会话状态
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
 if "messages" not in st.session_state:
-    st.session_state.messages = get_initial_messages()  # 默认初始
+    st.session_state.messages = get_initial_messages()
 if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "state_loaded" not in st.session_state:
@@ -84,7 +84,6 @@ if "prompt_input" not in st.session_state:
 with st.sidebar:
     st.markdown("### 👤 被试身份")
     
-    # 如果已输入编号但尚未加载状态，则尝试加载
     if st.session_state.participant_id and not st.session_state.state_loaded:
         loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
         if loaded_msgs is not None:
@@ -102,7 +101,6 @@ with st.sidebar:
             save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
             st.info("🆕 新被试，已初始化状态")
     
-    # 编号输入框
     pid_input = st.text_input(
         "请输入您的被试编号（如 P001）：",
         value=st.session_state.participant_id if st.session_state.participant_id else "",
@@ -165,38 +163,39 @@ st.markdown("欢迎！请输入您的科研提示词，并**选择最符合您�
 if st.session_state.participant_id:
     st.caption(f"👤 当前被试：{st.session_state.participant_id}")
 
-# 显示历史消息（跳过 system）
+# 显示历史消息
 for msg in st.session_state.messages:
     if msg["role"] != "system":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# ================= 7. 核心交互模块（使用表单） =================
+# ================= 7. 核心交互模块 =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在左侧边栏输入您的被试编号！")
 else:
     with st.form(key="prompt_form", clear_on_submit=True):
-        # ---- 文本输入框 ----
-        user_input = st.text_area(
-            "在这里输入您的提示词 (Prompt)：",
-            height=100,
-            key="prompt_input"
-        )
-
-        # ---- 附件上传按钮（右下角） ----
-        # 使用列布局将上传器放在输入框下方偏右
-        col_file, col_empty = st.columns([1, 5])
-        with col_file:
+        # ---- 输入框与附件按钮并排 ----
+        col_input, col_upload = st.columns([6, 1])
+        with col_input:
+            user_input = st.text_area(
+                "在这里输入您的提示词 (Prompt)：",
+                height=100,
+                key="prompt_input",
+                label_visibility="collapsed"
+            )
+        with col_upload:
+            # 占位将按钮对齐到底部
+            st.write("")
+            st.write("")
             uploaded_file = st.file_uploader(
-                label="📎 附件",  # 显示图标和文字
+                label="📎 附件",
                 type=["pdf", "docx"],
-                label_visibility="collapsed",  # 隐藏默认标签，只显示按钮文字
+                label_visibility="collapsed",
                 help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
                 key="file_uploader_in_form"
             )
-            # 如果有文件，显示文件名
             if uploaded_file is not None:
-                st.caption(f"已选：{uploaded_file.name}")
+                st.caption(uploaded_file.name[:10] + "..." if len(uploaded_file.name) > 10 else uploaded_file.name)
 
         st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
         col1, col2, col3, col4, col5 = st.columns(5)
@@ -217,11 +216,10 @@ else:
                 st.warning("⚠️ 请先输入提示词！")
                 st.stop()
 
-            # ---- 处理附件（如果有） ----
+            # ---- 处理附件 ----
             file_content = ""
             if uploaded_file is not None:
                 file_name = uploaded_file.name
-                # 解析 PDF
                 if file_name.endswith(".pdf"):
                     try:
                         reader = PdfReader(uploaded_file)
@@ -232,7 +230,6 @@ else:
                     except Exception as e:
                         st.error(f"PDF 解析失败：{e}")
                         file_content = ""
-                # 解析 Word
                 elif file_name.endswith(".docx"):
                     try:
                         doc = docx.Document(uploaded_file)
@@ -242,13 +239,8 @@ else:
                         st.error(f"Word 解析失败：{e}")
                         file_content = ""
 
-                # 截断过长内容
-                if file_content:
-                    if len(file_content) > 5000:
-                        file_content = file_content[:5000] + "\n...[内容已截断]"
-                else:
-                    st.warning("未能提取文本，请确认文档包含可识别的文字。")
-                    # 可以选择停止或继续，这里我们继续但附加空内容
+                if file_content and len(file_content) > 5000:
+                    file_content = file_content[:5000] + "\n...[内容已截断]"
 
             # ---- 构建完整用户消息 ----
             if file_content:
@@ -256,14 +248,13 @@ else:
             else:
                 full_user_message = user_input
 
-            # ---- 显示用户消息（只显示问题，简洁） ----
+            # ---- 显示用户消息 ----
             with st.chat_message("user"):
                 if file_content:
                     st.markdown(f"📎 **已附加文档**，提问：{user_input}")
                 else:
                     st.markdown(f"**[{clicked_behavior}]** {user_input}")
 
-            # ---- 将完整消息存入对话历史 ----
             st.session_state.messages.append({"role": "user", "content": full_user_message})
 
             # ---- 调用 AI ----
@@ -282,13 +273,12 @@ else:
             st.session_state.messages.append({"role": "assistant", "content": ai_reply})
             st.session_state.round_count += 1
 
-            # ================= 持久化：写入日志和状态 =================
-            # 1. 写入交互日志
+            # ---- 持久化 ----
             log_data = {
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "participant_id": st.session_state.participant_id,
                 "round": st.session_state.round_count,
-                "user_prompt": user_input,          # 只存原始问题
+                "user_prompt": user_input,
                 "behavior_button": clicked_behavior,
                 "ai_response": ai_reply
             }
@@ -297,7 +287,6 @@ else:
             except Exception as e:
                 st.error(f"日志保存失败：{e}")
 
-            # 2. 保存完整状态（历史消息和轮次）
             save_success = save_participant_state(
                 st.session_state.participant_id,
                 st.session_state.messages,
