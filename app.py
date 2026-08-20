@@ -112,16 +112,16 @@ st.markdown(
         .main .block-container {
             padding: 0 !important;
             max-width: 100% !important;
-            height: 100vh !important;
+            height: 100% !important;
         }
         .main .block-container > div {
             display: flex !important;
             flex-direction: column !important;
-            height: 100vh !important;
+            height: 100% !important;
         }
         /* 上块：20% 高度，无滚动，紧凑内边距 */
         .top-block {
-            height: 20vh !important;
+            height: 20% !important;
             flex-shrink: 0 !important;
             overflow: hidden !important;
             padding: 2px 15px !important;   /* 减少上下内边距 */
