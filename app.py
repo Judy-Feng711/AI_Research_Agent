@@ -104,11 +104,11 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS 强制布局 =================
+# ================= 6. CSS 紧凑布局 =================
 st.markdown(
     """
     <style>
-        /* 移除默认边距，让页面占满视口 */
+        /* 移除默认边距，占满视口 */
         .main .block-container {
             padding: 0 !important;
             max-width: 100% !important;
@@ -119,17 +119,40 @@ st.markdown(
             flex-direction: column !important;
             height: 100vh !important;
         }
-        /* 上块：20% 高度，无滚动 */
+        /* 上块：20% 高度，无滚动，紧凑内边距 */
         .top-block {
             height: 20vh !important;
             flex-shrink: 0 !important;
             overflow: hidden !important;
-            padding: 6px 20px !important;
+            padding: 2px 15px !important;   /* 减少上下内边距 */
             border-bottom: 2px solid #ddd;
             background-color: #f0f2f6;
             display: flex;
             flex-direction: column;
             justify-content: space-between;  /* 欢迎语和一行信息上下分布 */
+        }
+        /* 压缩顶部标题和文字间距 */
+        .top-block h2 {
+            margin: 0 0 2px 0 !important;
+            font-size: 1.4rem;
+        }
+        .top-block p {
+            margin: 0 0 2px 0 !important;
+            font-size: 0.9rem;
+        }
+        /* 顶部一行三列，紧凑 */
+        .top-block .stColumns {
+            margin-top: 2px !important;
+            gap: 0.5rem !important;
+        }
+        .top-block .stTextInput, .top-block .stMetric, .top-block .stButton {
+            margin-bottom: 0 !important;
+        }
+        .top-block .stTextInput > div {
+            margin-bottom: 0 !important;
+        }
+        .top-block .stMetric {
+            margin-bottom: 0 !important;
         }
         /* 下块：80% 高度，flex行 */
         .bottom-block {
@@ -144,7 +167,7 @@ st.markdown(
             width: 20% !important;
             height: 100% !important;
             overflow-y: auto !important;
-            padding: 10px !important;
+            padding: 8px !important;
             border-right: 1px solid #ddd;
             background-color: #fafafa;
         }
@@ -152,7 +175,7 @@ st.markdown(
             width: 45% !important;
             height: 100% !important;
             overflow-y: auto !important;
-            padding: 10px !important;
+            padding: 8px !important;
             border-right: 1px solid #ddd;
             background-color: #ffffff;
         }
@@ -160,7 +183,7 @@ st.markdown(
             width: 35% !important;
             height: 100% !important;
             overflow-y: auto !important;
-            padding: 10px !important;
+            padding: 8px !important;
             background-color: #fafafa;
         }
         /* 滚动条样式 */
@@ -178,13 +201,14 @@ st.markdown(
         .col-left::-webkit-scrollbar-thumb:hover, .col-mid::-webkit-scrollbar-thumb:hover, .col-right::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        /* 内部间距 */
+        /* 内部通用紧凑 */
         .stTextInput, .stTextArea, .stSelectbox, .stRadio, .stMetric {
             margin-bottom: 0.2rem !important;
         }
         .stButton button {
             width: 100%;
             margin: 2px 0;
+            padding: 0.2rem 0.5rem;
         }
         .stForm {
             padding: 0 !important;
@@ -192,16 +216,12 @@ st.markdown(
         h1, h2, h3, h4 {
             margin: 0.1rem 0;
         }
-        .top-block h2 {
-            margin-top: 0;
-            margin-bottom: 2px;
-        }
-        .top-block .top-info-row {
-            margin-top: 2px;
-        }
-        /* 让聊天消息正常显示 */
         .stChatMessage {
             margin: 4px 0;
+        }
+        /* 右栏内部分隔线紧凑 */
+        .stDivider {
+            margin: 0.3rem 0;
         }
     </style>
     """,
@@ -293,7 +313,7 @@ st.markdown('</div>', unsafe_allow_html=True)  # 结束上块
 # ---- 下块：80% ----
 st.markdown('<div class="bottom-block">', unsafe_allow_html=True)
 
-# 左栏 (20%)  - 改为静态辅助信息
+# 左栏 (20%)  - 操作指引
 st.markdown('<div class="col-left">', unsafe_allow_html=True)
 st.markdown("### ℹ️ 操作指引")
 st.markdown("""
