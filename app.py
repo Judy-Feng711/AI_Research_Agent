@@ -62,7 +62,37 @@ def get_initial_messages():
         {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我：您目前正在推进哪一项具体的教育学研究任务？"}
     ]
 
-# ================= 4. 页面初始化 =================
+# ================= 4. 方案数据函数 =================
+def load_plan(pid):
+    """加载该被试已有的方案数据，返回dict或None"""
+    try:
+        response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
+        if response.data:
+            return response.data[0]
+    except Exception as e:
+        st.warning(f"加载方案数据失败：{e}")
+    return None
+
+def save_plan(pid, task1_text, task1_button, task2_text, task2_button, task3_text, task3_button):
+    """保存或更新方案数据"""
+    data = {
+        "participant_id": pid,
+        "task1_text": task1_text,
+        "task1_button": task1_button,
+        "task2_text": task2_text,
+        "task2_button": task2_button,
+        "task3_text": task3_text,
+        "task3_button": task3_button,
+        "updated_at": datetime.datetime.now().isoformat()
+    }
+    try:
+        supabase.table("research_plans").upsert(data, on_conflict="participant_id").execute()
+        return True
+    except Exception as e:
+        st.error(f"方案保存失败：{e}")
+        return False
+
+# ================= 5. 页面初始化 =================
 st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="centered")
 
 if "participant_id" not in st.session_state:
@@ -75,8 +105,9 @@ if "state_loaded" not in st.session_state:
     st.session_state.state_loaded = False
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
+# 用于方案表单的临时状态（不必须）
 
-# ================= 5. 侧边栏 =================
+# ================= 6. 侧边栏 =================
 with st.sidebar:
     st.markdown("### 👤 被试身份")
     
@@ -132,39 +163,147 @@ with st.sidebar:
     if password:
         if password == RESEARCHER_PASSWORD:
             st.success("密码正确，可以下载数据")
+            # 下载交互日志
             try:
                 response = supabase.table("research_logs").select("*").execute()
                 if response.data:
                     df = pd.DataFrame(response.data)
                     csv_data = df.to_csv(index=False, encoding='utf-8-sig')
                     st.download_button(
-                        label="📥 下载全部交互数据",
+                        label="📥 下载全部交互数据（research_logs）",
                         data=csv_data.encode('utf-8-sig'),
                         file_name="research_logs.csv",
                         mime="text/csv"
                     )
                 else:
-                    st.info("暂无数据，请等待被试完成交互。")
+                    st.info("暂无交互数据。")
             except Exception as e:
-                st.error(f"读取数据失败：{e}")
+                st.error(f"读取交互数据失败：{e}")
+
+            # 下载方案数据
+            try:
+                response_plan = supabase.table("research_plans").select("*").execute()
+                if response_plan.data:
+                    df_plan = pd.DataFrame(response_plan.data)
+                    csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        label="📥 下载全部方案数据（research_plans）",
+                        data=csv_plan.encode('utf-8-sig'),
+                        file_name="research_plans.csv",
+                        mime="text/csv"
+                    )
+                else:
+                    st.info("暂无方案数据。")
+            except Exception as e:
+                st.error(f"读取方案数据失败：{e}")
         else:
             st.error("密码错误，无权限下载")
     else:
         st.info("请输入密码以导出数据")
 
-# ================= 6. 主页面 =================
+# ================= 7. 主页面 =================
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 st.markdown("欢迎！请输入您的科研提示词，并**选择最符合您当前行为意图的按钮**提交。")
 
 if st.session_state.participant_id:
     st.caption(f"👤 当前被试：{st.session_state.participant_id}")
 
+# 显示历史消息
 for msg in st.session_state.messages:
     if msg["role"] != "system":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# ================= 7. 核心交互模块 =================
+# ================= 8. 方案填写区域（新增） =================
+if st.session_state.participant_id:
+    # 加载已有方案（如果有）
+    existing_plan = load_plan(st.session_state.participant_id)
+    
+    with st.expander("📝 研究方案填写（可选，请在与AI交互后提炼填写）", expanded=True):
+        st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
+        st.caption("说明：请在与AI多轮交互完成下列每个子任务后，简要提炼产出结果，并勾选您的主导行为。")
+        
+        # 使用独立表单
+        with st.form(key="plan_form"):
+            # 子任务1
+            st.subheader("子任务1：选题与理论切入点")
+            task1_text = st.text_area(
+                "请精简提炼交互后最终确定的“选题核心与理论视角”（限150字）：",
+                value=existing_plan["task1_text"] if existing_plan else "",
+                height=100,
+                max_chars=150,
+                key="task1_text"
+            )
+            task1_button = st.radio(
+                "本阶段交互中，您最常使用的行为按钮是（单选）：",
+                options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
+                index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task1_button"]) if existing_plan and existing_plan["task1_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
+                horizontal=True,
+                key="task1_button"
+            )
+            
+            st.divider()
+            
+            # 子任务2
+            st.subheader("子任务2：实施步骤与工具设计")
+            task2_text = st.text_area(
+                "请精简提炼交互后生成的“核心实施步骤或研究工具框架”（限150字）：",
+                value=existing_plan["task2_text"] if existing_plan else "",
+                height=100,
+                max_chars=150,
+                key="task2_text"
+            )
+            task2_button = st.radio(
+                "本阶段交互中，您最常使用的行为按钮是（单选）：",
+                options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
+                index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task2_button"]) if existing_plan and existing_plan["task2_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
+                horizontal=True,
+                key="task2_button"
+            )
+            
+            st.divider()
+            
+            # 子任务3
+            st.subheader("子任务3：反思局限性与方案定稿")
+            task3_text = st.text_area(
+                "请精简提炼交互后指出的“方案局限性及您的最终修改决策”（限150字）：",
+                value=existing_plan["task3_text"] if existing_plan else "",
+                height=100,
+                max_chars=150,
+                key="task3_text"
+            )
+            task3_button = st.radio(
+                "本阶段交互中，您最常使用的行为按钮是（单选）：",
+                options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
+                index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task3_button"]) if existing_plan and existing_plan["task3_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
+                horizontal=True,
+                key="task3_button"
+            )
+            
+            # 提交按钮
+            submitted = st.form_submit_button("📤 提交方案")
+            if submitted:
+                # 校验非空（可根据需要）
+                if not task1_text.strip() or not task2_text.strip() or not task3_text.strip():
+                    st.warning("请完整填写所有文本字段（限150字）")
+                else:
+                    success = save_plan(
+                        st.session_state.participant_id,
+                        task1_text.strip(),
+                        task1_button,
+                        task2_text.strip(),
+                        task2_button,
+                        task3_text.strip(),
+                        task3_button
+                    )
+                    if success:
+                        st.success("✅ 方案已成功提交/更新！")
+                        # 刷新页面以显示最新数据（表单会重新加载）
+                        st.rerun()
+                    else:
+                        st.error("❌ 方案提交失败，请检查网络或联系管理员。")
+
+# ================= 9. 核心交互模块（原有） =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在左侧边栏输入您的被试编号！")
 else:
@@ -177,11 +316,11 @@ else:
             label_visibility="collapsed"
         )
 
-        # ---- 上传文档按钮（独立一行） ----
+        # ---- 上传文档按钮 ----
         uploaded_file = st.file_uploader(
-            "上传文档",  # 中文 label
+            "上传文档",
             type=["pdf", "docx"],
-            help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",  # 悬停提示
+            help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
             key="file_uploader_simple"
         )
         if uploaded_file is not None:
