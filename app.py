@@ -124,12 +124,12 @@ st.markdown(
             height: 20vh !important;
             flex-shrink: 0 !important;
             overflow: hidden !important;
-            padding: 10px 20px !important;
+            padding: 6px 20px !important;
             border-bottom: 2px solid #ddd;
             background-color: #f0f2f6;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;  /* 欢迎语和一行信息上下分布 */
         }
         /* 下块：80% 高度，flex行 */
         .bottom-block {
@@ -180,7 +180,7 @@ st.markdown(
         }
         /* 内部间距 */
         .stTextInput, .stTextArea, .stSelectbox, .stRadio, .stMetric {
-            margin-bottom: 0.3rem !important;
+            margin-bottom: 0.2rem !important;
         }
         .stButton button {
             width: 100%;
@@ -190,12 +190,16 @@ st.markdown(
             padding: 0 !important;
         }
         h1, h2, h3, h4 {
-            margin: 0.2rem 0;
+            margin: 0.1rem 0;
         }
         .top-block h2 {
             margin-top: 0;
+            margin-bottom: 2px;
         }
-        /* 让聊天消息在中间栏正常显示 */
+        .top-block .top-info-row {
+            margin-top: 2px;
+        }
+        /* 让聊天消息正常显示 */
         .stChatMessage {
             margin: 4px 0;
         }
@@ -208,81 +212,96 @@ st.markdown(
 
 # ---- 上块：20% ----
 st.markdown('<div class="top-block">', unsafe_allow_html=True)
+# 欢迎语
 st.markdown("## 🎓 EduResearch Copilot")
-st.markdown("**欢迎使用全栈式教育研究学术助理！** 请先在左侧栏输入您的被试编号，然后与AI进行多轮深度对话，并填写右侧的研究方案记录表。")
-st.markdown("本工具旨在辅助您完成教育学研究的选题、设计、实施、分析、撰写与反思全过程。")
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("**欢迎使用全栈式教育研究学术助理！** 请先在下方输入被试编号，然后与AI进行多轮深度对话，并填写右侧的研究方案记录表。")
+
+# 一行三列：被试编号、进度、导出
+with st.container():
+    col_id, col_progress, col_export = st.columns([1, 0.8, 1.2])
+    with col_id:
+        st.markdown("**👤 被试编号**")
+        pid_input = st.text_input(
+            "被试编号",
+            value=st.session_state.participant_id if st.session_state.participant_id else "",
+            key="pid_input_top",
+            placeholder="请输入编号，如P001",
+            label_visibility="collapsed"
+        )
+        if pid_input and pid_input.strip() != st.session_state.participant_id:
+            new_pid = pid_input.strip()
+            st.session_state.participant_id = new_pid
+            st.session_state.state_loaded = False
+            st.rerun()
+        if st.session_state.participant_id:
+            st.success(f"当前：{st.session_state.participant_id}")
+        else:
+            st.info("等待输入")
+    with col_progress:
+        st.markdown("**📊 对话进度**")
+        if st.session_state.participant_id:
+            st.metric(label="已完成轮数", value=st.session_state.round_count)
+            if st.session_state.round_count >= 10:
+                st.success("✅ 达成建议")
+            elif st.session_state.round_count >= 8:
+                st.info("💡 接近建议")
+            else:
+                st.caption("建议 8-12 轮")
+        else:
+            st.caption("待输入编号")
+    with col_export:
+        st.markdown("**🔐 数据导出**")
+        password = st.text_input(
+            "密码",
+            type="password",
+            key="export_pwd_top",
+            placeholder="请输入导出密码",
+            label_visibility="collapsed"
+        )
+        RESEARCHER_PASSWORD = st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123")
+        if password:
+            if password == RESEARCHER_PASSWORD:
+                st.success("密码正确")
+                col_dl1, col_dl2 = st.columns(2)
+                with col_dl1:
+                    try:
+                        resp = supabase.table("research_logs").select("*").execute()
+                        if resp.data:
+                            df = pd.DataFrame(resp.data)
+                            csv = df.to_csv(index=False, encoding='utf-8-sig')
+                            st.download_button("📥 交互日志", data=csv.encode('utf-8-sig'),
+                                               file_name="research_logs.csv", mime="text/csv", key="dl_logs_top")
+                    except:
+                        st.warning("无日志")
+                with col_dl2:
+                    try:
+                        resp = supabase.table("research_plans").select("*").execute()
+                        if resp.data:
+                            df = pd.DataFrame(resp.data)
+                            csv = df.to_csv(index=False, encoding='utf-8-sig')
+                            st.download_button("📥 方案数据", data=csv.encode('utf-8-sig'),
+                                               file_name="research_plans.csv", mime="text/csv", key="dl_plans_top")
+                    except:
+                        st.warning("无方案")
+            else:
+                st.error("密码错误")
+        else:
+            st.caption("请输入密码")
+
+st.markdown('</div>', unsafe_allow_html=True)  # 结束上块
 
 # ---- 下块：80% ----
 st.markdown('<div class="bottom-block">', unsafe_allow_html=True)
 
-# 左栏 (20%)
+# 左栏 (20%)  - 改为静态辅助信息
 st.markdown('<div class="col-left">', unsafe_allow_html=True)
-
-st.markdown("### 👤 基本信息")
-pid_input = st.text_input(
-    "被试编号",
-    value=st.session_state.participant_id if st.session_state.participant_id else "",
-    key="pid_input_left",
-    placeholder="如 P001",
-    label_visibility="collapsed"
-)
-if pid_input and pid_input.strip() != st.session_state.participant_id:
-    new_pid = pid_input.strip()
-    st.session_state.participant_id = new_pid
-    st.session_state.state_loaded = False
-    st.rerun()
-if st.session_state.participant_id:
-    st.success(f"当前被试：{st.session_state.participant_id}")
-else:
-    st.info("请输入编号")
-
-st.divider()
-st.markdown("### 📊 对话进度")
-if st.session_state.participant_id:
-    st.metric(label="已完成轮数", value=st.session_state.round_count)
-    if st.session_state.round_count >= 10:
-        st.success("✅ 达成建议轮数")
-    elif st.session_state.round_count >= 8:
-        st.info("💡 接近建议轮数")
-    else:
-        st.caption("建议 8-12 轮")
-else:
-    st.caption("待输入编号")
-
-st.divider()
-st.markdown("### 🔐 数据导出")
-password = st.text_input("密码", type="password", key="export_pwd_left", placeholder="导出密码")
-RESEARCHER_PASSWORD = st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123")
-if password:
-    if password == RESEARCHER_PASSWORD:
-        st.success("密码正确")
-        col_dl1, col_dl2 = st.columns(2)
-        with col_dl1:
-            try:
-                resp = supabase.table("research_logs").select("*").execute()
-                if resp.data:
-                    df = pd.DataFrame(resp.data)
-                    csv = df.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button("📥 交互日志", data=csv.encode('utf-8-sig'),
-                                       file_name="research_logs.csv", mime="text/csv", key="dl_logs_left")
-            except:
-                st.warning("无日志")
-        with col_dl2:
-            try:
-                resp = supabase.table("research_plans").select("*").execute()
-                if resp.data:
-                    df = pd.DataFrame(resp.data)
-                    csv = df.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button("📥 方案数据", data=csv.encode('utf-8-sig'),
-                                       file_name="research_plans.csv", mime="text/csv", key="dl_plans_left")
-            except:
-                st.warning("无方案")
-    else:
-        st.error("密码错误")
-else:
-    st.caption("请输入密码")
-
+st.markdown("### ℹ️ 操作指引")
+st.markdown("""
+- 在顶部输入被试编号后，即可开始AI对话。
+- 中栏为AI交互区，您可以提问、上传文档，并选择行为按钮。
+- 右栏为研究方案填写区，请根据与AI的交互成果提炼填写。
+- 所有数据会自动保存至数据库。
+""")
 st.markdown('</div>', unsafe_allow_html=True)  # 结束左栏
 
 # 中栏 (45%)
@@ -306,7 +325,7 @@ if st.session_state.participant_id and not st.session_state.state_loaded:
 
 st.markdown("### 💬 AI 学术助手对话")
 if not st.session_state.participant_id:
-    st.warning("请先在左侧栏输入被试编号")
+    st.warning("请先在顶部输入被试编号")
 else:
     # 显示历史消息
     for msg in st.session_state.messages:
@@ -425,7 +444,7 @@ st.markdown('<div class="col-right">', unsafe_allow_html=True)
 
 st.markdown("### 📝 研究方案填写")
 if not st.session_state.participant_id:
-    st.warning("请先在左侧栏输入被试编号")
+    st.warning("请先在顶部输入被试编号")
 else:
     existing_plan = load_plan(st.session_state.participant_id)
 
