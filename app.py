@@ -104,17 +104,33 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. 自定义CSS：左栏flex布局，滚动容器自适应 =================
+# ================= 6. 自定义CSS：固定高度两栏，左栏内部滚动 =================
 st.markdown(
     """
     <style>
-        /* 让左栏本身成为flex列 */
+        /* 让整个页面占满视口，无多余边距 */
+        .main .block-container {
+            padding: 0 !important;
+            max-width: 100% !important;
+        }
+        /* 顶部信息栏 + 分割线占约 200px，剩余高度给两栏 */
+        [data-testid="stHorizontalBlock"] {
+            height: calc(100vh - 200px) !important;
+            min-height: 400px;
+            overflow: hidden !important;  /* 防止整体溢出 */
+        }
+        /* 每一列高度100% */
+        [data-testid="stHorizontalBlock"] > div {
+            height: 100% !important;
+            overflow: hidden !important;  /* 列本身不滚动，内部容器滚动 */
+        }
+        /* 左栏内容容器：flex列，占满高度 */
         .left-col-fix {
             display: flex;
             flex-direction: column;
-            height: 100%;  /* 继承父容器高度 */
+            height: 100%;
         }
-        /* 滚动容器 flex:1 自动撑满剩余高度 */
+        /* 滚动容器：flex:1 撑满剩余空间，允许垂直滚动 */
         .chat-scroll-container {
             flex: 1;
             overflow-y: auto;
@@ -133,6 +149,31 @@ st.markdown(
             border-radius: 5px;
         }
         .chat-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* 右栏方案填写区域也设为flex列，但内容较少，保持可滚动 */
+        .right-col-fix {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .right-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .right-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .right-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+        .right-scroll::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+        .right-scroll::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
     </style>
@@ -245,12 +286,12 @@ else:
 
     # ---------- 左栏：AI交互 ----------
     with col_left:
-        # 包裹左栏内容，使用flex列
-        st.markdown('<div class="left-col-fix" style="height:100%;">', unsafe_allow_html=True)
+        # 包裹左栏，使用flex列
+        st.markdown('<div class="left-col-fix">', unsafe_allow_html=True)
         
         st.subheader("💬 AI 学术助手对话")
         
-        # 滚动容器开始
+        # 滚动容器开始（包含所有消息和输入表单）
         st.markdown('<div class="chat-scroll-container">', unsafe_allow_html=True)
         
         # 显示历史消息
@@ -372,8 +413,10 @@ else:
 
     # ---------- 右栏：方案填写 ----------
     with col_right:
+        st.markdown('<div class="right-col-fix">', unsafe_allow_html=True)
         st.subheader("📝 研究方案填写")
-        # 加载已有方案
+        
+        st.markdown('<div class="right-scroll">', unsafe_allow_html=True)
         existing_plan = load_plan(st.session_state.participant_id)
         
         with st.container():
@@ -453,3 +496,6 @@ else:
                             st.rerun()
                         else:
                             st.error("❌ 提交失败")
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # 结束 right-scroll
+        st.markdown('</div>', unsafe_allow_html=True)  # 结束 right-col-fix
