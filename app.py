@@ -91,7 +91,7 @@ def save_plan(pid, task1_text, task1_button, task2_text, task2_button, task3_tex
         return False
 
 # ================= 5. 页面初始化 =================
-st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="wide")  # 改为wide布局，便于两栏
+st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="wide")
 
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
@@ -104,10 +104,44 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. 顶部信息栏（原侧边栏内容） =================
+# ================= 6. 自定义CSS：左栏固定高度，垂直滚动 =================
+st.markdown(
+    """
+    <style>
+        /* 让左栏内容容器固定高度并滚动 */
+        .chat-scroll-container {
+            height: calc(100vh - 280px) !important;  /* 根据顶部标题和边距调整 */
+            overflow-y: auto !important;
+            padding-right: 5px;
+        }
+        /* 美化滚动条 */
+        .chat-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+        .chat-scroll-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+        .chat-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* 右栏方案填写区域也稍微调整，与左栏对齐 */
+        .right-col {
+            height: calc(100vh - 280px);
+            overflow-y: auto;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# ================= 7. 顶部信息栏（原侧边栏内容） =================
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 
-# 用 columns 或 expander 展示被试身份、进度、导出
 with st.expander("📋 被试信息与数据管理", expanded=True):
     col_id, col_progress, col_export = st.columns([1, 1, 1.5])
     
@@ -185,7 +219,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.divider()
 
-# ================= 7. 主体两栏布局 =================
+# ================= 8. 主体两栏布局 =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
@@ -211,13 +245,17 @@ else:
     # ---------- 左栏：AI交互 ----------
     with col_left:
         st.subheader("💬 AI 学术助手对话")
+        
+        # 滚动容器开始
+        st.markdown('<div class="chat-scroll-container">', unsafe_allow_html=True)
+        
         # 显示历史消息
         for msg in st.session_state.messages:
             if msg["role"] != "system":
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
 
-        # 对话输入表单
+        # 对话输入表单（也在滚动容器内）
         with st.form(key="prompt_form", clear_on_submit=True):
             user_input = st.text_area(
                 "在这里输入您的提示词 (Prompt)：",
@@ -324,13 +362,17 @@ else:
                 )
                 st.rerun()
 
+        # 滚动容器结束
+        st.markdown('</div>', unsafe_allow_html=True)
+
     # ---------- 右栏：方案填写 ----------
     with col_right:
         st.subheader("📝 研究方案填写")
         # 加载已有方案
         existing_plan = load_plan(st.session_state.participant_id)
         
-        with st.container():   # 不折叠，始终保持可见
+        # 加一个容器，保持高度一致（可选），但不强制滚动，因为内容本身不多
+        with st.container():
             st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
             st.caption("说明：请在与AI多轮交互完成每个子任务后，提炼产出并勾选主导行为。")
             
