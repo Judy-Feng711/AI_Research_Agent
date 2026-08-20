@@ -69,7 +69,8 @@ def load_plan(pid):
         if response.data:
             return response.data[0]
     except Exception as e:
-        st.warning(f"加载方案数据失败：{e}")
+        # 表不存在时静默返回None，不影响使用
+        return None
     return None
 
 def save_plan(pid, task1_text, task1_button, task2_text, task2_button, task3_text, task3_button):
@@ -104,108 +105,40 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. 紧凑顶部信息栏 =================
-# 使用 columns 制作紧凑的一行，替代之前的 expander
-st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
-
-# 紧凑信息行：被试身份、进度、导出，用 columns 并设置小字体
-col_id, col_progress, col_export = st.columns([1.5, 1, 1.5])
-with col_id:
-    st.markdown("**👤 被试**")
-    pid_input = st.text_input(
-        "编号",
-        value=st.session_state.participant_id if st.session_state.participant_id else "",
-        key="pid_input_top",
-        label_visibility="collapsed",
-        placeholder="输入编号如P001"
-    )
-    if pid_input and pid_input.strip() != st.session_state.participant_id:
-        new_pid = pid_input.strip()
-        st.session_state.participant_id = new_pid
-        st.session_state.state_loaded = False
-        st.rerun()
-    if st.session_state.participant_id:
-        st.caption(f"当前: {st.session_state.participant_id}")
-    else:
-        st.caption("请先输入编号")
-
-with col_progress:
-    st.markdown("**📊 进度**")
-    if st.session_state.participant_id:
-        st.metric(label="轮数", value=st.session_state.round_count)
-        if st.session_state.round_count >= 10:
-            st.caption("✅ 达标")
-        elif st.session_state.round_count >= 8:
-            st.caption("💡 接近")
-        else:
-            st.caption("建议8-12轮")
-    else:
-        st.caption("—")
-
-with col_export:
-    st.markdown("**🔐 导出**")
-    password = st.text_input("密码", type="password", key="export_pwd", placeholder="输入导出密码")
-    RESEARCHER_PASSWORD = st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123")
-    if password:
-        if password == RESEARCHER_PASSWORD:
-            st.success("密码正确")
-            # 两个下载按钮放在一行
-            col_dl1, col_dl2 = st.columns(2)
-            with col_dl1:
-                try:
-                    response = supabase.table("research_logs").select("*").execute()
-                    if response.data:
-                        df = pd.DataFrame(response.data)
-                        csv_data = df.to_csv(index=False, encoding='utf-8-sig')
-                        st.download_button(
-                            label="📥 日志",
-                            data=csv_data.encode('utf-8-sig'),
-                            file_name="research_logs.csv",
-                            mime="text/csv",
-                            key="dl_logs"
-                        )
-                except:
-                    pass
-            with col_dl2:
-                try:
-                    response_plan = supabase.table("research_plans").select("*").execute()
-                    if response_plan.data:
-                        df_plan = pd.DataFrame(response_plan.data)
-                        csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
-                        st.download_button(
-                            label="📥 方案",
-                            data=csv_plan.encode('utf-8-sig'),
-                            file_name="research_plans.csv",
-                            mime="text/csv",
-                            key="dl_plans"
-                        )
-                except:
-                    pass
-        else:
-            st.error("密码错误")
-    else:
-        st.caption("请输入密码")
-
-st.divider()
-
-# ================= 7. 自定义CSS：固定左右两栏高度 =================
+# ================= 6. 自定义CSS：紧凑顶部 + 固定高度两栏 =================
 st.markdown(
     """
     <style>
-        /* 让顶部信息紧凑，减小高度 */
-        .stApp > header {
-            background-color: transparent;
+        /* 移除全局边距，使布局更紧凑 */
+        .main > div {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
         }
-        /* 固定左右列所在的横向容器高度 */
+        /* 顶部信息栏紧凑 */
+        .top-info-row {
+            margin-bottom: 0.2rem !important;
+        }
+        .top-info-row .stColumns {
+            gap: 0.2rem;
+        }
+        /* 主体容器：使用flex列，占满视口高度 */
+        .main .block-container {
+            padding-top: 0.2rem !important;
+            padding-bottom: 0.2rem !important;
+            max-width: 100% !important;
+        }
+        /* 左右两栏的父容器（即stColumns） */
         div[data-testid="stHorizontalBlock"] {
-            height: calc(100vh - 180px) !important;
+            height: calc(100vh - 200px) !important;  /* 根据顶部高度调整 */
             min-height: 400px;
+            align-items: stretch !important;
         }
-        /* 左右列自身 */
+        /* 每一列 */
         div[data-testid="stHorizontalBlock"] > div {
             height: 100% !important;
             overflow-y: auto !important;
             padding-right: 10px;
+            padding-left: 5px;
         }
         /* 滚动条美化 */
         ::-webkit-scrollbar {
@@ -213,6 +146,7 @@ st.markdown(
         }
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
+            border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb {
             background: #888;
@@ -221,18 +155,119 @@ st.markdown(
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        /* 确保列内元素不会溢出 */
-        .stColumn {
-            overflow-y: auto !important;
+        /* 针对左栏消息列表，让输入表单在底部（利用flex）但我们不强制，整体滚动即可 */
+        /* 调整标题边距 */
+        h1, h2, h3 {
+            margin-top: 0.1rem !important;
+            margin-bottom: 0.3rem !important;
+        }
+        /* 压缩expander标题 */
+        .streamlit-expanderHeader {
+            padding: 0.2rem 0.5rem !important;
+            font-size: 0.9rem !important;
+        }
+        .streamlit-expanderContent {
+            padding: 0.2rem 0.5rem !important;
+        }
+        /* 顶部三列紧凑 */
+        .top-info-row .stTextInput > div {
+            margin-bottom: 0 !important;
+        }
+        .top-info-row .stMetric {
+            margin-bottom: 0 !important;
+        }
+        /* 删除默认的padding-bottom */
+        .stAlert, .stSuccess, .stInfo {
+            margin-bottom: 0.2rem !important;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
 
+# ================= 7. 顶部信息栏（紧凑一行） =================
+st.markdown("### 🎓 EduResearch Copilot")
+with st.container():
+    col_id, col_progress, col_export = st.columns([1, 1, 1.5], gap="small")
+    with col_id:
+        st.markdown("**👤 被试**")
+        pid_input = st.text_input(
+            "编号",
+            value=st.session_state.participant_id if st.session_state.participant_id else "",
+            key="pid_input_top",
+            label_visibility="collapsed",
+            placeholder="如 P001"
+        )
+        if pid_input and pid_input.strip() != st.session_state.participant_id:
+            new_pid = pid_input.strip()
+            st.session_state.participant_id = new_pid
+            st.session_state.state_loaded = False
+            st.rerun()
+        if st.session_state.participant_id:
+            st.success(f"当前：{st.session_state.participant_id}")
+        else:
+            st.info("请输入编号")
+    with col_progress:
+        st.markdown("**📊 进度**")
+        if st.session_state.participant_id:
+            st.metric(label="轮数", value=st.session_state.round_count)
+            if st.session_state.round_count >= 10:
+                st.success("✅ 达成建议轮数")
+            elif st.session_state.round_count >= 8:
+                st.info("💡 接近建议轮数")
+            else:
+                st.caption("建议 8-12 轮")
+        else:
+            st.caption("待输入")
+    with col_export:
+        st.markdown("**🔐 导出**")
+        password = st.text_input("密码", type="password", key="export_pwd", placeholder="输入导出密码")
+        RESEARCHER_PASSWORD = st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123")
+        if password:
+            if password == RESEARCHER_PASSWORD:
+                st.success("密码正确")
+                # 下载按钮并排
+                col_dl1, col_dl2 = st.columns(2)
+                with col_dl1:
+                    try:
+                        response = supabase.table("research_logs").select("*").execute()
+                        if response.data:
+                            df = pd.DataFrame(response.data)
+                            csv_data = df.to_csv(index=False, encoding='utf-8-sig')
+                            st.download_button(
+                                label="📥 交互日志",
+                                data=csv_data.encode('utf-8-sig'),
+                                file_name="research_logs.csv",
+                                mime="text/csv",
+                                key="dl_logs"
+                            )
+                    except:
+                        st.warning("无日志数据")
+                with col_dl2:
+                    try:
+                        response_plan = supabase.table("research_plans").select("*").execute()
+                        if response_plan.data:
+                            df_plan = pd.DataFrame(response_plan.data)
+                            csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
+                            st.download_button(
+                                label="📥 方案数据",
+                                data=csv_plan.encode('utf-8-sig'),
+                                file_name="research_plans.csv",
+                                mime="text/csv",
+                                key="dl_plans"
+                            )
+                    except:
+                        st.warning("无方案数据")
+            else:
+                st.error("密码错误")
+        else:
+            st.caption("请输入密码")
+
+st.divider()
+
 # ================= 8. 主体两栏布局 =================
 if not st.session_state.participant_id:
-    st.warning("⚠️ 请先在顶部输入您的被试编号！")
+    st.warning("⚠️ 请先在顶部输入被试编号！")
 else:
     # 加载历史状态
     if not st.session_state.state_loaded:
@@ -256,30 +291,32 @@ else:
     # ---------- 左栏：AI交互 ----------
     with col_left:
         st.subheader("💬 AI 学术助手对话")
-        # 显示所有历史消息（非系统消息）
+        # 显示所有历史消息（非系统）
         for msg in st.session_state.messages:
             if msg["role"] != "system":
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
 
-        # 对话输入表单（位于消息下方）
+        # 对话输入表单（位于消息下方，在左栏滚动区域内）
         with st.form(key="prompt_form", clear_on_submit=True):
             user_input = st.text_area(
-                "在这里输入您的提示词 (Prompt)：",
-                height=100,
+                "提示词",
+                height=80,
                 key="prompt_input",
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                placeholder="在这里输入您的提示词..."
             )
             uploaded_file = st.file_uploader(
                 "上传文档",
                 type=["pdf", "docx"],
-                help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
-                key="file_uploader_simple"
+                help="支持 PDF 或 Word，内容将附加到提问中",
+                key="file_uploader_simple",
+                label_visibility="collapsed"
             )
             if uploaded_file is not None:
                 st.caption(f"已选择：{uploaded_file.name}")
 
-            st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
+            st.markdown("👇 **行为按钮**")
             col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
             clicked_behavior = None
             if col_b1.form_submit_button("获取基础信息"):
@@ -348,7 +385,7 @@ else:
                 st.session_state.messages.append({"role": "assistant", "content": ai_reply})
                 st.session_state.round_count += 1
 
-                # 持久化日志
+                # 持久化
                 log_data = {
                     "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "participant_id": st.session_state.participant_id,
@@ -374,80 +411,85 @@ else:
         st.subheader("📝 研究方案填写")
         existing_plan = load_plan(st.session_state.participant_id)
 
-        with st.container():
+        with st.form(key="plan_form"):
             st.markdown("**AI协同研究方案生成记录表**")
-            st.caption("说明：提炼产出并勾选主导行为。")
+            st.caption("说明：请在与AI多轮交互后提炼填写。")
 
-            with st.form(key="plan_form"):
-                # 子任务1
-                st.markdown("**子任务1：选题与理论切入点**")
-                task1_text = st.text_area(
-                    "提炼“选题核心与理论视角”（限150字）：",
-                    value=existing_plan["task1_text"] if existing_plan else "",
-                    height=80,
-                    max_chars=150,
-                    key="task1_text"
-                )
-                task1_button = st.radio(
-                    "本阶段最常使用的行为按钮：",
-                    options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
-                    index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task1_button"]) if existing_plan and existing_plan["task1_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
-                    horizontal=True,
-                    key="task1_button"
-                )
-                st.divider()
+            # 子任务1
+            st.markdown("**1. 选题与理论切入点**")
+            task1_text = st.text_area(
+                "提炼“选题核心与理论视角”（限150字）",
+                value=existing_plan["task1_text"] if existing_plan else "",
+                height=60,
+                max_chars=150,
+                key="task1_text",
+                label_visibility="collapsed"
+            )
+            task1_button = st.radio(
+                "主导行为按钮",
+                options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
+                index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task1_button"]) if existing_plan and existing_plan["task1_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
+                horizontal=True,
+                key="task1_button",
+                label_visibility="collapsed"
+            )
+            st.divider()
 
-                # 子任务2
-                st.markdown("**子任务2：实施步骤与工具设计**")
-                task2_text = st.text_area(
-                    "提炼“核心实施步骤或研究工具框架”（限150字）：",
-                    value=existing_plan["task2_text"] if existing_plan else "",
-                    height=80,
-                    max_chars=150,
-                    key="task2_text"
-                )
-                task2_button = st.radio(
-                    "本阶段最常使用的行为按钮：",
-                    options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
-                    index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task2_button"]) if existing_plan and existing_plan["task2_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
-                    horizontal=True,
-                    key="task2_button"
-                )
-                st.divider()
+            # 子任务2
+            st.markdown("**2. 实施步骤与工具设计**")
+            task2_text = st.text_area(
+                "提炼“核心实施步骤或研究工具框架”（限150字）",
+                value=existing_plan["task2_text"] if existing_plan else "",
+                height=60,
+                max_chars=150,
+                key="task2_text",
+                label_visibility="collapsed"
+            )
+            task2_button = st.radio(
+                "主导行为按钮",
+                options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
+                index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task2_button"]) if existing_plan and existing_plan["task2_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
+                horizontal=True,
+                key="task2_button",
+                label_visibility="collapsed"
+            )
+            st.divider()
 
-                # 子任务3
-                st.markdown("**子任务3：反思局限性与方案定稿**")
-                task3_text = st.text_area(
-                    "提炼“方案局限性及最终修改决策”（限150字）：",
-                    value=existing_plan["task3_text"] if existing_plan else "",
-                    height=80,
-                    max_chars=150,
-                    key="task3_text"
-                )
-                task3_button = st.radio(
-                    "本阶段最常使用的行为按钮：",
-                    options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
-                    index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task3_button"]) if existing_plan and existing_plan["task3_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
-                    horizontal=True,
-                    key="task3_button"
-                )
+            # 子任务3
+            st.markdown("**3. 反思局限性与方案定稿**")
+            task3_text = st.text_area(
+                "提炼“方案局限性及最终修改决策”（限150字）",
+                value=existing_plan["task3_text"] if existing_plan else "",
+                height=60,
+                max_chars=150,
+                key="task3_text",
+                label_visibility="collapsed"
+            )
+            task3_button = st.radio(
+                "主导行为按钮",
+                options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
+                index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task3_button"]) if existing_plan and existing_plan["task3_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
+                horizontal=True,
+                key="task3_button",
+                label_visibility="collapsed"
+            )
 
-                submitted = st.form_submit_button("📤 提交方案")
-                if submitted:
-                    if not task1_text.strip() or not task2_text.strip() or not task3_text.strip():
-                        st.warning("请完整填写所有文本字段")
+            submitted = st.form_submit_button("📤 提交方案")
+            if submitted:
+                if not task1_text.strip() or not task2_text.strip() or not task3_text.strip():
+                    st.warning("请完整填写所有文本字段")
+                else:
+                    success = save_plan(
+                        st.session_state.participant_id,
+                        task1_text.strip(),
+                        task1_button,
+                        task2_text.strip(),
+                        task2_button,
+                        task3_text.strip(),
+                        task3_button
+                    )
+                    if success:
+                        st.success("✅ 方案已提交/更新！")
+                        st.rerun()
                     else:
-                        success = save_plan(
-                            st.session_state.participant_id,
-                            task1_text.strip(),
-                            task1_button,
-                            task2_text.strip(),
-                            task2_button,
-                            task3_text.strip(),
-                            task3_button
-                        )
-                        if success:
-                            st.success("✅ 方案已提交/更新！")
-                            st.rerun()
-                        else:
-                            st.error("❌ 提交失败")
+                        st.error("❌ 提交失败")
