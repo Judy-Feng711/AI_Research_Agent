@@ -112,26 +112,25 @@ st.markdown(
         .main .block-container {
             padding: 0 !important;
             max-width: 100% !important;
-            height: 100% !important;
+            height: 100vh !important;
         }
         .main .block-container > div {
             display: flex !important;
             flex-direction: column !important;
-            height: 100% !important;
+            height: 100vh !important;
         }
         /* 上块：20% 高度，无滚动，紧凑内边距 */
         .top-block {
-            height: 20% !important;
+            height: 20vh !important;
             flex-shrink: 0 !important;
             overflow: hidden !important;
-            padding: 2px 15px !important;   /* 减少上下内边距 */
+            padding: 2px 15px !important;
             border-bottom: 2px solid #ddd;
             background-color: #f0f2f6;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;  /* 欢迎语和一行信息上下分布 */
+            justify-content: space-between;
         }
-        /* 压缩顶部标题和文字间距 */
         .top-block h2 {
             margin: 0 0 2px 0 !important;
             font-size: 1.4rem;
@@ -140,7 +139,6 @@ st.markdown(
             margin: 0 0 2px 0 !important;
             font-size: 0.9rem;
         }
-        /* 顶部一行三列，紧凑 */
         .top-block .stColumns {
             margin-top: 2px !important;
             gap: 0.5rem !important;
@@ -167,7 +165,7 @@ st.markdown(
             width: 20% !important;
             height: 100% !important;
             overflow-y: auto !important;
-            padding: 8px !important;
+            padding: 2px 8px 8px 8px !important;   /* 顶部padding仅2px，紧挨边框 */
             border-right: 1px solid #ddd;
             background-color: #fafafa;
         }
@@ -185,6 +183,11 @@ st.markdown(
             overflow-y: auto !important;
             padding: 8px !important;
             background-color: #fafafa;
+        }
+        /* 左栏标题紧贴顶部 */
+        .col-left h3 {
+            margin-top: 0 !important;
+            margin-bottom: 4px !important;
         }
         /* 滚动条样式 */
         .col-left::-webkit-scrollbar, .col-mid::-webkit-scrollbar, .col-right::-webkit-scrollbar {
@@ -219,7 +222,6 @@ st.markdown(
         .stChatMessage {
             margin: 4px 0;
         }
-        /* 右栏内部分隔线紧凑 */
         .stDivider {
             margin: 0.3rem 0;
         }
@@ -232,11 +234,9 @@ st.markdown(
 
 # ---- 上块：20% ----
 st.markdown('<div class="top-block">', unsafe_allow_html=True)
-# 欢迎语
 st.markdown("## 🎓 EduResearch Copilot")
 st.markdown("**欢迎使用全栈式教育研究学术助理！** 请先在下方输入被试编号，然后与AI进行多轮深度对话，并填写右侧的研究方案记录表。")
 
-# 一行三列：被试编号、进度、导出
 with st.container():
     col_id, col_progress, col_export = st.columns([1, 0.8, 1.2])
     with col_id:
@@ -308,12 +308,12 @@ with st.container():
         else:
             st.caption("请输入密码")
 
-st.markdown('</div>', unsafe_allow_html=True)  # 结束上块
+st.markdown('</div>', unsafe_allow_html=True)
 
 # ---- 下块：80% ----
 st.markdown('<div class="bottom-block">', unsafe_allow_html=True)
 
-# 左栏 (20%)  - 操作指引
+# 左栏 (20%)
 st.markdown('<div class="col-left">', unsafe_allow_html=True)
 st.markdown("### ℹ️ 操作指引")
 st.markdown("""
@@ -322,12 +322,11 @@ st.markdown("""
 - 右栏为研究方案填写区，请根据与AI的交互成果提炼填写。
 - 所有数据会自动保存至数据库。
 """)
-st.markdown('</div>', unsafe_allow_html=True)  # 结束左栏
+st.markdown('</div>', unsafe_allow_html=True)
 
 # 中栏 (45%)
 st.markdown('<div class="col-mid">', unsafe_allow_html=True)
 
-# 加载历史状态
 if st.session_state.participant_id and not st.session_state.state_loaded:
     loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
     if loaded_msgs is not None:
@@ -347,13 +346,11 @@ st.markdown("### 💬 AI 学术助手对话")
 if not st.session_state.participant_id:
     st.warning("请先在顶部输入被试编号")
 else:
-    # 显示历史消息
     for msg in st.session_state.messages:
         if msg["role"] != "system":
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
-    # 输入表单
     with st.form(key="prompt_form", clear_on_submit=True):
         user_input = st.text_area(
             "提示词",
@@ -386,7 +383,6 @@ else:
                 st.warning("⚠️ 请输入提示词")
                 st.stop()
 
-            # 处理附件
             file_content = ""
             if uploaded_file:
                 fname = uploaded_file.name
@@ -411,7 +407,6 @@ else:
 
             full_msg = f"【文档内容】\n{file_content}\n\n【问题】\n{user_input}" if file_content else user_input
 
-            # 显示用户消息
             with st.chat_message("user"):
                 if file_content:
                     st.markdown(f"📎 已附加文档，提问：{user_input}")
@@ -420,7 +415,6 @@ else:
 
             st.session_state.messages.append({"role": "user", "content": full_msg})
 
-            # AI调用
             with st.chat_message("assistant"):
                 with st.spinner("思考中..."):
                     try:
@@ -436,7 +430,6 @@ else:
             st.session_state.messages.append({"role": "assistant", "content": ai_reply})
             st.session_state.round_count += 1
 
-            # 持久化日志
             log_data = {
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "participant_id": st.session_state.participant_id,
@@ -457,7 +450,7 @@ else:
             )
             st.rerun()
 
-st.markdown('</div>', unsafe_allow_html=True)  # 结束中栏
+st.markdown('</div>', unsafe_allow_html=True)
 
 # 右栏 (35%)
 st.markdown('<div class="col-right">', unsafe_allow_html=True)
@@ -472,7 +465,6 @@ else:
         st.markdown("**AI协同研究方案生成记录表**")
         st.caption("提炼成果并勾选主导行为")
 
-        # 子任务1
         st.markdown("**1. 选题与理论切入点**")
         task1_text = st.text_area(
             "提炼（限150字）",
@@ -492,7 +484,6 @@ else:
         )
         st.divider()
 
-        # 子任务2
         st.markdown("**2. 实施步骤与工具设计**")
         task2_text = st.text_area(
             "提炼（限150字）",
@@ -512,7 +503,6 @@ else:
         )
         st.divider()
 
-        # 子任务3
         st.markdown("**3. 反思局限性与方案定稿**")
         task3_text = st.text_area(
             "提炼（限150字）",
@@ -551,6 +541,6 @@ else:
                 else:
                     st.error("❌ 提交失败")
 
-st.markdown('</div>', unsafe_allow_html=True)  # 结束右栏
+st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)  # 结束下块
+st.markdown('</div>', unsafe_allow_html=True)
