@@ -104,11 +104,20 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS：左侧正常滚动，右侧固定 =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
-        /* 移除之前可能设置的固定高度 */
+        /* 顶部固定 */
+        .top-fixed {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 100;
+            padding: 0px 0px 10px 0px;
+            border-bottom: 2px solid #ddd;
+        }
+        /* 下方两栏容器正常流式 */
         [data-testid="stHorizontalBlock"] {
             height: auto !important;
             min-height: 0 !important;
@@ -123,10 +132,10 @@ st.markdown(
         /* 右侧列固定（sticky）在视口顶部 */
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
-            top: 0 !important;
+            top: 80px !important;  /* 留出顶部固定栏的高度，可根据实际调整 */
             align-self: flex-start !important;
-            height: 100vh !important;  /* 占满视口高度 */
-            overflow-y: auto !important; /* 内容过多时内部滚动 */
+            height: calc(100vh - 80px) !important;
+            overflow-y: auto !important;
             background-color: #fafafa;
             padding: 10px !important;
             border-left: 1px solid #ddd;
@@ -151,85 +160,88 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 顶部信息栏（完全不变） =================
-st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
+# ================= 7. 顶部固定栏 =================
+with st.container():
+    st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
+    st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 
-with st.expander("📋 被试信息与数据管理", expanded=True):
-    col_id, col_progress, col_export = st.columns([1, 1, 1.5])
-    
-    with col_id:
-        st.markdown("**👤 被试身份**")
-        pid_input = st.text_input(
-            "请输入您的被试编号（如 P001）：",
-            value=st.session_state.participant_id if st.session_state.participant_id else "",
-            key="pid_input_top"
-        )
-        if pid_input and pid_input.strip() != st.session_state.participant_id:
-            new_pid = pid_input.strip()
-            st.session_state.participant_id = new_pid
-            st.session_state.state_loaded = False
-            st.rerun()
-        if st.session_state.participant_id:
-            st.success(f"当前被试：{st.session_state.participant_id}")
-        else:
-            st.info("请在上方输入编号")
-
-    with col_progress:
-        st.markdown("**📊 对话进度**")
-        if st.session_state.participant_id:
-            st.metric(label="已完成的对话轮数", value=st.session_state.round_count)
-            if st.session_state.round_count >= 10:
-                st.success("✅ 已达成建议轮数（10轮）")
-            elif st.session_state.round_count >= 8:
-                st.info("💡 接近建议轮数（8-12轮）")
+    with st.expander("📋 被试信息与数据管理", expanded=True):
+        col_id, col_progress, col_export = st.columns([1, 1, 1.5])
+        
+        with col_id:
+            st.markdown("**👤 被试身份**")
+            pid_input = st.text_input(
+                "请输入您的被试编号（如 P001）：",
+                value=st.session_state.participant_id if st.session_state.participant_id else "",
+                key="pid_input_top"
+            )
+            if pid_input and pid_input.strip() != st.session_state.participant_id:
+                new_pid = pid_input.strip()
+                st.session_state.participant_id = new_pid
+                st.session_state.state_loaded = False
+                st.rerun()
+            if st.session_state.participant_id:
+                st.success(f"当前被试：{st.session_state.participant_id}")
             else:
-                st.caption("建议完成 8-12 轮对话")
-        else:
-            st.caption("请先输入被试编号")
+                st.info("请在上方输入编号")
 
-    with col_export:
-        st.markdown("**🔐 研究者数据导出**")
-        password = st.text_input("请输入数据导出密码", type="password")
-        RESEARCHER_PASSWORD = st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123")
-        if password:
-            if password == RESEARCHER_PASSWORD:
-                st.success("密码正确")
-                # 交互日志下载
-                try:
-                    response = supabase.table("research_logs").select("*").execute()
-                    if response.data:
-                        df = pd.DataFrame(response.data)
-                        csv_data = df.to_csv(index=False, encoding='utf-8-sig')
-                        st.download_button(
-                            label="📥 下载交互日志",
-                            data=csv_data.encode('utf-8-sig'),
-                            file_name="research_logs.csv",
-                            mime="text/csv",
-                            key="dl_logs"
-                        )
-                except Exception as e:
-                    st.error(f"读取交互数据失败：{e}")
-                # 方案数据下载
-                try:
-                    response_plan = supabase.table("research_plans").select("*").execute()
-                    if response_plan.data:
-                        df_plan = pd.DataFrame(response_plan.data)
-                        csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
-                        st.download_button(
-                            label="📥 下载方案数据",
-                            data=csv_plan.encode('utf-8-sig'),
-                            file_name="research_plans.csv",
-                            mime="text/csv",
-                            key="dl_plans"
-                        )
-                except Exception as e:
-                    st.error(f"读取方案数据失败：{e}")
+        with col_progress:
+            st.markdown("**📊 对话进度**")
+            if st.session_state.participant_id:
+                st.metric(label="已完成的对话轮数", value=st.session_state.round_count)
+                if st.session_state.round_count >= 10:
+                    st.success("✅ 已达成建议轮数（10轮）")
+                elif st.session_state.round_count >= 8:
+                    st.info("💡 接近建议轮数（8-12轮）")
+                else:
+                    st.caption("建议完成 8-12 轮对话")
             else:
-                st.error("密码错误")
-        else:
-            st.info("请输入密码以导出数据")
+                st.caption("请先输入被试编号")
 
-st.divider()
+        with col_export:
+            st.markdown("**🔐 研究者数据导出**")
+            password = st.text_input("请输入数据导出密码", type="password")
+            RESEARCHER_PASSWORD = st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123")
+            if password:
+                if password == RESEARCHER_PASSWORD:
+                    st.success("密码正确")
+                    # 交互日志下载
+                    try:
+                        response = supabase.table("research_logs").select("*").execute()
+                        if response.data:
+                            df = pd.DataFrame(response.data)
+                            csv_data = df.to_csv(index=False, encoding='utf-8-sig')
+                            st.download_button(
+                                label="📥 下载交互日志",
+                                data=csv_data.encode('utf-8-sig'),
+                                file_name="research_logs.csv",
+                                mime="text/csv",
+                                key="dl_logs"
+                            )
+                    except Exception as e:
+                        st.error(f"读取交互数据失败：{e}")
+                    # 方案数据下载
+                    try:
+                        response_plan = supabase.table("research_plans").select("*").execute()
+                        if response_plan.data:
+                            df_plan = pd.DataFrame(response_plan.data)
+                            csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
+                            st.download_button(
+                                label="📥 下载方案数据",
+                                data=csv_plan.encode('utf-8-sig'),
+                                file_name="research_plans.csv",
+                                mime="text/csv",
+                                key="dl_plans"
+                            )
+                    except Exception as e:
+                        st.error(f"读取方案数据失败：{e}")
+                else:
+                    st.error("密码错误")
+            else:
+                st.info("请输入密码以导出数据")
+
+    st.divider()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 主体两栏布局 =================
 if not st.session_state.participant_id:
@@ -254,17 +266,15 @@ else:
     # 创建两列
     col_left, col_right = st.columns([2, 1], gap="large")
 
-    # ---------- 左栏：AI交互（正常流式，无滚动容器） ----------
+    # ---------- 左栏：AI交互（正常流式） ----------
     with col_left:
         st.subheader("💬 AI 学术助手对话")
         
-        # 显示历史消息
         for msg in st.session_state.messages:
             if msg["role"] != "system":
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
 
-        # 对话输入表单
         with st.form(key="prompt_form", clear_on_submit=True):
             user_input = st.text_area(
                 "在这里输入您的提示词 (Prompt)：",
@@ -300,7 +310,6 @@ else:
                     st.warning("⚠️ 请先输入提示词！")
                     st.stop()
 
-                # 处理附件
                 file_content = ""
                 if uploaded_file is not None:
                     file_name = uploaded_file.name
@@ -325,7 +334,6 @@ else:
 
                 full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
 
-                # 显示用户消息
                 with st.chat_message("user"):
                     if file_content:
                         st.markdown(f"📎 **已附加文档**，提问：{user_input}")
@@ -334,7 +342,6 @@ else:
 
                 st.session_state.messages.append({"role": "user", "content": full_user_message})
 
-                # 调用 AI
                 with st.chat_message("assistant"):
                     with st.spinner("思考中..."):
                         try:
@@ -350,7 +357,6 @@ else:
                 st.session_state.messages.append({"role": "assistant", "content": ai_reply})
                 st.session_state.round_count += 1
 
-                # 持久化日志
                 log_data = {
                     "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "participant_id": st.session_state.participant_id,
@@ -375,13 +381,11 @@ else:
     with col_right:
         st.subheader("📝 研究方案填写")
         existing_plan = load_plan(st.session_state.participant_id)
-        
-        # 内容自然放置，父容器已固定
+
         st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
         st.caption("说明：请在与AI多轮交互完成每个子任务后，提炼产出并勾选主导行为。")
-        
+
         with st.form(key="plan_form"):
-            # 子任务1
             st.markdown("**子任务1：选题与理论切入点**")
             task1_text = st.text_area(
                 "提炼“选题核心与理论视角”（限150字）：",
@@ -398,8 +402,7 @@ else:
                 key="task1_button"
             )
             st.divider()
-            
-            # 子任务2
+
             st.markdown("**子任务2：实施步骤与工具设计**")
             task2_text = st.text_area(
                 "提炼“核心实施步骤或研究工具框架”（限150字）：",
@@ -416,8 +419,7 @@ else:
                 key="task2_button"
             )
             st.divider()
-            
-            # 子任务3
+
             st.markdown("**子任务3：反思局限性与方案定稿**")
             task3_text = st.text_area(
                 "提炼“方案局限性及最终修改决策”（限150字）：",
@@ -433,7 +435,7 @@ else:
                 horizontal=True,
                 key="task3_button"
             )
-            
+
             submitted = st.form_submit_button("📤 提交方案")
             if submitted:
                 if not task1_text.strip() or not task2_text.strip() or not task3_text.strip():
