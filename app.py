@@ -91,7 +91,7 @@ def save_plan(pid, task1_text, task1_button, task2_text, task2_button, task3_tex
         return False
 
 # ================= 5. 页面初始化 =================
-st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="wide")  # 改为wide布局，便于两栏
+st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="wide")
 
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
@@ -104,7 +104,80 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. 顶部信息栏（原侧边栏内容）完全不变 =================
+# ================= 6. CSS 仅修改左栏布局 =================
+st.markdown(
+    """
+    <style>
+        /* 保持顶部信息栏不变 */
+        /* 让两栏的父容器占满剩余视口高度，避免整体滚动 */
+        [data-testid="stHorizontalBlock"] {
+            height: calc(100vh - 180px) !important; /* 根据顶部实际高度调整，可微调 */
+            min-height: 400px;
+            overflow: hidden !important;
+        }
+        /* 每一列高度100% */
+        [data-testid="stHorizontalBlock"] > div {
+            height: 100% !important;
+            overflow: hidden !important;
+        }
+        /* 左栏 flex 列容器 */
+        .left-col-fix {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        /* 滚动容器：flex:1 自动撑满剩余高度，启用垂直滚动 */
+        .chat-scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        /* 滚动条样式 */
+        .chat-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+        .chat-scroll-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+        .chat-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* 确保右栏也能自适应高度（但不强制滚动） */
+        .right-col-fix {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .right-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .right-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .right-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+        .right-scroll::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+        .right-scroll::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# ================= 7. 顶部信息栏（原侧边栏内容，完全不变） =================
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 
 with st.expander("📋 被试信息与数据管理", expanded=True):
@@ -184,7 +257,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.divider()
 
-# ================= 7. 主体两栏布局 =================
+# ================= 8. 主体两栏布局 =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
@@ -209,46 +282,14 @@ else:
 
     # ---------- 左栏：AI交互 ----------
     with col_left:
+        # 使用flex列容器
+        st.markdown('<div class="left-col-fix">', unsafe_allow_html=True)
+        
+        # 标题固定
         st.subheader("💬 AI 学术助手对话")
         
-        # 自定义CSS：为左栏内容设置滚动容器（除标题外）
-        st.markdown(
-            """
-            <style>
-                /* 让左栏内部成为一个flex列，标题固定，下方内容滚动 */
-                .left-chat-wrapper {
-                    display: flex;
-                    flex-direction: column;
-                    height: calc(100vh - 280px);  /* 根据顶部信息栏高度调整，可微调 */
-                    overflow: hidden;
-                }
-                .chat-scroll-area {
-                    flex: 1;
-                    overflow-y: auto;
-                    padding-right: 5px;
-                }
-                .chat-scroll-area::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .chat-scroll-area::-webkit-scrollbar-track {
-                    background: #f1f1f1;
-                    border-radius: 5px;
-                }
-                .chat-scroll-area::-webkit-scrollbar-thumb {
-                    background: #888;
-                    border-radius: 5px;
-                }
-                .chat-scroll-area::-webkit-scrollbar-thumb:hover {
-                    background: #555;
-                }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-        
-        # 使用div包裹所有需要滚动的内容（历史消息和输入表单）
-        st.markdown('<div class="left-chat-wrapper">', unsafe_allow_html=True)
-        st.markdown('<div class="chat-scroll-area">', unsafe_allow_html=True)
+        # 滚动容器开始（包含所有消息和输入表单）
+        st.markdown('<div class="chat-scroll-container">', unsafe_allow_html=True)
         
         # 显示历史消息
         for msg in st.session_state.messages:
@@ -256,7 +297,7 @@ else:
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
 
-        # 对话输入表单（在滚动区域内）
+        # 对话输入表单（也在滚动容器内）
         with st.form(key="prompt_form", clear_on_submit=True):
             user_input = st.text_area(
                 "在这里输入您的提示词 (Prompt)：",
@@ -363,16 +404,20 @@ else:
                 )
                 st.rerun()
 
-        st.markdown('</div>', unsafe_allow_html=True)  # 结束 chat-scroll-area
-        st.markdown('</div>', unsafe_allow_html=True)  # 结束 left-chat-wrapper
+        # 滚动容器结束
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)  # 结束 left-col-fix
 
     # ---------- 右栏：方案填写 ----------
     with col_right:
+        # 为了与左栏高度一致，也使用flex列
+        st.markdown('<div class="right-col-fix">', unsafe_allow_html=True)
         st.subheader("📝 研究方案填写")
-        # 加载已有方案
+        
+        st.markdown('<div class="right-scroll">', unsafe_allow_html=True)
         existing_plan = load_plan(st.session_state.participant_id)
         
-        with st.container():   # 不折叠，始终保持可见
+        with st.container():
             st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
             st.caption("说明：请在与AI多轮交互完成每个子任务后，提炼产出并勾选主导行为。")
             
@@ -449,3 +494,6 @@ else:
                             st.rerun()
                         else:
                             st.error("❌ 提交失败")
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # 结束 right-scroll
+        st.markdown('</div>', unsafe_allow_html=True)  # 结束 right-col-fix
