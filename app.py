@@ -91,7 +91,7 @@ def save_plan(pid, task1_text, task1_button, task2_text, task2_button, task3_tex
         return False
 
 # ================= 5. 页面初始化 =================
-st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="wide")  # 改为wide布局，便于两栏
+st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="wide")
 
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
@@ -104,13 +104,54 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. 顶部信息栏（原侧边栏内容） =================
+# ================= 6. 自定义CSS：固定左右两栏高度，内部滚动 =================
+st.markdown(
+    """
+    <style>
+        /* 顶部信息区域占固定高度，不参与滚动 */
+        .top-info {
+            margin-bottom: 10px;
+        }
+        /* 左右两栏的父容器（横向块） */
+        div[data-testid="stHorizontalBlock"] {
+            height: calc(100vh - 280px) !important;
+            min-height: 400px;
+        }
+        /* 左右两列自身 */
+        div[data-testid="stHorizontalBlock"] > div {
+            height: 100% !important;
+            overflow-y: auto !important;
+            padding-right: 10px;
+        }
+        /* 左栏内表单布局，让输入表单在底部（通过flex）——但Streamlit原生不支持，我们使用简单上下排列，整体滚动 */
+        /* 右栏样式 */
+        div[data-testid="stHorizontalBlock"] > div:last-child {
+            overflow-y: auto !important;
+        }
+        /* 优化滚动条外观 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# ================= 7. 顶部信息栏 =================
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 
-# 用 columns 或 expander 展示被试身份、进度、导出
 with st.expander("📋 被试信息与数据管理", expanded=True):
     col_id, col_progress, col_export = st.columns([1, 1, 1.5])
-    
     with col_id:
         st.markdown("**👤 被试身份**")
         pid_input = st.text_input(
@@ -127,7 +168,6 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
             st.success(f"当前被试：{st.session_state.participant_id}")
         else:
             st.info("请在上方输入编号")
-
     with col_progress:
         st.markdown("**📊 对话进度**")
         if st.session_state.participant_id:
@@ -140,7 +180,6 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
                 st.caption("建议完成 8-12 轮对话")
         else:
             st.caption("请先输入被试编号")
-
     with col_export:
         st.markdown("**🔐 研究者数据导出**")
         password = st.text_input("请输入数据导出密码", type="password")
@@ -185,7 +224,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.divider()
 
-# ================= 7. 主体两栏布局 =================
+# ================= 8. 主体两栏布局 =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
@@ -205,19 +244,19 @@ else:
             st.session_state.state_loaded = True
             save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
 
-    # 创建两列
+    # 创建两列，宽度比例 2:1
     col_left, col_right = st.columns([2, 1], gap="large")
 
     # ---------- 左栏：AI交互 ----------
     with col_left:
         st.subheader("💬 AI 学术助手对话")
-        # 显示历史消息
+        # 显示所有历史消息（非系统消息）
         for msg in st.session_state.messages:
             if msg["role"] != "system":
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
 
-        # 对话输入表单
+        # 对话输入表单（位于消息下方，整体在左栏内滚动）
         with st.form(key="prompt_form", clear_on_submit=True):
             user_input = st.text_area(
                 "在这里输入您的提示词 (Prompt)：",
@@ -327,13 +366,12 @@ else:
     # ---------- 右栏：方案填写 ----------
     with col_right:
         st.subheader("📝 研究方案填写")
-        # 加载已有方案
         existing_plan = load_plan(st.session_state.participant_id)
-        
-        with st.container():   # 不折叠，始终保持可见
+
+        with st.container():
             st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
             st.caption("说明：请在与AI多轮交互完成每个子任务后，提炼产出并勾选主导行为。")
-            
+
             with st.form(key="plan_form"):
                 # 子任务1
                 st.markdown("**子任务1：选题与理论切入点**")
@@ -352,7 +390,7 @@ else:
                     key="task1_button"
                 )
                 st.divider()
-                
+
                 # 子任务2
                 st.markdown("**子任务2：实施步骤与工具设计**")
                 task2_text = st.text_area(
@@ -370,7 +408,7 @@ else:
                     key="task2_button"
                 )
                 st.divider()
-                
+
                 # 子任务3
                 st.markdown("**子任务3：反思局限性与方案定稿**")
                 task3_text = st.text_area(
@@ -387,7 +425,7 @@ else:
                     horizontal=True,
                     key="task3_button"
                 )
-                
+
                 submitted = st.form_submit_button("📤 提交方案")
                 if submitted:
                     if not task1_text.strip() or not task2_text.strip() or not task3_text.strip():
