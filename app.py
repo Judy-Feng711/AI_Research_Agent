@@ -104,14 +104,20 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. 自定义CSS：左栏固定高度，垂直滚动 =================
+# ================= 6. 自定义CSS：左栏flex布局，滚动容器自适应 =================
 st.markdown(
     """
     <style>
-        /* 让左栏内容容器固定高度并滚动 */
+        /* 让左栏本身成为flex列 */
+        .left-col-fix {
+            display: flex;
+            flex-direction: column;
+            height: 100%;  /* 继承父容器高度 */
+        }
+        /* 滚动容器 flex:1 自动撑满剩余高度 */
         .chat-scroll-container {
-            height: calc(100vh - 280px) !important;  /* 根据顶部标题和边距调整 */
-            overflow-y: auto !important;
+            flex: 1;
+            overflow-y: auto;
             padding-right: 5px;
         }
         /* 美化滚动条 */
@@ -128,11 +134,6 @@ st.markdown(
         }
         .chat-scroll-container::-webkit-scrollbar-thumb:hover {
             background: #555;
-        }
-        /* 右栏方案填写区域也稍微调整，与左栏对齐 */
-        .right-col {
-            height: calc(100vh - 280px);
-            overflow-y: auto;
         }
     </style>
     """,
@@ -244,6 +245,9 @@ else:
 
     # ---------- 左栏：AI交互 ----------
     with col_left:
+        # 包裹左栏内容，使用flex列
+        st.markdown('<div class="left-col-fix" style="height:100%;">', unsafe_allow_html=True)
+        
         st.subheader("💬 AI 学术助手对话")
         
         # 滚动容器开始
@@ -364,6 +368,7 @@ else:
 
         # 滚动容器结束
         st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)  # 结束 left-col-fix
 
     # ---------- 右栏：方案填写 ----------
     with col_right:
@@ -371,7 +376,6 @@ else:
         # 加载已有方案
         existing_plan = load_plan(st.session_state.participant_id)
         
-        # 加一个容器，保持高度一致（可选），但不强制滚动，因为内容本身不多
         with st.container():
             st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
             st.caption("说明：请在与AI多轮交互完成每个子任务后，提炼产出并勾选主导行为。")
