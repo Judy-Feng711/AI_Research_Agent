@@ -108,28 +108,30 @@ if "prompt_input" not in st.session_state:
 st.markdown(
     """
     <style>
-        /* 移除所有默认边距，让页面占满视口 */
+        /* 移除默认边距，让页面占满视口 */
         .main .block-container {
             padding: 0 !important;
             max-width: 100% !important;
             height: 100vh !important;
         }
-        /* 主容器使用 flex 列，占满高度 */
         .main .block-container > div {
             display: flex !important;
             flex-direction: column !important;
             height: 100vh !important;
         }
-        /* 上块：20% 高度 */
+        /* 上块：20% 高度，无滚动 */
         .top-block {
             height: 20vh !important;
             flex-shrink: 0 !important;
-            overflow: hidden !important;   /* 无滚动条 */
+            overflow: hidden !important;
             padding: 10px 20px !important;
             border-bottom: 2px solid #ddd;
-            background-color: #f8f9fa;
+            background-color: #f0f2f6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        /* 下块：80% 高度，使用 flex 行布局 */
+        /* 下块：80% 高度，flex行 */
         .bottom-block {
             height: 80vh !important;
             flex-shrink: 0 !important;
@@ -137,7 +139,7 @@ st.markdown(
             flex-direction: row !important;
             overflow: hidden !important;
         }
-        /* 下块内的三列，按比例分配宽度，且高度100% */
+        /* 三列 */
         .col-left {
             width: 20% !important;
             height: 100% !important;
@@ -176,7 +178,7 @@ st.markdown(
         .col-left::-webkit-scrollbar-thumb:hover, .col-mid::-webkit-scrollbar-thumb:hover, .col-right::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        /* 内部元素间距调整 */
+        /* 内部间距 */
         .stTextInput, .stTextArea, .stSelectbox, .stRadio, .stMetric {
             margin-bottom: 0.3rem !important;
         }
@@ -192,6 +194,10 @@ st.markdown(
         }
         .top-block h2 {
             margin-top: 0;
+        }
+        /* 让聊天消息在中间栏正常显示 */
+        .stChatMessage {
+            margin: 4px 0;
         }
     </style>
     """,
@@ -214,7 +220,6 @@ st.markdown('<div class="bottom-block">', unsafe_allow_html=True)
 st.markdown('<div class="col-left">', unsafe_allow_html=True)
 
 st.markdown("### 👤 基本信息")
-# 被试身份
 pid_input = st.text_input(
     "被试编号",
     value=st.session_state.participant_id if st.session_state.participant_id else "",
@@ -283,7 +288,7 @@ st.markdown('</div>', unsafe_allow_html=True)  # 结束左栏
 # 中栏 (45%)
 st.markdown('<div class="col-mid">', unsafe_allow_html=True)
 
-# 加载历史状态（如果有被试编号）
+# 加载历史状态
 if st.session_state.participant_id and not st.session_state.state_loaded:
     loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
     if loaded_msgs is not None:
@@ -299,7 +304,6 @@ if st.session_state.participant_id and not st.session_state.state_loaded:
         st.session_state.state_loaded = True
         save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
 
-# 显示AI对话
 st.markdown("### 💬 AI 学术助手对话")
 if not st.session_state.participant_id:
     st.warning("请先在左侧栏输入被试编号")
