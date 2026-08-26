@@ -108,7 +108,7 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS：顶部固定，右侧固定 =================
+# ================= 6. CSS：顶部固定，右侧固定，并消除展开面板底部留白 =================
 st.markdown(
     """
     <style>
@@ -118,9 +118,17 @@ st.markdown(
             top: 0;
             background-color: white;
             z-index: 100;
-            padding: 0.5rem 1rem 0.2rem 1rem;
+            padding: 0.5rem 1rem 0rem 1rem;   /* 底部padding改为0，减少留白 */
             border-bottom: 2px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        /* 让展开面板底部边距为0，内部padding减小 */
+        .top-fixed .stExpander {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        .top-fixed .stExpander .stExpanderContent {
+            padding-bottom: 0.2rem !important;
         }
         /* 左侧列正常流式 */
         [data-testid="stHorizontalBlock"] > div:first-child {
