@@ -164,33 +164,19 @@ st.markdown(
 # ================= 7. 顶部信息栏（固定） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 
-# ---- 标题 + 轮数（并列显示） ----
-col_title, col_round = st.columns([3, 1])
-with col_title:
-    st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
-with col_round:
-    if st.session_state.participant_id:
-        st.metric("对话轮数", st.session_state.round_count)
-        if st.session_state.round_count >= 10:
-            st.success("✅ 已达成建议轮数（10轮）")
-        elif st.session_state.round_count >= 8:
-            st.info("💡 接近建议轮数（8‑12轮）")
-        else:
-            st.caption("建议完成 8‑12 轮对话")
-    else:
-        st.metric("对话轮数", "0")
-        st.caption("请输入被试编号")
+st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 
-# ---- 欢迎语（固定显示在标题下方） ----
+# ---- 新增固定欢迎语（位于标题下方，展开面板上方） ----
 st.info(
     "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
     "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
     "请在上方输入您的被试编号并开始对话。"
 )
 
-# ---- 被试信息与数据管理（去掉“对话进度”列） ----
+# ---- 原有的展开面板（完全保持三列布局） ----
 with st.expander("📋 被试信息与数据管理", expanded=True):
-    col_id, col_export = st.columns([1, 2])  # 仅保留身份输入和导出
+    col_id, col_progress, col_export = st.columns([1, 1, 1.5])
+    
     with col_id:
         st.markdown("**👤 被试身份**")
         pid_input = st.text_input(
@@ -207,6 +193,21 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
             st.success(f"当前被试：{st.session_state.participant_id}")
         else:
             st.info("请在上方输入编号")
+
+    with col_progress:
+        st.markdown("**📊 对话进度**")
+        if st.session_state.participant_id:
+            # 这里的轮数在输入编号后立即显示，无需密码
+            st.metric(label="已完成的对话轮数", value=st.session_state.round_count)
+            if st.session_state.round_count >= 10:
+                st.success("✅ 已达成建议轮数（10轮）")
+            elif st.session_state.round_count >= 8:
+                st.info("💡 接近建议轮数（8-12轮）")
+            else:
+                st.caption("建议完成 8-12 轮对话")
+        else:
+            st.caption("请先输入被试编号")
+
     with col_export:
         st.markdown("**🔐 研究者数据导出**")
         password = st.text_input("请输入数据导出密码", type="password")
@@ -251,8 +252,8 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 主体内容（无分隔线） =================
-# 原来的 st.divider() 已被删除
+# ================= 8. 主体内容（注意：此处已删除 st.divider()） =================
+# 原来有 st.divider()，现在被删除，标题与下方内容之间无多余线条
 
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
