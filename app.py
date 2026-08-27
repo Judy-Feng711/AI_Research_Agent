@@ -89,12 +89,17 @@ def get_initial_messages():
         {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我：您目前正在推进哪一项具体的教育学研究任务？"}
     ]
 
-# ================= 4. 方案数据函数（扩展为6个子任务，移除按钮） =================
+# ================= 4. 方案数据函数（扩展为6个子任务，并容错处理缺失字段） =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
         if response.data:
-            return response.data[0]
+            plan = response.data[0]
+            # 确保6个字段都存在，缺失则补空字符串（防止KeyError）
+            for key in ["task4_text", "task5_text", "task6_text"]:
+                if key not in plan:
+                    plan[key] = ""
+            return plan
     except Exception as e:
         st.warning(f"加载方案数据失败：{e}")
     return None
@@ -105,10 +110,9 @@ def save_plan(pid, task1_text, task2_text, task3_text, task4_text, task5_text, t
         "task1_text": task1_text,
         "task2_text": task2_text,
         "task3_text": task3_text,
-        "task4_text": task4_text,   # 新增
-        "task5_text": task5_text,   # 新增
-        "task6_text": task6_text,   # 新增
-        # 原按钮字段保留为空字符串，以兼容旧表结构
+        "task4_text": task4_text,
+        "task5_text": task5_text,
+        "task6_text": task6_text,
         "task1_button": "",
         "task2_button": "",
         "task3_button": "",
@@ -402,7 +406,7 @@ else:
                 )
                 st.rerun()
 
-    # ================= 右侧：研究方案填写（6个子任务，无按钮） =================
+    # ================= 右侧：研究方案填写（6个子任务，无按钮，所有输入框默认为空） =================
     with col_right:
         st.subheader("📝 研究方案填写")
         existing_plan = load_plan(st.session_state.participant_id)
@@ -414,7 +418,7 @@ else:
             st.markdown("**子任务1：选题与文献发现**")
             task1_text = st.text_area(
                 "提炼“选题核心与理论视角”（限150字）：",
-                value=existing_plan["task1_text"] if existing_plan else "",
+                value="",  # 强制为空，不显示已有内容
                 height=80,
                 max_chars=150,
                 key="task1_text"
@@ -424,7 +428,7 @@ else:
             st.markdown("**子任务2：研究规划与设计**")
             task2_text = st.text_area(
                 "提炼“研究设计框架”（限150字）：",
-                value=existing_plan["task2_text"] if existing_plan else "",
+                value="",
                 height=80,
                 max_chars=150,
                 key="task2_text"
@@ -434,7 +438,7 @@ else:
             st.markdown("**子任务3：实施与数据采集**")
             task3_text = st.text_area(
                 "提炼“实施步骤及工具”（限150字）：",
-                value=existing_plan["task3_text"] if existing_plan else "",
+                value="",
                 height=80,
                 max_chars=150,
                 key="task3_text"
@@ -444,7 +448,7 @@ else:
             st.markdown("**子任务4：数据分析与阐释**")
             task4_text = st.text_area(
                 "提炼“数据分析方法及结果解读”（限150字）：",
-                value=existing_plan["task4_text"] if existing_plan else "",
+                value="",
                 height=80,
                 max_chars=150,
                 key="task4_text"
@@ -454,7 +458,7 @@ else:
             st.markdown("**子任务5：论文撰写与润色**")
             task5_text = st.text_area(
                 "提炼“论文结构及润色要点”（限150字）：",
-                value=existing_plan["task5_text"] if existing_plan else "",
+                value="",
                 height=80,
                 max_chars=150,
                 key="task5_text"
@@ -464,7 +468,7 @@ else:
             st.markdown("**子任务6：传播、评估与伦理**")
             task6_text = st.text_area(
                 "提炼“实践建议与伦理考量”（限150字）：",
-                value=existing_plan["task6_text"] if existing_plan else "",
+                value="",
                 height=80,
                 max_chars=150,
                 key="task6_text"
