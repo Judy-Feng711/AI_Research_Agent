@@ -31,13 +31,30 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
+    """加载被试状态，若消息列表为空，则从日志表恢复轮数"""
     try:
         response = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
         if response.data:
             record = response.data[0]
             messages = json.loads(record["messages"]) if record["messages"] else []
-            # 直接统计用户消息数量作为轮数
+            # 计算轮数
             round_count = sum(1 for msg in messages if msg["role"] == "user")
+            # 如果消息为空或轮数为0，尝试从日志表恢复
+            if not messages or round_count == 0:
+                # 从research_logs中统计该被试的有效对话轮数（排除退出记录）
+                log_resp = supabase.table("research_logs")\
+                    .select("*")\
+                    .eq("participant_id", pid)\
+                    .execute()
+                if log_resp.data:
+                    # 统计非退出行为且非空提问的记录数
+                    round_count = sum(1 for log in log_resp.data 
+                                      if log.get("behavior_button") != "退出实验" 
+                                      and log.get("user_prompt") 
+                                      and log.get("user_prompt") != "退出实验")
+                # 如果没有消息，构造基本消息列表（系统+欢迎语）
+                if not messages:
+                    messages = get_initial_messages()
             return messages, round_count
     except Exception as e:
         st.warning(f"加载历史状态失败：{e}")
@@ -295,10 +312,11 @@ else:
     if not st.session_state.state_loaded:
         loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
         if loaded_msgs is not None:
-            if loaded_msgs and loaded_msgs[0].get("role") == "system":
-                st.session_state.messages = loaded_msgs
-            else:
+            # 如果返回的消息列表不包含系统消息，则加上
+            if loaded_msgs and loaded_msgs[0].get("role") != "system":
                 st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}] + loaded_msgs
+            else:
+                st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
             st.session_state.state_loaded = True
         else:
