@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（统一按钮高度及移除分隔线） =================
+# ================= 6. CSS（增强对五个行为按钮列的对齐和分隔线移除） =================
 st.markdown(
     """
     <style>
@@ -160,10 +160,52 @@ st.markdown(
         .top-fixed .stExpander .stExpanderContent {
             padding-bottom: 0.2rem !important;
         }
-        .stButton button {
-            height: 38px !important;
-            white-space: nowrap !important;
+
+        /* ---------- 修复五个行为按钮对齐和分隔线 ---------- */
+        /* 移除所有列之间的边框和阴影 */
+        [data-testid="stHorizontalBlock"] .stColumn {
+            border-right: none !important;
+            box-shadow: none !important;
         }
+
+        /* 强制每个列使用flex布局，并垂直居中其内容 */
+        [data-testid="stHorizontalBlock"] .stColumn {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+        }
+
+        /* 让按钮容器在列中垂直居中并占满宽度 */
+        [data-testid="stHorizontalBlock"] .stColumn .stButton {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+        }
+
+        /* 统一所有按钮（包括 form_submit_button）的高度和内边距 */
+        .stButton button,
+        .stForm button[type="submit"] {
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            white-space: nowrap !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 1.2 !important;
+        }
+
+        /* 确保按钮容器高度一致 */
+        .stButton {
+            height: 38px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        /* ---------- 修复结束 ---------- */
+
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
