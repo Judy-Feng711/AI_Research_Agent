@@ -139,23 +139,20 @@ if "prompt_input" not in st.session_state:
 if "user_role" not in st.session_state:
     st.session_state.user_role = "被试"  # 默认被试
 
-# ================= 6. CSS（标题居中，去除阴影线） =================
+# ================= 6. CSS（去除固定栏阴影线，标题居中在后面的HTML中处理） =================
 st.markdown(
     """
     <style>
+        /* 移除顶部固定栏的边框和阴影，仅保留背景 */
         .top-fixed {
             position: sticky;
             top: 0;
             background-color: white;
             z-index: 100;
             padding: 0.5rem 1rem 0.2rem 1rem;
-            /* 去掉下边框和阴影 */
+            /* 移除边框和阴影 */
             border-bottom: none !important;
             box-shadow: none !important;
-        }
-        /* 标题居中 */
-        .title-center {
-            text-align: center !important;
         }
         /* 移除顶部固定栏内列的边框（如果有） */
         .top-fixed .stColumn {
@@ -271,41 +268,63 @@ st.markdown(
             overflow: visible !important;
             align-items: flex-start !important;
         }
+
+        /* ---------- 居中样式 ---------- */
+        .centered-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 0 auto;
+        }
+        .centered-container .stMarkdown {
+            text-align: center;
+        }
+        /* 让 radio 按钮居中 */
+        .stRadio > div {
+            display: flex;
+            justify-content: center;
+        }
+        /* 让 info 框内容居中 */
+        .stAlert {
+            text-align: center;
+        }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# ================= 7. 固定顶部栏（仅标题，居中，无阴影） =================
+# ================= 7. 固定顶部栏（仅标题，居中） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
-# 标题居中
-st.markdown('<h1 class="title-center">🎓 EduResearch Copilot (教育研究全栈助理)</h1>', unsafe_allow_html=True)
+# 使用列居中标题
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown("<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 欢迎语和角色选择（在固定栏下方） =================
-st.info(
-    "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
-    "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
-)
-
-# 角色选择（单行显示）
-col_role1, col_role2, col_role3 = st.columns([1, 2, 1])
-with col_role2:
+# ================= 8. 欢迎语和角色选择（都居中） =================
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.info(
+        "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
+        "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
+    )
+    # 角色选择
     role = st.radio(
         "请选择您的角色：",
         options=["被试", "研究者"],
         index=0 if st.session_state.user_role == "被试" else 1,
         horizontal=True,
-        key="role_selector_main"
+        key="role_selector_main",
+        label_visibility="visible"
     )
     if role != st.session_state.user_role:
         st.session_state.user_role = role
-        # 切换角色时重置被试状态（避免数据残留）
         if role == "被试":
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
-        # 如果切换到研究者，重置导出授权状态（防止残留）
         elif role == "研究者":
             st.session_state.export_authorized = False
         st.rerun()
@@ -350,7 +369,6 @@ if st.session_state.user_role == "被试":
     with col_exit:
         # 退出按钮（仅当有编号时显示）
         if st.session_state.participant_id:
-            # 使用自定义容器实现右对齐
             st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
             exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=False)
             st.markdown('</div>', unsafe_allow_html=True)
