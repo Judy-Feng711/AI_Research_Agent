@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（彻底移除五个按钮列之间的分隔线，并调整退出按钮） =================
+# ================= 6. CSS（统一按钮高度及移除分隔线） =================
 st.markdown(
     """
     <style>
@@ -160,70 +160,10 @@ st.markdown(
         .top-fixed .stExpander .stExpanderContent {
             padding-bottom: 0.2rem !important;
         }
-
-        /* ---------- 彻底移除五个行为按钮列之间的分隔线 ---------- */
-        /* 定位到包含五个按钮的父容器（即 form 内的 st.columns(5)） */
-        /* 由于 st.columns 生成的列都有 class 为 stColumn，我们直接针对所有列块清除边框和阴影 */
-        [data-testid="stHorizontalBlock"] .stColumn {
-            border-right: none !important;
-            box-shadow: none !important;
-            background: transparent !important;
-        }
-
-        /* 移除列之间的间距（gap），防止出现缝隙或残留线条 */
-        [data-testid="stHorizontalBlock"] {
-            gap: 0 !important;
-        }
-
-        /* 为了视觉统一，给列之间增加微小的内边距，但不带边框 */
-        [data-testid="stHorizontalBlock"] .stColumn {
-            padding: 0 1px !important;
-        }
-
-        /* 统一按钮高度、宽度、文字样式 */
-        .stButton button,
-        .stForm button[type="submit"] {
+        .stButton button {
             height: 38px !important;
-            min-height: 38px !important;
-            max-height: 38px !important;
-            width: 100% !important;
             white-space: nowrap !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            line-height: 1.2 !important;
-            font-size: 14px !important;
-            text-align: center !important;
         }
-
-        .stButton {
-            height: 38px !important;
-            display: flex !important;
-            align-items: center !important;
-        }
-
-        /* ---------- 退出实验按钮：靠右，宽度自适应，无分隔线 ---------- */
-        /* 定位顶部固定栏的最后一列（退出按钮所在列），右对齐内容 */
-        .top-fixed .stColumn:last-child {
-            display: flex !important;
-            justify-content: flex-end !important;
-            align-items: center !important;
-            border-left: none !important; /* 确保左侧没有边框 */
-        }
-        .top-fixed .stColumn:last-child .stButton button {
-            width: auto !important;
-            padding-left: 12px !important;
-            padding-right: 12px !important;
-            min-width: unset !important;
-        }
-
-        /* 确保顶部固定栏的两列之间没有分隔线 */
-        .top-fixed .stColumn:first-child {
-            border-right: none !important;
-        }
-
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
@@ -272,7 +212,7 @@ with col_title:
     st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 with col_exit:
     if st.session_state.participant_id:
-        exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=False)
+        exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=True)
         if exit_clicked:
             exit_log = {
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -504,6 +444,7 @@ else:
         existing_plan = load_plan(st.session_state.participant_id)
         
         st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
+        # 修改说明文字
         st.caption("请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。每个模块均有最低字数要求（达标后方可提交）。您可以在交互过程中随时记录，或最后集中整理。")
         
         with st.form(key="plan_form"):
