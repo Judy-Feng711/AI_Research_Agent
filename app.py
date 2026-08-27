@@ -29,19 +29,44 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# ================= 3. 状态持久化函数 =================
+# ================= 3. 状态持久化函数（修正） =================
 def load_participant_state(pid):
+    """
+    加载被试状态：
+    - 轮数严格从 research_logs 表统计（五个有效按钮 + 非空输入）
+    - 消息列表从 participant_state 表加载（若失败则使用默认欢迎语）
+    - 始终返回 (messages, round_count)
+    """
+    messages = get_initial_messages()  # 默认消息
+    round_count = 0
+
     try:
-        response = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
-        if response.data:
-            record = response.data[0]
-            messages = json.loads(record["messages"]) if record["messages"] else []
-            # 直接统计用户消息数量作为轮数（每条用户消息代表一轮对话）
-            round_count = sum(1 for msg in messages if msg["role"] == "user")
-            return messages, round_count
+        # 1. 统计有效轮数（独立于 participant_state，保证准确）
+        log_resp = supabase.table("research_logs")\
+            .select("*")\
+            .eq("participant_id", pid)\
+            .execute()
+        if log_resp.data:
+            valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
+            round_count = sum(1 for log in log_resp.data
+                              if log.get("behavior_button") in valid_behaviors
+                              and log.get("user_prompt")
+                              and log.get("user_prompt").strip() != "")
+
+        # 2. 加载历史消息（仅用于显示，不影响轮数）
+        state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
+        if state_resp.data:
+            raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
+            if raw_messages:
+                if raw_messages[0].get("role") != "system":
+                    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + raw_messages
+                else:
+                    messages = raw_messages
     except Exception as e:
-        st.warning(f"加载历史状态失败：{e}")
-    return None, None
+        # 查询失败时显示错误提示，但返回默认值，不影响页面
+        st.error(f"⚠️ 加载被试 {pid} 数据失败，请检查网络或刷新重试。错误详情：{e}")
+        # 仍然返回默认消息和0轮
+    return messages, round_count
 
 def save_participant_state(pid, messages, round_count):
     data = {
@@ -195,7 +220,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
         if pid_input and pid_input.strip() != st.session_state.participant_id:
             new_pid = pid_input.strip()
             st.session_state.participant_id = new_pid
-            st.session_state.state_loaded = False
+            st.session_state.state_loaded = False  # 强制重新加载
             st.rerun()
         if st.session_state.participant_id:
             st.success(f"当前被试：{st.session_state.participant_id}")
@@ -263,18 +288,18 @@ if not st.session_state.participant_id:
 else:
     if not st.session_state.state_loaded:
         loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
-        if loaded_msgs is not None:
-            if loaded_msgs and loaded_msgs[0].get("role") == "system":
+        # 确保消息列表不为空
+        if loaded_msgs:
+            if loaded_msgs[0].get("role") == "system":
                 st.session_state.messages = loaded_msgs
             else:
                 st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}] + loaded_msgs
-            st.session_state.round_count = loaded_round
-            st.session_state.state_loaded = True
         else:
             st.session_state.messages = get_initial_messages()
-            st.session_state.round_count = 0
-            st.session_state.state_loaded = True
-            save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
+        st.session_state.round_count = loaded_round
+        st.session_state.state_loaded = True
+        # 保存一次，确保状态表与日志一致（可选）
+        save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
 
     col_left, col_right = st.columns([2, 1], gap="large")
 
