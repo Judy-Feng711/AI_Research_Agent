@@ -31,40 +31,17 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
-    """
-    加载被试状态：
-    - 消息列表从 participant_state 表读取（用于显示历史对话）。
-    - 轮数从 research_logs 表统计（仅统计五个有效行为按钮，排除空内容），确保准确性。
-    """
-    messages = get_initial_messages()  # 默认消息
-    round_count = 0
     try:
-        # 1. 从日志表统计有效轮数
-        log_resp = supabase.table("research_logs")\
-            .select("*")\
-            .eq("participant_id", pid)\
-            .execute()
-        if log_resp.data:
-            valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-            round_count = sum(1 for log in log_resp.data
-                              if log.get("behavior_button") in valid_behaviors
-                              and log.get("user_prompt")
-                              and log.get("user_prompt").strip() != "")
-
-        # 2. 从状态表加载消息列表（仅用于显示）
-        state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
-        if state_resp.data:
-            raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
-            if raw_messages:
-                # 确保包含系统消息
-                if raw_messages[0].get("role") != "system":
-                    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + raw_messages
-                else:
-                    messages = raw_messages
-        return messages, round_count
+        response = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
+        if response.data:
+            record = response.data[0]
+            messages = json.loads(record["messages"]) if record["messages"] else []
+            # 直接统计用户消息数量作为轮数（每条用户消息代表一轮对话）
+            round_count = sum(1 for msg in messages if msg["role"] == "user")
+            return messages, round_count
     except Exception as e:
-        st.warning(f"加载状态失败：{e}")
-        return messages, round_count
+        st.warning(f"加载历史状态失败：{e}")
+    return None, None
 
 def save_participant_state(pid, messages, round_count):
     data = {
