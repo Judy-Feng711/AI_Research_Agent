@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（增强对五个行为按钮列的对齐和分隔线移除） =================
+# ================= 6. CSS（精确控制五个行为按钮：顶部对齐、等宽、间距一致） =================
 st.markdown(
     """
     <style>
@@ -161,34 +161,35 @@ st.markdown(
             padding-bottom: 0.2rem !important;
         }
 
-        /* ---------- 修复五个行为按钮对齐和分隔线 ---------- */
-        /* 移除所有列之间的边框和阴影 */
+        /* ---------- 五个行为按钮所在列的精确控制 ---------- */
+        /* 移除所有列之间的边框和阴影，并设置等宽、顶部对齐 */
         [data-testid="stHorizontalBlock"] .stColumn {
             border-right: none !important;
             box-shadow: none !important;
-        }
-
-        /* 强制每个列使用flex布局，并垂直居中其内容 */
-        [data-testid="stHorizontalBlock"] .stColumn {
+            flex: 1 1 0 !important;          /* 等宽 */
+            min-width: 0 !important;
+            padding: 0 2px !important;       /* 统一间距 */
             display: flex !important;
             flex-direction: column !important;
-            justify-content: center !important;
+            justify-content: flex-start !important;  /* 顶部对齐 */
+            align-items: stretch !important;
         }
 
-        /* 让按钮容器在列中垂直居中并占满宽度 */
+        /* 按钮容器在列中占满宽度，并垂直顶部对齐 */
         [data-testid="stHorizontalBlock"] .stColumn .stButton {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
             width: 100% !important;
+            display: flex !important;
+            align-items: flex-start !important;
+            justify-content: center !important;
         }
 
-        /* 统一所有按钮（包括 form_submit_button）的高度和内边距 */
+        /* 统一所有按钮（包括 form_submit_button）的高度、宽度、内边距、文字样式 */
         .stButton button,
         .stForm button[type="submit"] {
             height: 38px !important;
             min-height: 38px !important;
             max-height: 38px !important;
+            width: 100% !important;
             white-space: nowrap !important;
             display: flex !important;
             align-items: center !important;
@@ -196,13 +197,15 @@ st.markdown(
             padding-top: 0 !important;
             padding-bottom: 0 !important;
             line-height: 1.2 !important;
+            font-size: 14px !important;
+            text-align: center !important;
         }
 
-        /* 确保按钮容器高度一致 */
+        /* 确保按钮容器高度固定 */
         .stButton {
             height: 38px !important;
             display: flex !important;
-            align-items: center !important;
+            align-items: flex-start !important;
         }
         /* ---------- 修复结束 ---------- */
 
