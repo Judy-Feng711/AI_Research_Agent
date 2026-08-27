@@ -31,42 +31,20 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
-    """
-    加载被试状态：
-    - 轮数严格从 research_logs 表统计（五个有效按钮 + 非空输入）
-    - 消息列表从 participant_state 表加载（若失败则使用默认欢迎语）
-    - 始终返回 (messages, round_count)，不会返回 None
-    """
-    messages = get_initial_messages()
-    round_count = 0
-
     try:
-        # 1. 统计有效轮数（独立于 participant_state）
-        log_resp = supabase.table("research_logs")\
-            .select("*")\
-            .eq("participant_id", pid)\
-            .execute()
-        if log_resp.data:
-            valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-            round_count = sum(1 for log in log_resp.data
-                              if log.get("behavior_button") in valid_behaviors
-                              and log.get("user_prompt")
-                              and log.get("user_prompt").strip() != "")
-
-        # 2. 加载历史消息（仅用于显示）
-        state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
-        if state_resp.data:
-            raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
-            if raw_messages:
-                if raw_messages[0].get("role") != "system":
-                    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + raw_messages
-                else:
-                    messages = raw_messages
+        response = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
+        if response.data:
+            record = response.data[0]
+            messages = json.loads(record["messages"]) if record["messages"] else []
+            # 获取存储的轮数，可能为 None 或 0
+            round_count = record.get("current_round", 0)
+            # 如果存储的轮数为 0，但消息列表中有用户消息，则从消息中计算轮数（排除系统消息）
+            if round_count == 0 and messages:
+                round_count = sum(1 for msg in messages if msg["role"] == "user")
+            return messages, round_count
     except Exception as e:
-        # 查询失败时显示错误提示，但返回默认值，不影响页面
-        st.error(f"⚠️ 加载被试 {pid} 数据失败，请检查网络或刷新重试。错误详情：{e}")
-        # 仍然返回默认消息和0轮
-    return messages, round_count
+        st.warning(f"加载历史状态失败：{e}")
+    return None, None
 
 def save_participant_state(pid, messages, round_count):
     data = {
@@ -130,7 +108,7 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS：顶部固定，右侧列自适应高度 =================
+# ================= 6. CSS：顶部固定，右侧固定 =================
 st.markdown(
     """
     <style>
@@ -140,30 +118,21 @@ st.markdown(
             top: 0;
             background-color: white;
             z-index: 100;
-            padding: 0.5rem 1rem 0rem 1rem;
+            padding: 0.5rem 1rem 0.2rem 1rem;
             border-bottom: 2px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        /* 让展开面板底部边距为0，内部padding减小 */
-        .top-fixed .stExpander {
-            margin-bottom: 0 !important;
-            padding-bottom: 0 !important;
-        }
-        .top-fixed .stExpander .stExpanderContent {
-            padding-bottom: 0.2rem !important;
         }
         /* 左侧列正常流式 */
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
         }
-        /* 右侧列固定（sticky）但高度自适应，内容多时滚动 */
+        /* 右侧列固定（sticky）在视口顶部，与顶部固定栏错开 */
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
-            top: 120px !important;
+            top: 120px !important;  /* 顶部固定栏的大致高度，可根据实际微调 */
             align-self: flex-start !important;
-            height: auto !important;
-            max-height: calc(100vh - 120px) !important;
+            height: calc(100vh - 120px) !important;
             overflow-y: auto !important;
             background-color: #fafafa;
             padding: 10px !important;
@@ -196,17 +165,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 顶部信息栏 =================
+# ================= 7. 顶部信息栏（固定） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 
+# 新增固定欢迎语（位于标题下方，展开面板上方）
 st.info(
     "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
     "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
     "请在上方输入您的被试编号并开始对话。"
 )
 
+# 原有的三列展开面板（保留完整布局）
 with st.expander("📋 被试信息与数据管理", expanded=True):
     col_id, col_progress, col_export = st.columns([1, 1, 1.5])
     
@@ -220,7 +191,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
         if pid_input and pid_input.strip() != st.session_state.participant_id:
             new_pid = pid_input.strip()
             st.session_state.participant_id = new_pid
-            st.session_state.state_loaded = False  # 强制重新加载
+            st.session_state.state_loaded = False
             st.rerun()
         if st.session_state.participant_id:
             st.success(f"当前被试：{st.session_state.participant_id}")
@@ -230,6 +201,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
     with col_progress:
         st.markdown("**📊 对话进度**")
         if st.session_state.participant_id:
+            # 这里的轮数会在输入编号后立即显示，包含历史数据
             st.metric(label="已完成的对话轮数", value=st.session_state.round_count)
             if st.session_state.round_count >= 10:
                 st.success("✅ 已达成建议轮数（10轮）")
@@ -247,6 +219,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
         if password:
             if password == RESEARCHER_PASSWORD:
                 st.success("密码正确")
+                # 交互日志下载
                 try:
                     response = supabase.table("research_logs").select("*").execute()
                     if response.data:
@@ -261,6 +234,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
                         )
                 except Exception as e:
                     st.error(f"读取交互数据失败：{e}")
+                # 方案数据下载
                 try:
                     response_plan = supabase.table("research_plans").select("*").execute()
                     if response_plan.data:
@@ -282,34 +256,42 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 主体内容 =================
+# ================= 8. 主体内容（已删除 st.divider()） =================
+# 原先的 st.divider() 已被移除
+
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
+    # 加载历史状态
     if not st.session_state.state_loaded:
         loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
-        # 确保 loaded_msgs 不为空
-        if loaded_msgs:
-            if loaded_msgs[0].get("role") == "system":
+        if loaded_msgs is not None:
+            if loaded_msgs and loaded_msgs[0].get("role") == "system":
                 st.session_state.messages = loaded_msgs
             else:
                 st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}] + loaded_msgs
+            st.session_state.round_count = loaded_round
+            st.session_state.state_loaded = True
         else:
             st.session_state.messages = get_initial_messages()
-        st.session_state.round_count = loaded_round
-        st.session_state.state_loaded = True
-        # 保存一次，确保状态表与日志一致（可选）
-        save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
+            st.session_state.round_count = 0
+            st.session_state.state_loaded = True
+            save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
 
+    # 创建两列
     col_left, col_right = st.columns([2, 1], gap="large")
 
+    # ---------- 左栏：AI交互（正常流式） ----------
     with col_left:
         st.subheader("💬 AI 学术助手对话")
+        
+        # 显示历史消息
         for msg in st.session_state.messages:
             if msg["role"] != "system":
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
 
+        # 对话输入表单
         with st.form(key="prompt_form", clear_on_submit=True):
             user_input = st.text_area(
                 "在这里输入您的提示词 (Prompt)：",
@@ -345,6 +327,7 @@ else:
                     st.warning("⚠️ 请先输入提示词！")
                     st.stop()
 
+                # 处理附件
                 file_content = ""
                 if uploaded_file is not None:
                     file_name = uploaded_file.name
@@ -369,6 +352,7 @@ else:
 
                 full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
 
+                # 显示用户消息
                 with st.chat_message("user"):
                     if file_content:
                         st.markdown(f"📎 **已附加文档**，提问：{user_input}")
@@ -377,6 +361,7 @@ else:
 
                 st.session_state.messages.append({"role": "user", "content": full_user_message})
 
+                # 调用 AI
                 with st.chat_message("assistant"):
                     with st.spinner("思考中..."):
                         try:
@@ -392,6 +377,7 @@ else:
                 st.session_state.messages.append({"role": "assistant", "content": ai_reply})
                 st.session_state.round_count += 1
 
+                # 持久化日志
                 log_data = {
                     "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "participant_id": st.session_state.participant_id,
@@ -412,6 +398,7 @@ else:
                 )
                 st.rerun()
 
+    # ---------- 右栏：方案填写（固定，错开顶部固定栏） ----------
     with col_right:
         st.subheader("📝 研究方案填写")
         existing_plan = load_plan(st.session_state.participant_id)
@@ -420,6 +407,7 @@ else:
         st.caption("说明：请在与AI多轮交互完成每个子任务后，提炼产出并勾选主导行为。")
         
         with st.form(key="plan_form"):
+            # 子任务1
             st.markdown("**子任务1：选题与理论切入点**")
             task1_text = st.text_area(
                 "提炼“选题核心与理论视角”（限150字）：",
@@ -437,6 +425,7 @@ else:
             )
             st.divider()
             
+            # 子任务2
             st.markdown("**子任务2：实施步骤与工具设计**")
             task2_text = st.text_area(
                 "提炼“核心实施步骤或研究工具框架”（限150字）：",
@@ -454,6 +443,7 @@ else:
             )
             st.divider()
             
+            # 子任务3
             st.markdown("**子任务3：反思局限性与方案定稿**")
             task3_text = st.text_area(
                 "提炼“方案局限性及最终修改决策”（限150字）：",
