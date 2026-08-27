@@ -31,26 +31,27 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
-    """加载被试状态：消息列表用于显示，轮数从日志表统计（准确可靠）"""
+    """加载被试状态：消息列表用于显示，轮数严格从日志表统计有效对话"""
     messages = get_initial_messages()  # 默认消息
     round_count = 0
     try:
-        # 1. 从日志表统计有效轮数（排除退出记录）
+        # 从日志表统计有效轮数（仅统计五个行为按钮，排除退出实验）
         log_resp = supabase.table("research_logs")\
             .select("*")\
             .eq("participant_id", pid)\
             .execute()
         if log_resp.data:
+            valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
             round_count = sum(1 for log in log_resp.data 
-                              if log.get("behavior_button") != "退出实验" 
-                              and log.get("user_prompt") 
+                              if log.get("behavior_button") in valid_behaviors
+                              and log.get("user_prompt")
+                              and log.get("user_prompt").strip() != ""
                               and log.get("user_prompt") != "退出实验")
-        # 2. 从状态表加载消息列表（仅用于显示历史对话）
+        # 从状态表加载消息列表（仅用于显示历史对话）
         state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
         if state_resp.data:
             raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
             if raw_messages:
-                # 确保包含系统消息
                 if raw_messages[0].get("role") != "system":
                     messages = [{"role": "system", "content": SYSTEM_PROMPT}] + raw_messages
                 else:
@@ -63,7 +64,7 @@ def load_participant_state(pid):
 def save_participant_state(pid, messages, round_count):
     data = {
         "participant_id": pid,
-        "current_round": round_count,   # 备份存储，但加载时不再使用
+        "current_round": round_count,
         "messages": json.dumps(messages, ensure_ascii=False),
         "updated_at": datetime.datetime.now().isoformat()
     }
@@ -303,7 +304,7 @@ else:
         st.session_state.messages = loaded_msgs if loaded_msgs else get_initial_messages()
         st.session_state.round_count = loaded_round
         st.session_state.state_loaded = True
-        # 保存一次，确保消息列表与日志一致（可选）
+        # 保存一次，确保状态表与日志一致（可选）
         save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
 
     col_left, col_right = st.columns([2, 1], gap="large")
