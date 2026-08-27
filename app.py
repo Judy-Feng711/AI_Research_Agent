@@ -137,9 +137,9 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 if "user_role" not in st.session_state:
-    st.session_state.user_role = "被试"  # 或 "研究者"
+    st.session_state.user_role = "被试"  # 默认被试
 
-# ================= 6. CSS（与之前保持一致） =================
+# ================= 6. CSS（保持原有样式，精简固定栏） =================
 st.markdown(
     """
     <style>
@@ -148,19 +148,13 @@ st.markdown(
             top: 0;
             background-color: white;
             z-index: 100;
-            padding: 0.5rem 1rem 0rem 1rem;
+            padding: 0.5rem 1rem 0.2rem 1rem;
             border-bottom: 2px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
+        /* 移除顶部固定栏内列的边框（如果有） */
         .top-fixed .stColumn {
             border-right: none !important;
-        }
-        .top-fixed .stExpander {
-            margin-bottom: 0 !important;
-            padding-bottom: 0 !important;
-        }
-        .top-fixed .stExpander .stExpanderContent {
-            padding-bottom: 0.2rem !important;
         }
 
         /* ---------- 彻底移除五个行为按钮列之间的所有竖线 ---------- */
@@ -222,25 +216,18 @@ st.markdown(
             align-items: center !important;
         }
 
-        /* ---------- 退出实验按钮：右对齐 ---------- */
-        .top-fixed .stColumn:last-child {
+        /* ---------- 退出实验按钮：右对齐（用于被试模式的顶部行） ---------- */
+        .exit-button-container {
             display: flex !important;
             justify-content: flex-end !important;
             align-items: center !important;
-            border-left: none !important;
+            height: 100%;
         }
-        .top-fixed .stColumn:last-child .stButton {
-            margin-left: auto !important;
-            width: auto !important;
-        }
-        .top-fixed .stColumn:last-child .stButton button {
+        .exit-button-container .stButton button {
             width: auto !important;
             padding-left: 12px !important;
             padding-right: 12px !important;
             min-width: unset !important;
-        }
-        .top-fixed .stColumn:first-child {
-            border-right: none !important;
         }
 
         /* ---------- 右侧固定栏 ---------- */
@@ -284,33 +271,45 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 顶部信息栏（含角色选择、编号输入、退出按钮） =================
+# ================= 7. 固定顶部栏（仅标题） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
+st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
+st.markdown('</div>', unsafe_allow_html=True)
 
-# 第一行：标题 + 角色选择
-col_title, col_role = st.columns([3, 1])
-with col_title:
-    st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
-with col_role:
+# ================= 8. 欢迎语和角色选择（在固定栏下方） =================
+st.info(
+    "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
+    "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
+)
+
+# 角色选择（单行显示）
+col_role1, col_role2, col_role3 = st.columns([1, 2, 1])
+with col_role2:
     role = st.radio(
-        "选择角色",
+        "请选择您的角色：",
         options=["被试", "研究者"],
         index=0 if st.session_state.user_role == "被试" else 1,
         horizontal=True,
-        key="role_selector"
+        key="role_selector_main"
     )
     if role != st.session_state.user_role:
         st.session_state.user_role = role
-        # 切换角色时重置相关状态
+        # 切换角色时重置被试状态（避免数据残留）
         if role == "被试":
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
+        # 如果切换到研究者，重置导出授权状态（防止残留）
+        elif role == "研究者":
+            st.session_state.export_authorized = False
         st.rerun()
 
-# 第二行：如果是被试，显示编号输入 + 轮次 + 退出按钮；如果是研究者，只显示提示信息
+st.divider()  # 分隔线，将角色选择与后续内容分开
+
+# ================= 9. 根据角色显示内容 =================
 if st.session_state.user_role == "被试":
-    # 三列：编号输入、轮次、退出按钮
+    # ---------- 被试模式 ----------
+    # 顶部：编号输入 + 轮次 + 退出按钮（三列）
     col_id, col_progress, col_exit = st.columns([2, 2, 1])
     with col_id:
         st.markdown("**👤 被试编号**")
@@ -330,7 +329,6 @@ if st.session_state.user_role == "被试":
     with col_progress:
         st.markdown("**📊 对话进度**")
         if st.session_state.participant_id:
-            # 实时加载轮次
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
@@ -342,11 +340,14 @@ if st.session_state.user_role == "被试":
             else:
                 st.caption("建议完成 8-12 轮对话")
         else:
-            st.caption("请先输入编号")  # 输入编号前只显示这个，不显示轮次
+            st.caption("请先输入编号")
     with col_exit:
-        # 退出按钮
+        # 退出按钮（仅当有编号时显示）
         if st.session_state.participant_id:
+            # 使用自定义容器实现右对齐
+            st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
             exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=False)
+            st.markdown('</div>', unsafe_allow_html=True)
             if exit_clicked:
                 exit_log = {
                     "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -368,27 +369,7 @@ if st.session_state.user_role == "被试":
         else:
             st.write("")  # 占位
 
-else:
-    # 研究者模式：显示导出区域，隐藏编号等
-    st.info("🔐 研究者模式：您可在此导出数据。")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ================= 8. 欢迎语（放在标题下方，独立于固定栏） =================
-if st.session_state.user_role == "被试":
-    st.info(
-        "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
-        "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
-        "请在上方输入您的被试编号并开始对话。"
-    )
-else:
-    # 研究者模式不显示欢迎语，但可以留空或显示简洁提示
-    pass
-
-# ================= 9. 主体内容 =================
-# 根据角色显示不同内容
-if st.session_state.user_role == "被试":
-    # ---------- 被试模式：显示对话和方案填写 ----------
+    # 如果没有编号，显示警告，不显示对话和方案
     if not st.session_state.participant_id:
         st.warning("⚠️ 请先在顶部输入您的被试编号！")
     else:
@@ -597,7 +578,7 @@ if st.session_state.user_role == "被试":
                         st.error("❌ 提交失败，请检查数据库是否已添加所需字段。")
 
 else:
-    # ---------- 研究者模式：只显示数据导出区域 ----------
+    # ---------- 研究者模式 ----------
     st.subheader("📊 研究者数据导出")
     st.markdown("请输入研究者密码以查看并下载数据。")
     
