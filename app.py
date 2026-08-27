@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（彻底清除竖线 + 修复第五按钮位置） =================
+# ================= 6. CSS（包含退出按钮右对齐修复） =================
 st.markdown(
     """
     <style>
@@ -174,7 +174,7 @@ st.markdown(
             display: flex !important;
             flex-direction: column !important;
             justify-content: flex-start !important;
-            align-items: stretch !important;   /* 确保列内元素拉伸 */
+            align-items: stretch !important;
         }
         [data-testid="stHorizontalBlock"] .stColumn::before,
         [data-testid="stHorizontalBlock"] .stColumn::after {
@@ -220,12 +220,18 @@ st.markdown(
             align-items: center !important;
         }
 
-        /* ---------- 退出实验按钮 ---------- */
+        /* ---------- 退出实验按钮：右对齐 ---------- */
+        /* 让退出按钮所在列右对齐 */
         .top-fixed .stColumn:last-child {
             display: flex !important;
             justify-content: flex-end !important;
             align-items: center !important;
             border-left: none !important;
+        }
+        /* 按钮容器强制右移并自适应宽度 */
+        .top-fixed .stColumn:last-child .stButton {
+            margin-left: auto !important;
+            width: auto !important;
         }
         .top-fixed .stColumn:last-child .stButton button {
             width: auto !important;
@@ -233,6 +239,8 @@ st.markdown(
             padding-right: 12px !important;
             min-width: unset !important;
         }
+
+        /* 确保顶部固定栏的两列之间没有分隔线 */
         .top-fixed .stColumn:first-child {
             border-right: none !important;
         }
