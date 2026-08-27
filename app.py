@@ -31,17 +31,41 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
+    """
+    加载被试状态：
+    - 轮数严格从 research_logs 表统计（五个有效按钮 + 非空输入）
+    - 消息列表从 participant_state 表加载（若失败则使用默认欢迎语）
+    """
+    messages = get_initial_messages()   # 默认
+    round_count = 0
+
     try:
-        response = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
-        if response.data:
-            record = response.data[0]
-            messages = json.loads(record["messages"]) if record["messages"] else []
-            # 直接统计用户消息数量作为轮数（每条用户消息代表一轮对话）
-            round_count = sum(1 for msg in messages if msg["role"] == "user")
-            return messages, round_count
+        # 1. 统计有效轮数（独立于 participant_state，保证准确）
+        log_resp = supabase.table("research_logs")\
+            .select("*")\
+            .eq("participant_id", pid)\
+            .execute()
+        if log_resp.data:
+            valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
+            round_count = sum(1 for log in log_resp.data
+                              if log.get("behavior_button") in valid_behaviors
+                              and log.get("user_prompt")
+                              and log.get("user_prompt").strip() != "")
+
+        # 2. 加载历史消息（仅用于显示，不影响轮数）
+        state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
+        if state_resp.data:
+            raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
+            if raw_messages:
+                if raw_messages[0].get("role") != "system":
+                    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + raw_messages
+                else:
+                    messages = raw_messages
     except Exception as e:
-        st.warning(f"加载历史状态失败：{e}")
-    return None, None
+        # 即使出错，也保证轮数为0，但不会影响后续重试
+        st.warning(f"加载状态时出现异常：{e}，请稍后重试。")
+
+    return messages, round_count
 
 def save_participant_state(pid, messages, round_count):
     data = {
@@ -105,7 +129,7 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS：顶部固定，右侧列自适应高度（消除多余空白） =================
+# ================= 6. CSS：顶部固定，右侧列自适应高度 =================
 st.markdown(
     """
     <style>
@@ -137,8 +161,8 @@ st.markdown(
             position: sticky !important;
             top: 120px !important;
             align-self: flex-start !important;
-            height: auto !important;                /* 自适应内容高度 */
-            max-height: calc(100vh - 120px) !important;  /* 最大高度限制 */
+            height: auto !important;
+            max-height: calc(100vh - 120px) !important;
             overflow-y: auto !important;
             background-color: #fafafa;
             padding: 10px !important;
@@ -171,7 +195,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 顶部信息栏（固定） =================
+# ================= 7. 顶部信息栏 =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
@@ -257,7 +281,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 主体内容（无分隔线） =================
+# ================= 8. 主体内容 =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
