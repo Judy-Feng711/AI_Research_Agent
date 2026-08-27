@@ -197,10 +197,40 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 顶部信息栏 =================
+# ================= 7. 顶部信息栏（含退出按钮） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 
-st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
+# 创建两列：标题占大部分，右上角放退出按钮
+col_title, col_exit = st.columns([5, 1])
+with col_title:
+    st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
+with col_exit:
+    # 如果当前有被试编号，显示退出按钮
+    if st.session_state.participant_id:
+        exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=True)
+        if exit_clicked:
+            # 记录退出事件到 research_logs
+            exit_log = {
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "participant_id": st.session_state.participant_id,
+                "round": st.session_state.round_count,
+                "user_prompt": "退出实验",
+                "behavior_button": "退出实验",
+                "ai_response": ""
+            }
+            try:
+                supabase.table("research_logs").insert(exit_log).execute()
+                st.success("✅ 已记录退出实验，您的研究数据将不会被纳入最终分析。")
+                # 清空状态
+                st.session_state.participant_id = ""
+                st.session_state.messages = get_initial_messages()
+                st.session_state.round_count = 0
+                st.rerun()
+            except Exception as e:
+                st.error(f"记录退出失败：{e}")
+    else:
+        # 无被试时显示占位
+        st.write("")  # 占位保持布局
 
 st.info(
     "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
@@ -418,7 +448,7 @@ else:
             st.markdown("**子任务1：选题与文献发现**")
             task1_text = st.text_area(
                 "提炼“选题核心与理论视角”（限150字）：",
-                value="",  # 强制为空，不显示已有内容
+                value="",
                 height=80,
                 max_chars=150,
                 key="task1_text"
@@ -476,11 +506,9 @@ else:
             
             submitted = st.form_submit_button("📤 提交方案")
             if submitted:
-                # 检查是否所有文本都填了（非强制，但建议完整）
                 if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
                             task4_text.strip(), task5_text.strip(), task6_text.strip()]):
                     st.warning("建议填写所有子任务，以完善研究方案。")
-                # 仍然保存
                 success = save_plan(
                     st.session_state.participant_id,
                     task1_text.strip(),
