@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（精确控制五个行为按钮：顶部对齐、等宽、间距一致） =================
+# ================= 6. CSS（彻底移除五个按钮之间的分隔线） =================
 st.markdown(
     """
     <style>
@@ -161,29 +161,47 @@ st.markdown(
             padding-bottom: 0.2rem !important;
         }
 
-        /* ---------- 五个行为按钮所在列的精确控制 ---------- */
-        /* 移除所有列之间的边框和阴影，并设置等宽、顶部对齐 */
+        /* ---------- 彻底移除所有列之间的分隔线 ---------- */
+        /* 移除列本身的边框 */
         [data-testid="stHorizontalBlock"] .stColumn {
             border-right: none !important;
             box-shadow: none !important;
-            flex: 1 1 0 !important;          /* 等宽 */
+        }
+        /* 移除列之间可能存在的伪元素分隔线 */
+        [data-testid="stHorizontalBlock"] .stColumn::after,
+        [data-testid="stHorizontalBlock"] .stColumn::before {
+            display: none !important;
+            content: none !important;
+        }
+        /* 移除整个行内所有元素的边框 */
+        [data-testid="stHorizontalBlock"] {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        /* 确保按钮列之间没有分隔线 */
+        .stElementContainer {
+            border-right: none !important;
+        }
+
+        /* ---------- 五个行为按钮列：等宽、顶部对齐、间距统一 ---------- */
+        [data-testid="stHorizontalBlock"] .stColumn {
+            flex: 1 1 0 !important;
             min-width: 0 !important;
-            padding: 0 2px !important;       /* 统一间距 */
+            padding: 0 2px !important;
             display: flex !important;
             flex-direction: column !important;
-            justify-content: flex-start !important;  /* 顶部对齐 */
+            justify-content: flex-start !important;
             align-items: stretch !important;
         }
 
-        /* 按钮容器在列中占满宽度，并垂直顶部对齐 */
-        [data-testid="stHorizontalBlock"] .stColumn .stButton {
+        .stButton {
             width: 100% !important;
             display: flex !important;
             align-items: flex-start !important;
             justify-content: center !important;
+            height: 38px !important;
         }
 
-        /* 统一所有按钮（包括 form_submit_button）的高度、宽度、内边距、文字样式 */
         .stButton button,
         .stForm button[type="submit"] {
             height: 38px !important;
@@ -200,14 +218,6 @@ st.markdown(
             font-size: 14px !important;
             text-align: center !important;
         }
-
-        /* 确保按钮容器高度固定 */
-        .stButton {
-            height: 38px !important;
-            display: flex !important;
-            align-items: flex-start !important;
-        }
-        /* ---------- 修复结束 ---------- */
 
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
