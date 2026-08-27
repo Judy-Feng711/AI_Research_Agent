@@ -36,7 +36,7 @@ def load_participant_state(pid):
         if response.data:
             record = response.data[0]
             messages = json.loads(record["messages"]) if record["messages"] else []
-            # 直接统计用户消息数量作为轮数（每条用户消息代表一轮对话）
+            # 直接统计用户消息数量作为轮数
             round_count = sum(1 for msg in messages if msg["role"] == "user")
             return messages, round_count
     except Exception as e:
@@ -105,7 +105,7 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS：顶部固定，右侧列自适应高度（消除多余空白） =================
+# ================= 6. CSS：顶部固定，右侧列自适应高度 =================
 st.markdown(
     """
     <style>
@@ -137,8 +137,8 @@ st.markdown(
             position: sticky !important;
             top: 120px !important;
             align-self: flex-start !important;
-            height: auto !important;                /* 自适应内容高度 */
-            max-height: calc(100vh - 120px) !important;  /* 最大高度限制 */
+            height: auto !important;
+            max-height: calc(100vh - 120px) !important;
             overflow-y: auto !important;
             background-color: #fafafa;
             padding: 10px !important;
@@ -174,14 +174,45 @@ st.markdown(
 # ================= 7. 顶部信息栏（固定） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 
-st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
+# ---- 标题与退出按钮同行 ----
+col_title, col_exit = st.columns([5, 1])
+with col_title:
+    st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
+with col_exit:
+    exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=True)
+    if exit_clicked:
+        if st.session_state.participant_id:
+            # 记录退出事件到日志表
+            exit_log = {
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "participant_id": st.session_state.participant_id,
+                "round": st.session_state.round_count,
+                "user_prompt": "退出实验",
+                "behavior_button": "退出实验",
+                "ai_response": ""
+            }
+            try:
+                supabase.table("research_logs").insert(exit_log).execute()
+                st.success("✅ 已记录退出实验，您的研究数据将不会被纳入最终分析。")
+                # 清空被试编号，回到初始状态
+                st.session_state.participant_id = ""
+                st.session_state.messages = get_initial_messages()
+                st.session_state.round_count = 0
+                st.session_state.state_loaded = False
+                st.rerun()
+            except Exception as e:
+                st.error(f"记录失败：{e}")
+        else:
+            st.warning("请先输入被试编号")
 
+# ---- 固定欢迎语 ----
 st.info(
     "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
     "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
     "请在上方输入您的被试编号并开始对话。"
 )
 
+# ---- 三列展开面板 ----
 with st.expander("📋 被试信息与数据管理", expanded=True):
     col_id, col_progress, col_export = st.columns([1, 1, 1.5])
     
