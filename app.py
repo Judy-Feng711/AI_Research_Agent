@@ -29,19 +29,12 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# ================= 3. 状态持久化函数（轮次取最大round，保持不变） =================
+# ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
-    """
-    从数据库实时加载被试状态：
-    - 轮数从 research_logs 表统计，取最大 round 值（有效按钮+非空输入）
-    - 消息列表从 participant_state 表加载
-    - 始终返回 (messages, round_count)
-    """
     messages = get_initial_messages()
     round_count = 0
 
     try:
-        # 1. 统计有效轮数（取最大round）
         log_resp = supabase.table("research_logs")\
             .select("*")\
             .eq("participant_id", pid)\
@@ -56,7 +49,6 @@ def load_participant_state(pid):
                         max_round = r
             round_count = max_round
 
-        # 2. 加载历史消息
         state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
         if state_resp.data:
             raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
@@ -89,13 +81,12 @@ def get_initial_messages():
         {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"}
     ]
 
-# ================= 4. 方案数据函数（扩展为6个子任务，并容错处理缺失字段） =================
+# ================= 4. 方案数据函数 =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
         if response.data:
             plan = response.data[0]
-            # 确保6个字段都存在，缺失则补空字符串（防止KeyError）
             for key in ["task4_text", "task5_text", "task6_text"]:
                 if key not in plan:
                     plan[key] = ""
@@ -137,7 +128,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（统一按钮高度及移除分隔线） =================
+# ================= 6. CSS（修复按钮对齐和分隔线） =================
 st.markdown(
     """
     <style>
@@ -160,10 +151,37 @@ st.markdown(
         .top-fixed .stExpander .stExpanderContent {
             padding-bottom: 0.2rem !important;
         }
-        .stButton button {
-            height: 38px !important;
-            white-space: nowrap !important;
+
+        /* ---- 修复五个行为按钮高度一致，移除列间分隔线 ---- */
+        /* 移除所有列之间的竖线 */
+        [data-testid="stHorizontalBlock"] .stColumn {
+            border-right: none !important;
+            box-shadow: none !important;
         }
+
+        /* 统一所有按钮（包括form_submit_button）的高度 */
+        .stButton button,
+        .stForm button[type="submit"] {
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            white-space: nowrap !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 1.2 !important;
+        }
+
+        /* 确保按钮容器也统一高度 */
+        .stButton,
+        .stForm .stButton {
+            height: 38px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
@@ -204,7 +222,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 顶部信息栏（含退出按钮） =================
+# ================= 7. 顶部信息栏 =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 
 col_title, col_exit = st.columns([5, 1])
@@ -438,19 +456,18 @@ else:
                 )
                 st.rerun()
 
-    # ================= 右侧：研究方案填写（更新文字） =================
+    # ================= 右侧：研究方案填写 =================
     with col_right:
         st.subheader("📝 研究方案填写")
         existing_plan = load_plan(st.session_state.participant_id)
         
         st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
-        # 修改说明文字
         st.caption("请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。每个模块均有最低字数要求（达标后方可提交）。您可以在交互过程中随时记录，或最后集中整理。")
         
         with st.form(key="plan_form"):
             st.markdown("**子任务1：选题与文献发现**")
             task1_text = st.text_area(
-                "请写清您的核心研究问题、选题依据及所依据的理论视角。（限150字）",
+                "请写清您的核心研究问题、选题依据及所依据的理论视角。",
                 value="",
                 height=80,
                 max_chars=150,
@@ -460,7 +477,7 @@ else:
             
             st.markdown("**子任务2：研究规划与设计**")
             task2_text = st.text_area(
-                "请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。（限150字）",
+                "请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。",
                 value="",
                 height=80,
                 max_chars=150,
@@ -470,7 +487,7 @@ else:
             
             st.markdown("**子任务3：实施与数据采集**")
             task3_text = st.text_area(
-                "请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。（限150字）",
+                "请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。",
                 value="",
                 height=80,
                 max_chars=150,
@@ -480,7 +497,7 @@ else:
             
             st.markdown("**子任务4：数据分析与阐释**")
             task4_text = st.text_area(
-                "请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。（限150字）",
+                "请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。",
                 value="",
                 height=80,
                 max_chars=150,
@@ -500,7 +517,7 @@ else:
             
             st.markdown("**子任务6：传播、评估与伦理**")
             task6_text = st.text_area(
-                "请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）",
+                "请列出本研究涉及的伦理考量及计划中的成果传播渠道。",
                 value="",
                 height=80,
                 max_chars=150,
