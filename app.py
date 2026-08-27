@@ -36,11 +36,8 @@ def load_participant_state(pid):
         if response.data:
             record = response.data[0]
             messages = json.loads(record["messages"]) if record["messages"] else []
-            # 获取存储的轮数，可能为 None 或 0
-            round_count = record.get("current_round", 0)
-            # 如果存储的轮数为 0，但消息列表中有用户消息，则从消息中计算轮数（排除系统消息）
-            if round_count == 0 and messages:
-                round_count = sum(1 for msg in messages if msg["role"] == "user")
+            # 直接统计用户消息数量作为轮数（每条用户消息代表一轮对话）
+            round_count = sum(1 for msg in messages if msg["role"] == "user")
             return messages, round_count
     except Exception as e:
         st.warning(f"加载历史状态失败：{e}")
@@ -209,7 +206,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
     with col_progress:
         st.markdown("**📊 对话进度**")
         if st.session_state.participant_id:
-            # 这里的轮数会在输入编号后立即显示，包含历史数据
+            # 轮数会在输入编号后立即显示，基于消息列表实时计算
             st.metric(label="已完成的对话轮数", value=st.session_state.round_count)
             if st.session_state.round_count >= 10:
                 st.success("✅ 已达成建议轮数（10轮）")
@@ -265,8 +262,6 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 主体内容（已删除 st.divider()） =================
-# 原先的 st.divider() 已被移除
-
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
