@@ -29,7 +29,7 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# ================= 3. 状态持久化函数（轮次取最大round，保持不变） =================
+# ================= 3. 状态持久化函数（轮次取最大round） =================
 def load_participant_state(pid):
     """
     从数据库实时加载被试状态：
@@ -89,13 +89,13 @@ def get_initial_messages():
         {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"}
     ]
 
-# ================= 4. 方案数据函数（扩展为6个子任务，并容错处理缺失字段） =================
+# ================= 4. 方案数据函数（6个子任务） =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
         if response.data:
             plan = response.data[0]
-            # 确保6个字段都存在，缺失则补空字符串（防止KeyError）
+            # 确保6个字段都存在，缺失则补空字符串
             for key in ["task4_text", "task5_text", "task6_text"]:
                 if key not in plan:
                     plan[key] = ""
@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（统一按钮高度及移除分隔线） =================
+# ================= 6. CSS（彻底清除按钮列分隔线，调整退出按钮） =================
 st.markdown(
     """
     <style>
@@ -160,10 +160,78 @@ st.markdown(
         .top-fixed .stExpander .stExpanderContent {
             padding-bottom: 0.2rem !important;
         }
-        .stButton button {
-            height: 38px !important;
-            white-space: nowrap !important;
+
+        /* ---------- 彻底移除五个行为按钮列之间的所有竖线 ---------- */
+        /* 定位到包含五个按钮的父容器（即 st.columns(5)） */
+        [data-testid="stHorizontalBlock"] {
+            gap: 0 !important;   /* 移除列间距 */
         }
+
+        /* 每个列清除左右边框、阴影、背景 */
+        [data-testid="stHorizontalBlock"] .stColumn {
+            border-left: none !important;
+            border-right: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            /* 为了视觉统一，加微小内边距（但不带边框） */
+            padding: 0 1px !important;
+        }
+
+        /* 隐藏任何可能残留的伪元素分隔 */
+        [data-testid="stHorizontalBlock"] .stColumn::before,
+        [data-testid="stHorizontalBlock"] .stColumn::after {
+            content: none !important;
+            display: none !important;
+        }
+
+        /* 按钮容器本身无边框 */
+        [data-testid="stHorizontalBlock"] .stColumn .stButton {
+            border: none !important;
+        }
+
+        /* 统一按钮高度、宽度、文字样式 */
+        .stButton button,
+        .stForm button[type="submit"] {
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            width: 100% !important;
+            white-space: nowrap !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 1.2 !important;
+            font-size: 14px !important;
+            text-align: center !important;
+        }
+
+        .stButton {
+            height: 38px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        /* ---------- 退出实验按钮：靠右，宽度自适应 ---------- */
+        .top-fixed .stColumn:last-child {
+            display: flex !important;
+            justify-content: flex-end !important;
+            align-items: center !important;
+            border-left: none !important;
+        }
+        .top-fixed .stColumn:last-child .stButton button {
+            width: auto !important;
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+            min-width: unset !important;
+        }
+
+        /* 确保顶部固定栏的两列之间没有分隔线 */
+        .top-fixed .stColumn:first-child {
+            border-right: none !important;
+        }
+
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
@@ -212,7 +280,7 @@ with col_title:
     st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 with col_exit:
     if st.session_state.participant_id:
-        exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=True)
+        exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=False)
         if exit_clicked:
             exit_log = {
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -438,13 +506,12 @@ else:
                 )
                 st.rerun()
 
-    # ================= 右侧：研究方案填写（更新文字） =================
+    # ================= 右侧：研究方案填写（6个子任务） =================
     with col_right:
         st.subheader("📝 研究方案填写")
         existing_plan = load_plan(st.session_state.participant_id)
         
         st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
-        # 修改说明文字
         st.caption("请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。每个模块均有最低字数要求（达标后方可提交）。您可以在交互过程中随时记录，或最后集中整理。")
         
         with st.form(key="plan_form"):
