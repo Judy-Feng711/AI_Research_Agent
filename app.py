@@ -31,35 +31,17 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
-    """加载被试状态：消息列表用于显示，轮数严格从日志表统计有效对话"""
-    messages = get_initial_messages()  # 默认消息
-    round_count = 0
     try:
-        # 从日志表统计有效轮数（仅统计五个行为按钮，排除退出实验）
-        log_resp = supabase.table("research_logs")\
-            .select("*")\
-            .eq("participant_id", pid)\
-            .execute()
-        if log_resp.data:
-            valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-            round_count = sum(1 for log in log_resp.data 
-                              if log.get("behavior_button") in valid_behaviors
-                              and log.get("user_prompt")
-                              and log.get("user_prompt").strip() != ""
-                              and log.get("user_prompt") != "退出实验")
-        # 从状态表加载消息列表（仅用于显示历史对话）
-        state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
-        if state_resp.data:
-            raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
-            if raw_messages:
-                if raw_messages[0].get("role") != "system":
-                    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + raw_messages
-                else:
-                    messages = raw_messages
-        return messages, round_count
+        response = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
+        if response.data:
+            record = response.data[0]
+            messages = json.loads(record["messages"]) if record["messages"] else []
+            # 直接统计用户消息数量作为轮数（每条用户消息代表一轮对话）
+            round_count = sum(1 for msg in messages if msg["role"] == "user")
+            return messages, round_count
     except Exception as e:
-        st.warning(f"加载状态失败：{e}")
-        return messages, round_count
+        st.warning(f"加载历史状态失败：{e}")
+    return None, None
 
 def save_participant_state(pid, messages, round_count):
     data = {
@@ -123,10 +105,11 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS：顶部固定，右侧列自适应高度 =================
+# ================= 6. CSS：顶部固定，右侧列自适应高度（消除多余空白） =================
 st.markdown(
     """
     <style>
+        /* 顶部固定容器样式 */
         .top-fixed {
             position: sticky;
             top: 0;
@@ -136,6 +119,7 @@ st.markdown(
             border-bottom: 2px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
+        /* 让展开面板底部边距为0，内部padding减小 */
         .top-fixed .stExpander {
             margin-bottom: 0 !important;
             padding-bottom: 0 !important;
@@ -143,21 +127,24 @@ st.markdown(
         .top-fixed .stExpander .stExpanderContent {
             padding-bottom: 0.2rem !important;
         }
+        /* 左侧列正常流式 */
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
         }
+        /* 右侧列固定（sticky）但高度自适应，内容多时滚动 */
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
             top: 120px !important;
             align-self: flex-start !important;
-            height: auto !important;
-            max-height: calc(100vh - 120px) !important;
+            height: auto !important;                /* 自适应内容高度 */
+            max-height: calc(100vh - 120px) !important;  /* 最大高度限制 */
             overflow-y: auto !important;
             background-color: #fafafa;
             padding: 10px !important;
             border-left: 1px solid #ddd;
         }
+        /* 滚动条美化 */
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
         }
@@ -172,6 +159,7 @@ st.markdown(
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+        /* 调整两栏父容器高度自动 */
         [data-testid="stHorizontalBlock"] {
             height: auto !important;
             min-height: 0 !important;
@@ -183,36 +171,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 顶部信息栏 =================
+# ================= 7. 顶部信息栏（固定） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 
-col_title, col_exit = st.columns([5, 1])
-with col_title:
-    st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
-with col_exit:
-    exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=True)
-    if exit_clicked:
-        if st.session_state.participant_id:
-            exit_log = {
-                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "participant_id": st.session_state.participant_id,
-                "round": st.session_state.round_count,
-                "user_prompt": "退出实验",
-                "behavior_button": "退出实验",
-                "ai_response": ""
-            }
-            try:
-                supabase.table("research_logs").insert(exit_log).execute()
-                st.success("✅ 已记录退出实验，您的研究数据将不会被纳入最终分析。")
-                st.session_state.participant_id = ""
-                st.session_state.messages = get_initial_messages()
-                st.session_state.round_count = 0
-                st.session_state.state_loaded = False
-                st.rerun()
-            except Exception as e:
-                st.error(f"记录失败：{e}")
-        else:
-            st.warning("请先输入被试编号")
+st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 
 st.info(
     "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
@@ -295,17 +257,24 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 主体内容 =================
+# ================= 8. 主体内容（无分隔线） =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
     if not st.session_state.state_loaded:
         loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
-        st.session_state.messages = loaded_msgs if loaded_msgs else get_initial_messages()
-        st.session_state.round_count = loaded_round
-        st.session_state.state_loaded = True
-        # 保存一次，确保状态表与日志一致（可选）
-        save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
+        if loaded_msgs is not None:
+            if loaded_msgs and loaded_msgs[0].get("role") == "system":
+                st.session_state.messages = loaded_msgs
+            else:
+                st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}] + loaded_msgs
+            st.session_state.round_count = loaded_round
+            st.session_state.state_loaded = True
+        else:
+            st.session_state.messages = get_initial_messages()
+            st.session_state.round_count = 0
+            st.session_state.state_loaded = True
+            save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
 
     col_left, col_right = st.columns([2, 1], gap="large")
 
@@ -396,7 +365,6 @@ else:
                             st.error(f"AI 调用失败：{e}")
                             st.stop()
                 st.session_state.messages.append({"role": "assistant", "content": ai_reply})
-                # 轮数增加
                 st.session_state.round_count += 1
 
                 log_data = {
