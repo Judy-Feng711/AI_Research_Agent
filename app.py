@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（增加按钮统一高度及移除分隔线） =================
+# ================= 6. CSS（统一按钮高度及移除分隔线） =================
 st.markdown(
     """
     <style>
@@ -150,7 +150,6 @@ st.markdown(
             border-bottom: 2px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        /* 移除顶部列之间的分隔线 */
         .top-fixed .stColumn {
             border-right: none !important;
         }
@@ -161,7 +160,6 @@ st.markdown(
         .top-fixed .stExpander .stExpanderContent {
             padding-bottom: 0.2rem !important;
         }
-        /* 使所有按钮高度一致，文字不换行 */
         .stButton button {
             height: 38px !important;
             white-space: nowrap !important;
@@ -209,16 +207,13 @@ st.markdown(
 # ================= 7. 顶部信息栏（含退出按钮） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 
-# 创建两列：标题占大部分，右上角放退出按钮
 col_title, col_exit = st.columns([5, 1])
 with col_title:
     st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
 with col_exit:
-    # 如果当前有被试编号，显示退出按钮
     if st.session_state.participant_id:
         exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=True)
         if exit_clicked:
-            # 记录退出事件到 research_logs
             exit_log = {
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "participant_id": st.session_state.participant_id,
@@ -230,7 +225,6 @@ with col_exit:
             try:
                 supabase.table("research_logs").insert(exit_log).execute()
                 st.success("✅ 已记录退出实验，您的研究数据将不会被纳入最终分析。")
-                # 清空状态
                 st.session_state.participant_id = ""
                 st.session_state.messages = get_initial_messages()
                 st.session_state.round_count = 0
@@ -238,8 +232,7 @@ with col_exit:
             except Exception as e:
                 st.error(f"记录退出失败：{e}")
     else:
-        # 无被试时显示占位
-        st.write("")  # 占位保持布局
+        st.write("")
 
 st.info(
     "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
@@ -325,7 +318,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 主体内容（左右列比例6:4） =================
+# ================= 8. 主体内容 =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
@@ -445,18 +438,19 @@ else:
                 )
                 st.rerun()
 
-    # ================= 右侧：研究方案填写（6个子任务，无按钮，所有输入框默认为空） =================
+    # ================= 右侧：研究方案填写（更新文字） =================
     with col_right:
         st.subheader("📝 研究方案填写")
         existing_plan = load_plan(st.session_state.participant_id)
         
         st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
-        st.caption("说明：请在与AI多轮交互完成每个子任务后，提炼产出并填写。")
+        # 修改说明文字
+        st.caption("请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。每个模块均有最低字数要求（达标后方可提交）。您可以在交互过程中随时记录，或最后集中整理。")
         
         with st.form(key="plan_form"):
             st.markdown("**子任务1：选题与文献发现**")
             task1_text = st.text_area(
-                "提炼“选题核心与理论视角”（限150字）：",
+                "请写清您的核心研究问题、选题依据及所依据的理论视角。",
                 value="",
                 height=80,
                 max_chars=150,
@@ -466,7 +460,7 @@ else:
             
             st.markdown("**子任务2：研究规划与设计**")
             task2_text = st.text_area(
-                "提炼“研究设计框架”（限150字）：",
+                "请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。",
                 value="",
                 height=80,
                 max_chars=150,
@@ -476,7 +470,7 @@ else:
             
             st.markdown("**子任务3：实施与数据采集**")
             task3_text = st.text_area(
-                "提炼“实施步骤及工具”（限150字）：",
+                "请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。",
                 value="",
                 height=80,
                 max_chars=150,
@@ -486,7 +480,7 @@ else:
             
             st.markdown("**子任务4：数据分析与阐释**")
             task4_text = st.text_area(
-                "提炼“数据分析方法及结果解读”（限150字）：",
+                "请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。",
                 value="",
                 height=80,
                 max_chars=150,
@@ -496,7 +490,7 @@ else:
             
             st.markdown("**子任务5：论文撰写与润色**")
             task5_text = st.text_area(
-                "提炼“论文结构及润色要点”（限150字）：",
+                "请粘贴您借助AI撰写或润色后的论文片段（如引言或方法部分）。",
                 value="",
                 height=80,
                 max_chars=150,
@@ -506,7 +500,7 @@ else:
             
             st.markdown("**子任务6：传播、评估与伦理**")
             task6_text = st.text_area(
-                "提炼“实践建议与伦理考量”（限150字）：",
+                "请列出本研究涉及的伦理考量及计划中的成果传播渠道。",
                 value="",
                 height=80,
                 max_chars=150,
