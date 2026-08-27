@@ -139,7 +139,7 @@ if "prompt_input" not in st.session_state:
 if "user_role" not in st.session_state:
     st.session_state.user_role = "被试"  # 默认被试
 
-# ================= 6. CSS（保持原有样式，精简固定栏） =================
+# ================= 6. CSS（标题居中，去除阴影线） =================
 st.markdown(
     """
     <style>
@@ -149,8 +149,13 @@ st.markdown(
             background-color: white;
             z-index: 100;
             padding: 0.5rem 1rem 0.2rem 1rem;
-            border-bottom: 2px solid #ddd;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            /* 去掉下边框和阴影 */
+            border-bottom: none !important;
+            box-shadow: none !important;
+        }
+        /* 标题居中 */
+        .title-center {
+            text-align: center !important;
         }
         /* 移除顶部固定栏内列的边框（如果有） */
         .top-fixed .stColumn {
@@ -271,9 +276,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 固定顶部栏（仅标题） =================
+# ================= 7. 固定顶部栏（仅标题，居中，无阴影） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
-st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
+# 标题居中
+st.markdown('<h1 class="title-center">🎓 EduResearch Copilot (教育研究全栈助理)</h1>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 欢迎语和角色选择（在固定栏下方） =================
