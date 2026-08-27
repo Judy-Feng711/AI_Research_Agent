@@ -29,25 +29,34 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# ================= 3. 状态持久化函数 =================
+# ================= 3. 状态持久化函数（每次实时加载，轮次取最大round） =================
 def load_participant_state(pid):
+    """
+    从数据库实时加载被试状态：
+    - 轮数从 research_logs 表统计，取最大 round 值（有效按钮+非空输入）
+    - 消息列表从 participant_state 表加载
+    - 始终返回 (messages, round_count)
+    """
     messages = get_initial_messages()
     round_count = 0
 
     try:
-        # 轮数从 research_logs 表统计
+        # 1. 统计有效轮数（取最大round）
         log_resp = supabase.table("research_logs")\
             .select("*")\
             .eq("participant_id", pid)\
             .execute()
         if log_resp.data:
             valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-            round_count = sum(1 for log in log_resp.data
-                              if log.get("behavior_button") in valid_behaviors
-                              and log.get("user_prompt")
-                              and log.get("user_prompt").strip() != "")
+            max_round = 0
+            for log in log_resp.data:
+                if log.get("behavior_button") in valid_behaviors and log.get("user_prompt") and log.get("user_prompt").strip() != "":
+                    r = log.get("round", 0)
+                    if r > max_round:
+                        max_round = r
+            round_count = max_round
 
-        # 加载历史消息
+        # 2. 加载历史消息
         state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
         if state_resp.data:
             raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
@@ -80,7 +89,7 @@ def get_initial_messages():
         {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我：您目前正在推进哪一项具体的教育学研究任务？"}
     ]
 
-# ================= 4. 方案数据函数（6个子任务，去掉了按钮） =================
+# ================= 4. 方案数据函数 =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
@@ -90,26 +99,22 @@ def load_plan(pid):
         st.warning(f"加载方案数据失败：{e}")
     return None
 
-def save_plan(pid, task1_text, task2_text, task3_text, task4_text, task5_text, task6_text):
+def save_plan(pid, task1_text, task1_button, task2_text, task2_button, task3_text, task3_button):
     data = {
         "participant_id": pid,
         "task1_text": task1_text,
+        "task1_button": task1_button,
         "task2_text": task2_text,
+        "task2_button": task2_button,
         "task3_text": task3_text,
-        "task4_text": task4_text,   # 新增
-        "task5_text": task5_text,   # 新增
-        "task6_text": task6_text,   # 新增
-        # 以下字段保留但不再使用，设为空字符串以兼容旧表结构
-        "task1_button": "",
-        "task2_button": "",
-        "task3_button": "",
+        "task3_button": task3_button,
         "updated_at": datetime.datetime.now().isoformat()
     }
     try:
         supabase.table("research_plans").upsert(data, on_conflict="participant_id").execute()
         return True
     except Exception as e:
-        st.error(f"方案保存失败：{e} 请确保数据库表已添加 task4_text, task5_text, task6_text 列。")
+        st.error(f"方案保存失败：{e}")
         return False
 
 # ================= 5. 页面初始化 =================
@@ -124,7 +129,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS：顶部固定，右侧列自适应高度 =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
@@ -393,16 +398,15 @@ else:
                 )
                 st.rerun()
 
-    # ================= 右侧：研究方案填写（6个子任务，无按钮） =================
     with col_right:
         st.subheader("📝 研究方案填写")
         existing_plan = load_plan(st.session_state.participant_id)
         
         st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
-        st.caption("说明：请在与AI多轮交互完成每个子任务后，提炼产出并填写。")
+        st.caption("说明：请在与AI多轮交互完成每个子任务后，提炼产出并勾选主导行为。")
         
         with st.form(key="plan_form"):
-            st.markdown("**子任务1：选题与文献发现**")
+            st.markdown("**子任务1：选题与理论切入点**")
             task1_text = st.text_area(
                 "提炼“选题核心与理论视角”（限150字）：",
                 value=existing_plan["task1_text"] if existing_plan else "",
@@ -410,75 +414,64 @@ else:
                 max_chars=150,
                 key="task1_text"
             )
+            task1_button = st.radio(
+                "本阶段最常使用的行为按钮：",
+                options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
+                index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task1_button"]) if existing_plan and existing_plan["task1_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
+                horizontal=True,
+                key="task1_button"
+            )
             st.divider()
             
-            st.markdown("**子任务2：研究规划与设计**")
+            st.markdown("**子任务2：实施步骤与工具设计**")
             task2_text = st.text_area(
-                "提炼“研究设计框架”（限150字）：",
+                "提炼“核心实施步骤或研究工具框架”（限150字）：",
                 value=existing_plan["task2_text"] if existing_plan else "",
                 height=80,
                 max_chars=150,
                 key="task2_text"
             )
+            task2_button = st.radio(
+                "本阶段最常使用的行为按钮：",
+                options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
+                index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task2_button"]) if existing_plan and existing_plan["task2_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
+                horizontal=True,
+                key="task2_button"
+            )
             st.divider()
             
-            st.markdown("**子任务3：实施与数据采集**")
+            st.markdown("**子任务3：反思局限性与方案定稿**")
             task3_text = st.text_area(
-                "提炼“实施步骤及工具”（限150字）：",
+                "提炼“方案局限性及最终修改决策”（限150字）：",
                 value=existing_plan["task3_text"] if existing_plan else "",
                 height=80,
                 max_chars=150,
                 key="task3_text"
             )
-            st.divider()
-            
-            st.markdown("**子任务4：数据分析与阐释**")
-            task4_text = st.text_area(
-                "提炼“数据分析方法及结果解读”（限150字）：",
-                value=existing_plan["task4_text"] if existing_plan else "",
-                height=80,
-                max_chars=150,
-                key="task4_text"
-            )
-            st.divider()
-            
-            st.markdown("**子任务5：论文撰写与润色**")
-            task5_text = st.text_area(
-                "提炼“论文结构及润色要点”（限150字）：",
-                value=existing_plan["task5_text"] if existing_plan else "",
-                height=80,
-                max_chars=150,
-                key="task5_text"
-            )
-            st.divider()
-            
-            st.markdown("**子任务6：传播、评估与伦理**")
-            task6_text = st.text_area(
-                "提炼“实践建议与伦理考量”（限150字）：",
-                value=existing_plan["task6_text"] if existing_plan else "",
-                height=80,
-                max_chars=150,
-                key="task6_text"
+            task3_button = st.radio(
+                "本阶段最常使用的行为按钮：",
+                options=["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"],
+                index=(["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"].index(existing_plan["task3_button"]) if existing_plan and existing_plan["task3_button"] in ["1.获取基础信息", "2.规范语言/格式", "3.微调逻辑", "4.重构方案", "5.拓展思路"] else 0),
+                horizontal=True,
+                key="task3_button"
             )
             
             submitted = st.form_submit_button("📤 提交方案")
             if submitted:
-                # 检查是否所有文本都填了（非强制，但建议完整）
-                if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
-                            task4_text.strip(), task5_text.strip(), task6_text.strip()]):
-                    st.warning("建议填写所有子任务，以完善研究方案。")
-                # 仍然保存
-                success = save_plan(
-                    st.session_state.participant_id,
-                    task1_text.strip(),
-                    task2_text.strip(),
-                    task3_text.strip(),
-                    task4_text.strip(),
-                    task5_text.strip(),
-                    task6_text.strip()
-                )
-                if success:
-                    st.success("✅ 方案已提交/更新！")
-                    st.rerun()
+                if not task1_text.strip() or not task2_text.strip() or not task3_text.strip():
+                    st.warning("请完整填写所有文本字段")
                 else:
-                    st.error("❌ 提交失败，请检查数据库是否已添加所需字段。")
+                    success = save_plan(
+                        st.session_state.participant_id,
+                        task1_text.strip(),
+                        task1_button,
+                        task2_text.strip(),
+                        task2_button,
+                        task3_text.strip(),
+                        task3_button
+                    )
+                    if success:
+                        st.success("✅ 方案已提交/更新！")
+                        st.rerun()
+                    else:
+                        st.error("❌ 提交失败")
