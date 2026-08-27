@@ -29,29 +29,32 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# ================= 3. 状态持久化函数（每次实时加载） =================
+# ================= 3. 状态持久化函数（每次实时加载，轮次取最大round） =================
 def load_participant_state(pid):
     """
     从数据库实时加载被试状态：
-    - 轮数从 research_logs 表统计（五个有效按钮 + 非空输入）
-    - 消息列表从 participant_state 表加载（用于显示历史对话）
+    - 轮数从 research_logs 表统计，取最大 round 值（有效按钮+非空输入）
+    - 消息列表从 participant_state 表加载
     - 始终返回 (messages, round_count)
     """
     messages = get_initial_messages()
     round_count = 0
 
     try:
-        # 1. 统计有效轮数（独立于 participant_state）
+        # 1. 统计有效轮数（取最大round）
         log_resp = supabase.table("research_logs")\
             .select("*")\
             .eq("participant_id", pid)\
             .execute()
         if log_resp.data:
             valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-            round_count = sum(1 for log in log_resp.data
-                              if log.get("behavior_button") in valid_behaviors
-                              and log.get("user_prompt")
-                              and log.get("user_prompt").strip() != "")
+            max_round = 0
+            for log in log_resp.data:
+                if log.get("behavior_button") in valid_behaviors and log.get("user_prompt") and log.get("user_prompt").strip() != "":
+                    r = log.get("round", 0)
+                    if r > max_round:
+                        max_round = r
+            round_count = max_round
 
         # 2. 加载历史消息
         state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
@@ -126,11 +129,10 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS：顶部固定，右侧列自适应高度 =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
-        /* 顶部固定容器样式 */
         .top-fixed {
             position: sticky;
             top: 0;
@@ -140,7 +142,6 @@ st.markdown(
             border-bottom: 2px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        /* 让展开面板底部边距为0，内部padding减小 */
         .top-fixed .stExpander {
             margin-bottom: 0 !important;
             padding-bottom: 0 !important;
@@ -148,12 +149,10 @@ st.markdown(
         .top-fixed .stExpander .stExpanderContent {
             padding-bottom: 0.2rem !important;
         }
-        /* 左侧列正常流式 */
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
         }
-        /* 右侧列固定（sticky）但高度自适应，内容多时滚动 */
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
             top: 120px !important;
@@ -165,7 +164,6 @@ st.markdown(
             padding: 10px !important;
             border-left: 1px solid #ddd;
         }
-        /* 滚动条美化 */
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
         }
@@ -180,7 +178,6 @@ st.markdown(
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        /* 调整两栏父容器高度自动 */
         [data-testid="stHorizontalBlock"] {
             height: auto !important;
             min-height: 0 !important;
@@ -213,7 +210,6 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
             value=st.session_state.participant_id,
             key="pid_input_top"
         )
-        # 如果输入变化，立即更新并重运行
         if pid_input and pid_input.strip() != st.session_state.participant_id:
             st.session_state.participant_id = pid_input.strip()
             st.rerun()
@@ -226,7 +222,6 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
     with col_progress:
         st.markdown("**📊 对话进度**")
         if st.session_state.participant_id:
-            # 实时加载数据（移除 state_loaded 缓存，每次刷新都重新获取）
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
@@ -283,12 +278,10 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 主体内容（无分隔线） =================
+# ================= 8. 主体内容 =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
-    # 由于上方已实时加载了 messages 和 round_count，这里直接使用
-    # 但如果还没有加载（比如首次进入），补充加载一次
     if not st.session_state.messages or st.session_state.messages[0].get("role") != "system":
         loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
         st.session_state.messages = loaded_msgs
