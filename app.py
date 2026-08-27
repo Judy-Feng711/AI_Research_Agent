@@ -128,7 +128,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（修复按钮对齐和分隔线） =================
+# ================= 6. CSS（重点修复五个按钮对齐和竖线） =================
 st.markdown(
     """
     <style>
@@ -152,34 +152,40 @@ st.markdown(
             padding-bottom: 0.2rem !important;
         }
 
-        /* ---- 修复五个行为按钮高度一致，移除列间分隔线 ---- */
-        /* 移除所有列之间的竖线 */
+        /* ---------- 强制五个按钮统一高度，并移除列间竖线 ---------- */
+        /* 移除所有列之间的竖线（包括左右列） */
         [data-testid="stHorizontalBlock"] .stColumn {
             border-right: none !important;
             box-shadow: none !important;
         }
 
-        /* 统一所有按钮（包括form_submit_button）的高度 */
+        /* 针对表单中的按钮（form_submit_button）和普通按钮统一高度，并垂直居中 */
         .stButton button,
         .stForm button[type="submit"] {
             height: 38px !important;
             min-height: 38px !important;
             max-height: 38px !important;
             white-space: nowrap !important;
-            display: flex !important;
+            display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
             padding-top: 0 !important;
             padding-bottom: 0 !important;
             line-height: 1.2 !important;
+            margin: 0 !important;
         }
 
-        /* 确保按钮容器也统一高度 */
+        /* 确保按钮所在的容器（div）高度一致 */
         .stButton,
         .stForm .stButton {
             height: 38px !important;
             display: flex !important;
             align-items: center !important;
+        }
+
+        /* 针对表单内的按钮列（col_b1等），确保其高度统一 */
+        [data-testid="stHorizontalBlock"] .stColumn .stButton {
+            height: 38px !important;
         }
 
         [data-testid="stHorizontalBlock"] > div:first-child {
