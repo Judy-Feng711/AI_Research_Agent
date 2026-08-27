@@ -493,7 +493,7 @@ else:
                 "请粘贴您借助AI撰写或润色后的论文片段（如引言或方法部分）。（限300-500字）",
                 value="",
                 height=80,
-                max_chars=150,
+                max_chars=500,
                 key="task5_text"
             )
             st.divider()
