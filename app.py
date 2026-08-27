@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（移除右侧灰色背景） =================
+# ================= 6. CSS（增加按钮统一高度及移除分隔线） =================
 st.markdown(
     """
     <style>
@@ -150,12 +150,21 @@ st.markdown(
             border-bottom: 2px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
+        /* 移除顶部列之间的分隔线 */
+        .top-fixed .stColumn {
+            border-right: none !important;
+        }
         .top-fixed .stExpander {
             margin-bottom: 0 !important;
             padding-bottom: 0 !important;
         }
         .top-fixed .stExpander .stExpanderContent {
             padding-bottom: 0.2rem !important;
+        }
+        /* 使所有按钮高度一致，文字不换行 */
+        .stButton button {
+            height: 38px !important;
+            white-space: nowrap !important;
         }
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
@@ -168,7 +177,6 @@ st.markdown(
             height: auto !important;
             max-height: calc(100vh - 120px) !important;
             overflow-y: auto !important;
-            /* 移除灰色背景，改为白色或透明 */
             background-color: transparent !important;
             padding: 10px !important;
             border-left: 1px solid #ddd;
@@ -317,7 +325,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 主体内容（左右列比例改为6:4） =================
+# ================= 8. 主体内容（左右列比例6:4） =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
