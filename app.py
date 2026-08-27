@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS（彻底清除按钮列分隔线，调整退出按钮） =================
+# ================= 6. CSS（彻底清除竖线 + 修复第五按钮位置） =================
 st.markdown(
     """
     <style>
@@ -162,34 +162,42 @@ st.markdown(
         }
 
         /* ---------- 彻底移除五个行为按钮列之间的所有竖线 ---------- */
-        /* 定位到包含五个按钮的父容器（即 st.columns(5)） */
         [data-testid="stHorizontalBlock"] {
-            gap: 0 !important;   /* 移除列间距 */
+            gap: 0 !important;
         }
-
-        /* 每个列清除左右边框、阴影、背景 */
         [data-testid="stHorizontalBlock"] .stColumn {
             border-left: none !important;
             border-right: none !important;
             box-shadow: none !important;
             background: transparent !important;
-            /* 为了视觉统一，加微小内边距（但不带边框） */
             padding: 0 1px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-start !important;
+            align-items: stretch !important;   /* 确保列内元素拉伸 */
         }
-
-        /* 隐藏任何可能残留的伪元素分隔 */
         [data-testid="stHorizontalBlock"] .stColumn::before,
         [data-testid="stHorizontalBlock"] .stColumn::after {
             content: none !important;
             display: none !important;
         }
-
-        /* 按钮容器本身无边框 */
         [data-testid="stHorizontalBlock"] .stColumn .stButton {
             border: none !important;
         }
 
-        /* 统一按钮高度、宽度、文字样式 */
+        /* ---------- 修复第五个按钮位置下移 ---------- */
+        [data-testid="stHorizontalBlock"] .stColumn:nth-child(5) {
+            justify-content: flex-start !important;
+            align-items: stretch !important;
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+        [data-testid="stHorizontalBlock"] .stColumn:nth-child(5) .stButton {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* ---------- 统一所有按钮样式 ---------- */
         .stButton button,
         .stForm button[type="submit"] {
             height: 38px !important;
@@ -206,14 +214,13 @@ st.markdown(
             font-size: 14px !important;
             text-align: center !important;
         }
-
         .stButton {
             height: 38px !important;
             display: flex !important;
             align-items: center !important;
         }
 
-        /* ---------- 退出实验按钮：靠右，宽度自适应 ---------- */
+        /* ---------- 退出实验按钮 ---------- */
         .top-fixed .stColumn:last-child {
             display: flex !important;
             justify-content: flex-end !important;
@@ -226,12 +233,11 @@ st.markdown(
             padding-right: 12px !important;
             min-width: unset !important;
         }
-
-        /* 确保顶部固定栏的两列之间没有分隔线 */
         .top-fixed .stColumn:first-child {
             border-right: none !important;
         }
 
+        /* ---------- 右侧固定栏 ---------- */
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
