@@ -29,7 +29,7 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# ================= 3. 状态持久化函数（修正） =================
+# ================= 3. 状态持久化函数（修正版） =================
 def load_participant_state(pid):
     """
     加载被试状态：
@@ -63,7 +63,6 @@ def load_participant_state(pid):
                 else:
                     messages = raw_messages
     except Exception as e:
-        # 查询失败时显示错误提示，但返回默认值，不影响页面
         st.error(f"⚠️ 加载被试 {pid} 数据失败，请检查网络或刷新重试。错误详情：{e}")
         # 仍然返回默认消息和0轮
     return messages, round_count
@@ -71,7 +70,7 @@ def load_participant_state(pid):
 def save_participant_state(pid, messages, round_count):
     data = {
         "participant_id": pid,
-        "current_round": round_count,
+        "current_round": round_count,   # 仅作备份
         "messages": json.dumps(messages, ensure_ascii=False),
         "updated_at": datetime.datetime.now().isoformat()
     }
@@ -130,7 +129,7 @@ if "state_loaded" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS：顶部固定，右侧列自适应高度（消除多余空白） =================
+# ================= 6. CSS：顶部固定，右侧列自适应高度 =================
 st.markdown(
     """
     <style>
@@ -162,8 +161,8 @@ st.markdown(
             position: sticky !important;
             top: 120px !important;
             align-self: flex-start !important;
-            height: auto !important;                /* 自适应内容高度 */
-            max-height: calc(100vh - 120px) !important;  /* 最大高度限制 */
+            height: auto !important;
+            max-height: calc(100vh - 120px) !important;
             overflow-y: auto !important;
             background-color: #fafafa;
             padding: 10px !important;
@@ -196,7 +195,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 顶部信息栏（固定） =================
+# ================= 7. 顶部信息栏 =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 
 st.title("🎓 EduResearch Copilot (教育研究全栈助理)")
@@ -282,7 +281,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 主体内容（无分隔线） =================
+# ================= 8. 主体内容 =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
