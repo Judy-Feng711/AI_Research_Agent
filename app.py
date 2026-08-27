@@ -35,12 +35,13 @@ def load_participant_state(pid):
     加载被试状态：
     - 轮数严格从 research_logs 表统计（五个有效按钮 + 非空输入）
     - 消息列表从 participant_state 表加载（若失败则使用默认欢迎语）
+    - 始终返回 (messages, round_count)，不会返回 None
     """
-    messages = get_initial_messages()   # 默认
+    messages = get_initial_messages()
     round_count = 0
 
     try:
-        # 1. 统计有效轮数（独立于 participant_state，保证准确）
+        # 1. 统计有效轮数（独立于 participant_state）
         log_resp = supabase.table("research_logs")\
             .select("*")\
             .eq("participant_id", pid)\
@@ -52,7 +53,7 @@ def load_participant_state(pid):
                               and log.get("user_prompt")
                               and log.get("user_prompt").strip() != "")
 
-        # 2. 加载历史消息（仅用于显示，不影响轮数）
+        # 2. 加载历史消息（仅用于显示）
         state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
         if state_resp.data:
             raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
@@ -62,9 +63,9 @@ def load_participant_state(pid):
                 else:
                     messages = raw_messages
     except Exception as e:
-        # 即使出错，也保证轮数为0，但不会影响后续重试
-        st.warning(f"加载状态时出现异常：{e}，请稍后重试。")
-
+        # 查询失败时显示错误提示，但返回默认值，不影响页面
+        st.error(f"⚠️ 加载被试 {pid} 数据失败，请检查网络或刷新重试。错误详情：{e}")
+        # 仍然返回默认消息和0轮
     return messages, round_count
 
 def save_participant_state(pid, messages, round_count):
@@ -219,7 +220,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
         if pid_input and pid_input.strip() != st.session_state.participant_id:
             new_pid = pid_input.strip()
             st.session_state.participant_id = new_pid
-            st.session_state.state_loaded = False
+            st.session_state.state_loaded = False  # 强制重新加载
             st.rerun()
         if st.session_state.participant_id:
             st.success(f"当前被试：{st.session_state.participant_id}")
@@ -287,18 +288,18 @@ if not st.session_state.participant_id:
 else:
     if not st.session_state.state_loaded:
         loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
-        if loaded_msgs is not None:
-            if loaded_msgs and loaded_msgs[0].get("role") == "system":
+        # 确保 loaded_msgs 不为空
+        if loaded_msgs:
+            if loaded_msgs[0].get("role") == "system":
                 st.session_state.messages = loaded_msgs
             else:
                 st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}] + loaded_msgs
-            st.session_state.round_count = loaded_round
-            st.session_state.state_loaded = True
         else:
             st.session_state.messages = get_initial_messages()
-            st.session_state.round_count = 0
-            st.session_state.state_loaded = True
-            save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
+        st.session_state.round_count = loaded_round
+        st.session_state.state_loaded = True
+        # 保存一次，确保状态表与日志一致（可选）
+        save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
 
     col_left, col_right = st.columns([2, 1], gap="large")
 
