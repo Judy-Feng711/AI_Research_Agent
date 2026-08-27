@@ -86,7 +86,7 @@ def save_participant_state(pid, messages, round_count):
 def get_initial_messages():
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我：您目前正在推进哪一项具体的教育学研究任务？"}
+        {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"}
     ]
 
 # ================= 4. 方案数据函数（扩展为6个子任务，并容错处理缺失字段） =================
@@ -137,7 +137,7 @@ if "round_count" not in st.session_state:
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 
-# ================= 6. CSS =================
+# ================= 6. CSS（移除右侧灰色背景） =================
 st.markdown(
     """
     <style>
@@ -168,7 +168,8 @@ st.markdown(
             height: auto !important;
             max-height: calc(100vh - 120px) !important;
             overflow-y: auto !important;
-            background-color: #fafafa;
+            /* 移除灰色背景，改为白色或透明 */
+            background-color: transparent !important;
             padding: 10px !important;
             border-left: 1px solid #ddd;
         }
@@ -316,7 +317,7 @@ with st.expander("📋 被试信息与数据管理", expanded=True):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 主体内容 =================
+# ================= 8. 主体内容（左右列比例改为6:4） =================
 if not st.session_state.participant_id:
     st.warning("⚠️ 请先在顶部输入您的被试编号！")
 else:
@@ -325,7 +326,7 @@ else:
         st.session_state.messages = loaded_msgs
         st.session_state.round_count = loaded_round
 
-    col_left, col_right = st.columns([2, 1], gap="large")
+    col_left, col_right = st.columns([6, 4], gap="large")
 
     with col_left:
         st.subheader("💬 AI 学术助手对话")
