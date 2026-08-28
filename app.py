@@ -95,7 +95,6 @@ def load_plan(pid):
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
         if response.data:
             plan = response.data[0]
-            # 确保6个字段都存在，缺失则补空字符串
             for key in ["task4_text", "task5_text", "task6_text"]:
                 if key not in plan:
                     plan[key] = ""
@@ -136,11 +135,10 @@ if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
-# 初始角色为 None，表示未选择
 if "user_role" not in st.session_state:
-    st.session_state.user_role = None
+    st.session_state.user_role = None  # 默认未选择
 
-# ================= 6. CSS（保持原有样式，修改顶部栏） =================
+# ================= 6. CSS（保持原有样式，增加居中支持） =================
 st.markdown(
     """
     <style>
@@ -150,16 +148,14 @@ st.markdown(
             background-color: white;
             z-index: 100;
             padding: 0.5rem 1rem 0.2rem 1rem;
-            /* 去掉底部阴影线 */
             border-bottom: none !important;
             box-shadow: none !important;
         }
-        /* 移除顶部固定栏内列的边框（如果有） */
         .top-fixed .stColumn {
             border-right: none !important;
         }
 
-        /* ---------- 彻底移除五个行为按钮列之间的所有竖线 ---------- */
+        /* 移除五个行为按钮列之间的竖线 */
         [data-testid="stHorizontalBlock"] {
             gap: 0 !important;
         }
@@ -183,7 +179,7 @@ st.markdown(
             border: none !important;
         }
 
-        /* ---------- 修复第五个按钮位置下移 ---------- */
+        /* 修复第五个按钮位置 */
         [data-testid="stHorizontalBlock"] .stColumn:nth-child(5) {
             justify-content: flex-start !important;
             align-items: stretch !important;
@@ -195,7 +191,7 @@ st.markdown(
             padding-top: 0 !important;
         }
 
-        /* ---------- 统一所有按钮样式 ---------- */
+        /* 统一按钮样式 */
         .stButton button,
         .stForm button[type="submit"] {
             height: 38px !important;
@@ -218,7 +214,7 @@ st.markdown(
             align-items: center !important;
         }
 
-        /* ---------- 退出实验按钮：右对齐（用于被试模式的顶部行） ---------- */
+        /* 退出实验按钮右对齐 */
         .exit-button-container {
             display: flex !important;
             justify-content: flex-end !important;
@@ -232,7 +228,7 @@ st.markdown(
             min-width: unset !important;
         }
 
-        /* ---------- 右侧固定栏 ---------- */
+        /* 右侧固定栏 */
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
@@ -269,7 +265,7 @@ st.markdown(
             align-items: flex-start !important;
         }
 
-        /* 居中radio按钮的样式（可选） */
+        /* 居中 radio 按钮 */
         .stRadio > div {
             justify-content: center !important;
         }
@@ -299,28 +295,22 @@ st.markdown(
 )
 
 # ================= 9. 角色选择（居中，两个选项，默认不选） =================
-# 使用三列让内容居中
 col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
 with col_radio:
-    # 显示标签，居中
     st.markdown(
         "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
         unsafe_allow_html=True
     )
-    # 单选按钮，只有两个选项，默认 index=None（不选）
-    # 注意：st.radio 的 label 设为空，因为我们已经用 markdown 显示了标签
     role = st.radio(
         label="",
         options=["被试", "研究者"],
         index=None,  # 默认不选中
         horizontal=True,
         key="role_selector_main",
-        label_visibility="collapsed"  # 隐藏内置标签
+        label_visibility="collapsed"
     )
-    # 更新 session state
     if role != st.session_state.user_role:
         st.session_state.user_role = role
-        # 切换角色时重置相关状态
         if role == "被试":
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
@@ -329,12 +319,11 @@ with col_radio:
             st.session_state.export_authorized = False
         st.rerun()
 
-st.divider()  # 分隔线
+st.divider()
 
 # ================= 10. 根据角色显示内容 =================
 if st.session_state.user_role == "被试":
     # ---------- 被试模式 ----------
-    # 顶部：编号输入 + 轮次 + 退出按钮（三列）
     col_id, col_progress, col_exit = st.columns([2, 2, 1])
     with col_id:
         st.markdown("**👤 被试编号**")
@@ -401,7 +390,6 @@ if st.session_state.user_role == "被试":
             st.session_state.round_count = loaded_round
 
         col_left, col_right = st.columns([6, 4], gap="large")
-
         with col_left:
             st.subheader("💬 AI 学术助手对话")
             for msg in st.session_state.messages:
@@ -514,10 +502,8 @@ if st.session_state.user_role == "被试":
         with col_right:
             st.subheader("📝 研究方案填写")
             existing_plan = load_plan(st.session_state.participant_id)
-            
             st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
             st.caption("请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。每个模块均有最低字数要求（达标后方可提交）。您可以在交互过程中随时记录，或最后集中整理。")
-            
             with st.form(key="plan_form"):
                 st.markdown("**子任务1：选题与文献发现**")
                 task1_text = st.text_area(
@@ -528,7 +514,6 @@ if st.session_state.user_role == "被试":
                     key="task1_text"
                 )
                 st.divider()
-                
                 st.markdown("**子任务2：研究规划与设计**")
                 task2_text = st.text_area(
                     "请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。（限150字）",
@@ -538,7 +523,6 @@ if st.session_state.user_role == "被试":
                     key="task2_text"
                 )
                 st.divider()
-                
                 st.markdown("**子任务3：实施与数据采集**")
                 task3_text = st.text_area(
                     "请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。（限150字）",
@@ -548,7 +532,6 @@ if st.session_state.user_role == "被试":
                     key="task3_text"
                 )
                 st.divider()
-                
                 st.markdown("**子任务4：数据分析与阐释**")
                 task4_text = st.text_area(
                     "请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。（限150字）",
@@ -558,7 +541,6 @@ if st.session_state.user_role == "被试":
                     key="task4_text"
                 )
                 st.divider()
-                
                 st.markdown("**子任务5：论文撰写与润色**")
                 task5_text = st.text_area(
                     "请粘贴您借助AI撰写或润色后的论文片段（如引言或方法部分）。（限300-500字）",
@@ -568,7 +550,6 @@ if st.session_state.user_role == "被试":
                     key="task5_text"
                 )
                 st.divider()
-                
                 st.markdown("**子任务6：传播、评估与伦理**")
                 task6_text = st.text_area(
                     "请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）",
@@ -577,7 +558,6 @@ if st.session_state.user_role == "被试":
                     max_chars=150,
                     key="task6_text"
                 )
-                
                 submitted = st.form_submit_button("📤 提交方案")
                 if submitted:
                     if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
@@ -602,10 +582,8 @@ elif st.session_state.user_role == "研究者":
     # ---------- 研究者模式 ----------
     st.subheader("📊 研究者数据导出")
     st.markdown("请输入研究者密码以查看并下载数据。")
-    
     if "export_authorized" not in st.session_state:
         st.session_state.export_authorized = False
-
     if not st.session_state.export_authorized:
         export_pass = st.text_input("请输入研究者密码", type="password", key="export_pass")
         if st.button("验证", key="verify_export"):
@@ -649,5 +627,5 @@ elif st.session_state.user_role == "研究者":
             st.rerun()
 
 else:
-    # 未选择角色（user_role 为 None）
+    # 未选择角色
     st.info("👆 请选择您的角色以继续。")
