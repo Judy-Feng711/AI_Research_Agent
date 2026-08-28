@@ -136,21 +136,21 @@ if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
+# 默认角色为 "请选择"，表示未选择
 if "user_role" not in st.session_state:
-    st.session_state.user_role = "被试"  # 默认被试
+    st.session_state.user_role = "请选择"
 
-# ================= 6. CSS（去除固定栏阴影线，标题居中在后面的HTML中处理） =================
+# ================= 6. CSS（保持原有样式，修改顶部栏） =================
 st.markdown(
     """
     <style>
-        /* 移除顶部固定栏的边框和阴影，仅保留背景 */
         .top-fixed {
             position: sticky;
             top: 0;
             background-color: white;
             z-index: 100;
             padding: 0.5rem 1rem 0.2rem 1rem;
-            /* 移除边框和阴影 */
+            /* 去掉底部阴影线 */
             border-bottom: none !important;
             box-shadow: none !important;
         }
@@ -268,28 +268,6 @@ st.markdown(
             overflow: visible !important;
             align-items: flex-start !important;
         }
-
-        /* ---------- 居中样式 ---------- */
-        .centered-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            margin: 0 auto;
-        }
-        .centered-container .stMarkdown {
-            text-align: center;
-        }
-        /* 让 radio 按钮居中 */
-        .stRadio > div {
-            display: flex;
-            justify-content: center;
-        }
-        /* 让 info 框内容居中 */
-        .stAlert {
-            text-align: center;
-        }
     </style>
     """,
     unsafe_allow_html=True
@@ -297,30 +275,41 @@ st.markdown(
 
 # ================= 7. 固定顶部栏（仅标题，居中） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
-# 使用列居中标题
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.markdown("<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>", unsafe_allow_html=True)
+# 使用 HTML 居中标题
+st.markdown(
+    "<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>",
+    unsafe_allow_html=True
+)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 欢迎语和角色选择（都居中） =================
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.info(
-        "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
-        "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
-    )
-    # 角色选择
+# ================= 8. 欢迎语（居中，一行显示） =================
+st.markdown(
+    "<p style='text-align: center; font-size: 18px; white-space: nowrap;'>"
+    "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
+    "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
+    "</p>",
+    unsafe_allow_html=True
+)
+
+# ================= 9. 角色选择（居中） =================
+# 使用三列让单选按钮居中
+col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
+with col_radio:
+    # 添加 "请选择" 选项作为默认
+    role_options = ["请选择", "被试", "研究者"]
+    # 获取当前索引
+    current_index = role_options.index(st.session_state.user_role) if st.session_state.user_role in role_options else 0
     role = st.radio(
         "请选择您的角色：",
-        options=["被试", "研究者"],
-        index=0 if st.session_state.user_role == "被试" else 1,
+        options=role_options,
+        index=current_index,
         horizontal=True,
         key="role_selector_main",
         label_visibility="visible"
     )
     if role != st.session_state.user_role:
         st.session_state.user_role = role
+        # 切换角色时重置状态
         if role == "被试":
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
@@ -329,9 +318,9 @@ with col2:
             st.session_state.export_authorized = False
         st.rerun()
 
-st.divider()  # 分隔线，将角色选择与后续内容分开
+st.divider()  # 分隔线
 
-# ================= 9. 根据角色显示内容 =================
+# ================= 10. 根据角色显示内容 =================
 if st.session_state.user_role == "被试":
     # ---------- 被试模式 ----------
     # 顶部：编号输入 + 轮次 + 退出按钮（三列）
@@ -367,7 +356,6 @@ if st.session_state.user_role == "被试":
         else:
             st.caption("请先输入编号")
     with col_exit:
-        # 退出按钮（仅当有编号时显示）
         if st.session_state.participant_id:
             st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
             exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=False)
@@ -391,13 +379,11 @@ if st.session_state.user_role == "被试":
                 except Exception as e:
                     st.error(f"记录退出失败：{e}")
         else:
-            st.write("")  # 占位
+            st.write("")
 
-    # 如果没有编号，显示警告，不显示对话和方案
     if not st.session_state.participant_id:
         st.warning("⚠️ 请先在顶部输入您的被试编号！")
     else:
-        # 确保消息已加载
         if not st.session_state.messages or st.session_state.messages[0].get("role") != "system":
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
@@ -601,12 +587,11 @@ if st.session_state.user_role == "被试":
                     else:
                         st.error("❌ 提交失败，请检查数据库是否已添加所需字段。")
 
-else:
+elif st.session_state.user_role == "研究者":
     # ---------- 研究者模式 ----------
     st.subheader("📊 研究者数据导出")
     st.markdown("请输入研究者密码以查看并下载数据。")
     
-    # 密码验证
     if "export_authorized" not in st.session_state:
         st.session_state.export_authorized = False
 
@@ -651,3 +636,7 @@ else:
         if st.button("退出研究者模式"):
             st.session_state.export_authorized = False
             st.rerun()
+
+else:
+    # 未选择角色（"请选择"），显示提示信息
+    st.info("👆 请选择您的角色以继续。")
