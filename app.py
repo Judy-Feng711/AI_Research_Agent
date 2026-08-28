@@ -136,9 +136,9 @@ if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
-# 默认角色为 "请选择"，表示未选择
+# 初始角色为 None，表示未选择
 if "user_role" not in st.session_state:
-    st.session_state.user_role = "请选择"
+    st.session_state.user_role = None
 
 # ================= 6. CSS（保持原有样式，修改顶部栏） =================
 st.markdown(
@@ -268,6 +268,14 @@ st.markdown(
             overflow: visible !important;
             align-items: flex-start !important;
         }
+
+        /* 居中radio按钮的样式（可选） */
+        .stRadio > div {
+            justify-content: center !important;
+        }
+        .stRadio label {
+            font-size: 16px;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -275,7 +283,6 @@ st.markdown(
 
 # ================= 7. 固定顶部栏（仅标题，居中） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
-# 使用 HTML 居中标题
 st.markdown(
     "<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>",
     unsafe_allow_html=True
@@ -291,25 +298,29 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 9. 角色选择（居中） =================
-# 使用三列让单选按钮居中
+# ================= 9. 角色选择（居中，两个选项，默认不选） =================
+# 使用三列让内容居中
 col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
 with col_radio:
-    # 添加 "请选择" 选项作为默认
-    role_options = ["请选择", "被试", "研究者"]
-    # 获取当前索引
-    current_index = role_options.index(st.session_state.user_role) if st.session_state.user_role in role_options else 0
+    # 显示标签，居中
+    st.markdown(
+        "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
+        unsafe_allow_html=True
+    )
+    # 单选按钮，只有两个选项，默认 index=None（不选）
+    # 注意：st.radio 的 label 设为空，因为我们已经用 markdown 显示了标签
     role = st.radio(
-        "请选择您的角色：",
-        options=role_options,
-        index=current_index,
+        label="",
+        options=["被试", "研究者"],
+        index=None,  # 默认不选中
         horizontal=True,
         key="role_selector_main",
-        label_visibility="visible"
+        label_visibility="collapsed"  # 隐藏内置标签
     )
+    # 更新 session state
     if role != st.session_state.user_role:
         st.session_state.user_role = role
-        # 切换角色时重置状态
+        # 切换角色时重置相关状态
         if role == "被试":
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
@@ -638,5 +649,5 @@ elif st.session_state.user_role == "研究者":
             st.rerun()
 
 else:
-    # 未选择角色（"请选择"），显示提示信息
+    # 未选择角色（user_role 为 None）
     st.info("👆 请选择您的角色以继续。")
