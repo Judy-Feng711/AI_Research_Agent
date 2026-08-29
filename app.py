@@ -138,7 +138,7 @@ if "prompt_input" not in st.session_state:
 if "user_role" not in st.session_state:
     st.session_state.user_role = None  # 默认未选择
 
-# ================= 6. CSS（优化角色选择居中及控件大小） =================
+# ================= 6. CSS（保持原有样式） =================
 st.markdown(
     """
     <style>
@@ -264,46 +264,6 @@ st.markdown(
             overflow: visible !important;
             align-items: flex-start !important;
         }
-
-        /* 角色选择区：居中且紧凑 */
-        .role-selector-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        .role-selector-container .stRadio {
-            display: flex !important;
-            justify-content: center !important;
-            width: 100%;
-        }
-        .role-selector-container .stRadio > div {
-            display: flex !important;
-            justify-content: center !important;
-            gap: 20px !important;  /* 选项间距 */
-        }
-        /* 统一两个选项的 label 样式：字体缩小、高度一致 */
-        .role-selector-container .stRadio label {
-            font-size: 14px !important;
-            padding: 2px 6px !important;
-            margin: 0 !important;
-            line-height: 1.4 !important;
-            height: 28px !important;  /* 固定高度确保一致 */
-            display: flex !important;
-            align-items: center !important;
-        }
-        /* 让 radio 按钮本身缩小（可选） */
-        .role-selector-container .stRadio input[type="radio"] {
-            transform: scale(0.8);  /* 缩小到80% */
-            margin-right: 4px !important;
-        }
-        /* 标签字体加大加粗（可选） */
-        .role-selector-container .role-label {
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 0.2rem;
-        }
     </style>
     """,
     unsafe_allow_html=True
@@ -326,32 +286,42 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 9. 角色选择（居中，两个选项，默认不选，紧凑） =================
+# ================= 9. 角色选择（使用 button 模拟，完美居中） =================
 col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
 with col_radio:
-    st.markdown('<div class="role-selector-container">', unsafe_allow_html=True)
     st.markdown(
-        "<p class='role-label'>请选择您的角色：</p>",
+        "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
         unsafe_allow_html=True
     )
-    role = st.radio(
-        label="",
-        options=["被试", "研究者"],
-        index=None,
-        horizontal=True,
-        key="role_selector_main",
-        label_visibility="collapsed"
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
-    if role != st.session_state.user_role:
-        st.session_state.user_role = role
-        if role == "被试":
+    # 使用两列放置两个按钮，并居中
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("被试", key="btn_participant", use_container_width=True):
+            st.session_state.user_role = "被试"
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
-        elif role == "研究者":
+            st.rerun()
+        # 高亮当前选中的角色
+        if st.session_state.user_role == "被试":
+            st.markdown(
+                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+                unsafe_allow_html=True
+            )
+        else:
+            st.write("")  # 占位
+    with col_btn2:
+        if st.button("研究者", key="btn_researcher", use_container_width=True):
+            st.session_state.user_role = "研究者"
             st.session_state.export_authorized = False
-        st.rerun()
+            st.rerun()
+        if st.session_state.user_role == "研究者":
+            st.markdown(
+                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+                unsafe_allow_html=True
+            )
+        else:
+            st.write("")
 
 st.divider()
 
