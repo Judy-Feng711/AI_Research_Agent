@@ -265,20 +265,20 @@ st.markdown(
             align-items: flex-start !important;
         }
 
-        /* 居中 radio 按钮 */
-        .stRadio > div {
+        /* 让 radio 按钮在包裹容器内居中 */
+        .radio-center-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+        .radio-center-wrapper .stRadio {
+            display: flex !important;
             justify-content: center !important;
         }
-        .stRadio label {
-            font-size: 16px;
-        }
-
-        /* 角色选择容器内边距调整，使标签和选项紧凑 */
-        .role-selector-container {
+        .radio-center-wrapper .stRadio > div {
             display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            gap: 0.2rem !important;
+            justify-content: center !important;
+            gap: 30px !important;  /* 选项间距 */
         }
     </style>
     """,
@@ -303,19 +303,18 @@ st.markdown(
 )
 
 # ================= 9. 角色选择（居中，两个选项，默认不选） =================
-# 使用单个列并居中，标签与选项紧凑
 col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
 with col_radio:
-    # 容器包裹，方便CSS控制
-    st.markdown('<div class="role-selector-container">', unsafe_allow_html=True)
     st.markdown(
         "<p style='text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 0.2rem;'>请选择您的角色：</p>",
         unsafe_allow_html=True
     )
+    # 使用自定义包裹 div 强制居中
+    st.markdown('<div class="radio-center-wrapper">', unsafe_allow_html=True)
     role = st.radio(
         label="",
         options=["被试", "研究者"],
-        index=None,  # 默认不选中
+        index=None,
         horizontal=True,
         key="role_selector_main",
         label_visibility="collapsed"
