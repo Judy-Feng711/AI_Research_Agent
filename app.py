@@ -31,10 +31,21 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 
 # ================= 3. 状态持久化函数（轮次取最大round） =================
 def load_participant_state(pid):
+    """
+    从数据库实时加载被试状态：
+    - 轮数从 research_logs 表统计，取最大 round 值（有效按钮+非空输入）
+    - 消息列表从 participant_state 表加载
+    - 始终返回 (messages, round_count)
+    """
     messages = get_initial_messages()
     round_count = 0
+
     try:
-        log_resp = supabase.table("research_logs").select("*").eq("participant_id", pid).execute()
+        # 1. 统计有效轮数（取最大round）
+        log_resp = supabase.table("research_logs")\
+            .select("*")\
+            .eq("participant_id", pid)\
+            .execute()
         if log_resp.data:
             valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
             max_round = 0
@@ -44,6 +55,8 @@ def load_participant_state(pid):
                     if r > max_round:
                         max_round = r
             round_count = max_round
+
+        # 2. 加载历史消息
         state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
         if state_resp.data:
             raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
@@ -125,7 +138,7 @@ if "prompt_input" not in st.session_state:
 if "user_role" not in st.session_state:
     st.session_state.user_role = None  # 默认未选择
 
-# ================= 6. CSS（含自定义角色选择样式） =================
+# ================= 6. CSS（保持原有样式） =================
 st.markdown(
     """
     <style>
@@ -251,44 +264,6 @@ st.markdown(
             overflow: visible !important;
             align-items: flex-start !important;
         }
-
-        /* ---------- 自定义角色选择器（居中、紧凑） ---------- */
-        .custom-role-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            margin: 0.5rem 0 0.2rem 0;
-        }
-        .custom-role-container .role-label {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 0.3rem;
-            text-align: center;
-        }
-        .custom-role-container .role-options {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-        }
-        .custom-role-container .role-options label {
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            height: 28px;
-            line-height: 1.4;
-            padding: 0 4px;
-        }
-        .custom-role-container .role-options input[type="radio"] {
-            margin-right: 6px;
-            transform: scale(0.8);
-            width: 14px;
-            height: 14px;
-            cursor: pointer;
-        }
     </style>
     """,
     unsafe_allow_html=True
@@ -311,73 +286,42 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 9. 自定义角色选择（居中、两个选项、默认不选） =================
-# 使用 HTML + CSS 完全自定义，确保绝对居中
-st.markdown(
-    """
-    <div class="custom-role-container">
-        <div class="role-label">请选择您的角色：</div>
-        <div class="role-options">
-            <label>
-                <input type="radio" name="role_selector" value="被试" {}
-                > 被试
-            </label>
-            <label>
-                <input type="radio" name="role_selector" value="研究者" {}
-                > 研究者
-            </label>
-        </div>
-    </div>
-    """.format(
-        "checked" if st.session_state.user_role == "被试" else "",
-        "checked" if st.session_state.user_role == "研究者" else ""
-    ),
-    unsafe_allow_html=True
-)
-
-# 处理角色选择的逻辑（通过 st.session_state 的 rerun 触发）
-# 由于 HTML 不直接回调，我们用 st.empty 占位，然后通过 JavaScript 监控点击并触发 rerun
-# 更简单的方法：使用 st.radio 但隐藏原生样式，但我们已经放弃 st.radio。
-# 替代：用 st.button 或者 st.checkbox？不，还是用 st.radio 但将其隐藏，用 CSS 覆盖。
-# 但为了简单，我们放弃纯自定义，转而用 st.radio 并加上自定义 CSS 强制居中。
-# 但上面的自定义 HTML 无法直接更新 session_state，所以我们需要通过额外按钮或监听。
-# 更稳健：继续使用 st.radio，但用 CSS 彻底覆盖其布局使其居中。
-
-# 由于时间关系，我们回到 st.radio 方案，但用更强的 CSS 覆盖。
-# 下面使用 st.radio 并强制居中，我们已在上面的 CSS 中添加了 .role-selector-container 样式。
-# 我们将采用更可靠的方案：st.radio + 包裹 div + 强制 flex 居中。
-
-# 重新调整：使用 st.radio 并包裹 div，样式已在上文定义。
-# 为了简洁，我们直接使用 st.radio 并利用之前的样式。
-# 下面重新启用 st.radio，但确保 CSS 中的 .role-selector-container 正确应用。
-# 我们将重构角色选择部分。
-
-# ================= 9. 角色选择（改用 st.radio 并强制居中） =================
+# ================= 9. 角色选择（使用 button 模拟，完美居中） =================
 col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
 with col_radio:
-    st.markdown('<div class="role-selector-container">', unsafe_allow_html=True)
     st.markdown(
-        "<p class='role-label'>请选择您的角色：</p>",
+        "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
         unsafe_allow_html=True
     )
-    role = st.radio(
-        label="",
-        options=["被试", "研究者"],
-        index=None,
-        horizontal=True,
-        key="role_selector_main",
-        label_visibility="collapsed"
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
-    if role != st.session_state.user_role:
-        st.session_state.user_role = role
-        if role == "被试":
+    # 使用两列放置两个按钮，并居中
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("被试", key="btn_participant", use_container_width=True):
+            st.session_state.user_role = "被试"
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
-        elif role == "研究者":
+            st.rerun()
+        # 高亮当前选中的角色
+        if st.session_state.user_role == "被试":
+            st.markdown(
+                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+                unsafe_allow_html=True
+            )
+        else:
+            st.write("")  # 占位
+    with col_btn2:
+        if st.button("研究者", key="btn_researcher", use_container_width=True):
+            st.session_state.user_role = "研究者"
             st.session_state.export_authorized = False
-        st.rerun()
+            st.rerun()
+        if st.session_state.user_role == "研究者":
+            st.markdown(
+                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+                unsafe_allow_html=True
+            )
+        else:
+            st.write("")
 
 st.divider()
 
