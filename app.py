@@ -272,6 +272,14 @@ st.markdown(
         .stRadio label {
             font-size: 16px;
         }
+
+        /* 角色选择容器内边距调整，使标签和选项紧凑 */
+        .role-selector-container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 0.2rem !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -295,10 +303,13 @@ st.markdown(
 )
 
 # ================= 9. 角色选择（居中，两个选项，默认不选） =================
+# 使用单个列并居中，标签与选项紧凑
 col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
 with col_radio:
+    # 容器包裹，方便CSS控制
+    st.markdown('<div class="role-selector-container">', unsafe_allow_html=True)
     st.markdown(
-        "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
+        "<p style='text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 0.2rem;'>请选择您的角色：</p>",
         unsafe_allow_html=True
     )
     role = st.radio(
@@ -309,6 +320,7 @@ with col_radio:
         key="role_selector_main",
         label_visibility="collapsed"
     )
+    st.markdown('</div>', unsafe_allow_html=True)
     if role != st.session_state.user_role:
         st.session_state.user_role = role
         if role == "被试":
