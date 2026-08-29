@@ -138,7 +138,7 @@ if "prompt_input" not in st.session_state:
 if "user_role" not in st.session_state:
     st.session_state.user_role = None  # 默认未选择
 
-# ================= 6. CSS（保持原有样式，增加居中支持） =================
+# ================= 6. CSS（保持原有样式） =================
 st.markdown(
     """
     <style>
@@ -264,22 +264,6 @@ st.markdown(
             overflow: visible !important;
             align-items: flex-start !important;
         }
-
-        /* 让 radio 按钮在包裹容器内居中 */
-        .radio-center-wrapper {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-        .radio-center-wrapper .stRadio {
-            display: flex !important;
-            justify-content: center !important;
-        }
-        .radio-center-wrapper .stRadio > div {
-            display: flex !important;
-            justify-content: center !important;
-            gap: 30px !important;  /* 选项间距 */
-        }
     </style>
     """,
     unsafe_allow_html=True
@@ -302,33 +286,42 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 9. 角色选择（居中，两个选项，默认不选） =================
+# ================= 9. 角色选择（使用 button 模拟，完美居中） =================
 col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
 with col_radio:
     st.markdown(
-        "<p style='text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 0.2rem;'>请选择您的角色：</p>",
+        "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
         unsafe_allow_html=True
     )
-    # 使用自定义包裹 div 强制居中
-    st.markdown('<div class="radio-center-wrapper">', unsafe_allow_html=True)
-    role = st.radio(
-        label="",
-        options=["被试", "研究者"],
-        index=None,
-        horizontal=True,
-        key="role_selector_main",
-        label_visibility="collapsed"
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
-    if role != st.session_state.user_role:
-        st.session_state.user_role = role
-        if role == "被试":
+    # 使用两列放置两个按钮，并居中
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("被试", key="btn_participant", use_container_width=True):
+            st.session_state.user_role = "被试"
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
-        elif role == "研究者":
+            st.rerun()
+        # 高亮当前选中的角色
+        if st.session_state.user_role == "被试":
+            st.markdown(
+                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+                unsafe_allow_html=True
+            )
+        else:
+            st.write("")  # 占位
+    with col_btn2:
+        if st.button("研究者", key="btn_researcher", use_container_width=True):
+            st.session_state.user_role = "研究者"
             st.session_state.export_authorized = False
-        st.rerun()
+            st.rerun()
+        if st.session_state.user_role == "研究者":
+            st.markdown(
+                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+                unsafe_allow_html=True
+            )
+        else:
+            st.write("")
 
 st.divider()
 
