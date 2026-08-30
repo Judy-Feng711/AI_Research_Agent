@@ -165,6 +165,8 @@ if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 if "user_role" not in st.session_state:
     st.session_state.user_role = None
+if "exit_confirm" not in st.session_state:
+    st.session_state.exit_confirm = False
 
 # ================= 6. CSS =================
 st.markdown(
@@ -360,6 +362,7 @@ with col_back:
         st.session_state.participant_id = ""
         st.session_state.messages = get_initial_messages()
         st.session_state.round_count = 0
+        st.session_state.exit_confirm = False
         st.rerun()
 
 st.divider()
@@ -389,11 +392,6 @@ if st.session_state.user_role == "被试":
             # 使用确认弹窗
             exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=False)
             if exit_clicked:
-                # 使用 st.popover 或 st.confirm？但 Streamlit 没有原生 confirm，我们用 alert 替代
-                # 更优雅：显示一个警告框，用 st.warning + 两个按钮（确认/取消）
-                # 我们通过 session_state 记录是否确认退出
-                if "exit_confirm" not in st.session_state:
-                    st.session_state.exit_confirm = False
                 if not st.session_state.exit_confirm:
                     # 显示确认信息
                     st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
@@ -406,7 +404,7 @@ if st.session_state.user_role == "被试":
                         if st.button("取消", key="confirm_exit_no"):
                             st.session_state.exit_confirm = False
                             st.rerun()
-                    st.stop()  # 阻止后续代码执行
+                    st.stop()
                 else:
                     # 真正执行退出
                     exit_log = {
@@ -420,6 +418,8 @@ if st.session_state.user_role == "被试":
                     try:
                         supabase.table("research_logs").insert(exit_log).execute()
                         st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
+                        # 重置所有状态
+                        st.session_state.user_role = None
                         st.session_state.participant_id = ""
                         st.session_state.messages = get_initial_messages()
                         st.session_state.round_count = 0
