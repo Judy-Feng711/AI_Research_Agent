@@ -303,44 +303,40 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 9. 角色选择（标签与按钮同行居中） =================
-col_space1, col_center, col_space2 = st.columns([1, 2, 1])
+# ================= 9. 角色选择（标签在上，按钮垂直居中） =================
+col_space1, col_center, col_space2 = st.columns([1, 1.5, 1])
 with col_center:
-    # 第一行：标签
     st.markdown(
         "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
         unsafe_allow_html=True
     )
-    # 第二行：两个并排按钮，居中
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("被试", key="btn_subject", use_container_width=True):
-            st.session_state.user_role = "被试"
-            st.session_state.participant_id = ""
-            st.session_state.messages = get_initial_messages()
-            st.session_state.round_count = 0
-            st.rerun()
-        if st.session_state.user_role == "被试":
-            st.markdown(
-                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
-                unsafe_allow_html=True
-            )
-        else:
-            st.write("")  # 占位
-    with col_btn2:
-        if st.button("研究者", key="btn_researcher", use_container_width=True):
-            st.session_state.user_role = "研究者"
-            st.session_state.export_authorized = False
-            st.rerun()
-        if st.session_state.user_role == "研究者":
-            st.markdown(
-                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
-                unsafe_allow_html=True
-            )
-        else:
-            st.write("")
+    # 两个按钮垂直排列，居中
+    if st.button("被试", key="btn_subject", use_container_width=True):
+        st.session_state.user_role = "被试"
+        st.session_state.participant_id = ""
+        st.session_state.messages = get_initial_messages()
+        st.session_state.round_count = 0
+        st.rerun()
+    if st.session_state.user_role == "被试":
+        st.markdown(
+            "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+            unsafe_allow_html=True
+        )
+    else:
+        st.write("")  # 占位，保持间距
 
-st.divider()
+    # 研究者按钮
+    if st.button("研究者", key="btn_researcher", use_container_width=True):
+        st.session_state.user_role = "研究者"
+        st.session_state.export_authorized = False
+        st.rerun()
+    if st.session_state.user_role == "研究者":
+        st.markdown(
+            "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+            unsafe_allow_html=True
+        )
+    else:
+        st.write("")
 
 # ================= 10. 根据角色显示内容 =================
 if st.session_state.user_role == "被试":
