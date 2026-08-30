@@ -29,34 +29,64 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# ================= 3. 状态持久化函数 =================
+# ================= 3. 状态持久化函数（完全基于 research_logs 重建消息） =================
 def load_participant_state(pid):
+    """
+    从 research_logs 表完整重建消息列表（忽略 participant_state 中的 messages）。
+    按 round 排序，重建 user/assistant 成对消息。
+    最后将重建的消息保存回 participant_state 作为缓存。
+    返回 (messages, round_count)
+    """
     messages = get_initial_messages()
     round_count = 0
+
     try:
+        # 获取该被试所有有效日志，按 round 升序
         log_resp = supabase.table("research_logs")\
             .select("*")\
             .eq("participant_id", pid)\
+            .order("round", desc=False)\
             .execute()
-        if log_resp.data:
-            valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-            max_round = 0
-            for log in log_resp.data:
-                if log.get("behavior_button") in valid_behaviors and log.get("user_prompt") and log.get("user_prompt").strip() != "":
-                    r = log.get("round", 0)
-                    if r > max_round:
-                        max_round = r
-            round_count = max_round
-        state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
-        if state_resp.data:
-            raw_messages = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
-            if raw_messages:
-                if raw_messages[0].get("role") != "system":
-                    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + raw_messages
+        log_data = log_resp.data if log_resp.data else []
+
+        valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
+        # 过滤有效对话（有效行为 + 非空输入）
+        valid_logs = []
+        max_round = 0
+        for log in log_data:
+            if log.get("behavior_button") in valid_behaviors and log.get("user_prompt") and log.get("user_prompt").strip() != "":
+                valid_logs.append(log)
+                r = log.get("round", 0)
+                if r > max_round:
+                    max_round = r
+        round_count = max_round
+
+        # 重建消息列表
+        if valid_logs:
+            rebuilt = [{"role": "system", "content": SYSTEM_PROMPT}]
+            for log in valid_logs:
+                user_content = log["user_prompt"]
+                ai_content = log.get("ai_response", "")
+                # 添加用户消息
+                rebuilt.append({"role": "user", "content": user_content})
+                # 添加助手消息（如果缺失，使用占位）
+                if ai_content:
+                    rebuilt.append({"role": "assistant", "content": ai_content})
                 else:
-                    messages = raw_messages
+                    rebuilt.append({"role": "assistant", "content": "(系统未记录该轮助手回复)"})
+            messages = rebuilt
+        else:
+            # 没有有效日志，使用初始消息
+            messages = get_initial_messages()
+
+        # 将重建的消息保存到 participant_state，以便下次快速加载
+        save_participant_state(pid, messages, round_count)
+
     except Exception as e:
         st.error(f"⚠️ 加载被试 {pid} 数据失败，请检查网络或刷新重试。错误详情：{e}")
+        messages = get_initial_messages()
+        round_count = 0
+
     return messages, round_count
 
 def save_participant_state(pid, messages, round_count):
@@ -328,7 +358,6 @@ st.divider()
 
 if st.session_state.user_role == "被试":
     # ---------- 被试模式 ----------
-    # 顶部：编号输入或显示当前编号 + 退出按钮
     if not st.session_state.participant_id:
         col_id, col_dummy = st.columns([2, 2])
         with col_id:
@@ -341,11 +370,9 @@ if st.session_state.user_role == "被试":
             )
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
-                # 关键修复：重置消息列表，以便重新加载历史消息
-                st.session_state.messages = None
+                st.session_state.messages = None  # 强制重新加载
                 st.rerun()
     else:
-        # 已输入编号：只显示当前编号和退出按钮
         col_id, col_exit = st.columns([2, 1])
         with col_id:
             st.markdown(f"**当前被试：{st.session_state.participant_id}**")
@@ -372,15 +399,13 @@ if st.session_state.user_role == "被试":
                 except Exception as e:
                     st.error(f"记录退出失败：{e}")
 
-    # 如果有编号，加载并显示对话和方案
     if st.session_state.participant_id:
-        # 每次重新加载消息（确保历史记录）
+        # 加载或重新加载消息（每次都从数据库重建，但 load_participant_state 会缓存到 participant_state）
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
-            st.session_state.round_count = loaded_round  # 后台记录
+            st.session_state.round_count = loaded_round
 
-        # 显示对话和方案
         col_left, col_right = st.columns([6, 4], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
