@@ -163,16 +163,10 @@ if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
+if "user_role" not in st.session_state:
+    st.session_state.user_role = None
 if "show_exit_dialog" not in st.session_state:
     st.session_state.show_exit_dialog = False
-
-# ================= 角色判断（使用 URL 参数控制） =================
-# 检查 URL 参数 ?mode=admin，若存在则进入研究者模式，否则默认为被试
-query_params = st.query_params
-if "mode" in query_params and query_params["mode"] == "admin":
-    st.session_state.user_role = "研究者"
-else:
-    st.session_state.user_role = "被试"
 
 # ================= 6. CSS =================
 st.markdown(
@@ -266,7 +260,7 @@ st.markdown(
         }
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
-            top: 110px !important;
+            top: 110px !important;  /* 微调，适应新比例 */
             align-self: flex-start !important;
             height: auto !important;
             max-height: calc(100vh - 110px) !important;
@@ -325,16 +319,15 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 固定顶部栏（标题） =================
-st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
-st.markdown(
-    "<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>",
-    unsafe_allow_html=True
-)
-st.markdown('</div>', unsafe_allow_html=True)
+# ================= 7. 首页内容（仅当未选择角色时显示） =================
+if st.session_state.user_role is None:
+    st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
+    st.markdown(
+        "<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>",
+        unsafe_allow_html=True
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# 欢迎语（仅被试模式显示）
-if st.session_state.user_role == "被试":
     st.markdown(
         "<p style='text-align: center; font-size: 18px; white-space: nowrap;'>"
         "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
@@ -343,7 +336,39 @@ if st.session_state.user_role == "被试":
         unsafe_allow_html=True
     )
 
-# ================= 8. 根据角色显示内容 =================
+    col_space1, col_center, col_space2 = st.columns([1, 1.5, 1])
+    with col_center:
+        st.markdown(
+            "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
+            unsafe_allow_html=True
+        )
+        if st.button("被试", key="btn_subject", use_container_width=True):
+            st.session_state.user_role = "被试"
+            st.session_state.participant_id = ""
+            st.session_state.messages = get_initial_messages()
+            st.session_state.round_count = 0
+            st.session_state.show_exit_dialog = False
+            st.rerun()
+        if st.button("研究者", key="btn_researcher", use_container_width=True):
+            st.session_state.user_role = "研究者"
+            st.session_state.export_authorized = False
+            st.session_state.show_exit_dialog = False
+            st.rerun()
+    st.stop()
+
+# ================= 8. 角色内容（选择后显示） =================
+col_back, _ = st.columns([1, 5])
+with col_back:
+    if st.button("← 返回重新选择角色"):
+        st.session_state.user_role = None
+        st.session_state.participant_id = ""
+        st.session_state.messages = get_initial_messages()
+        st.session_state.round_count = 0
+        st.session_state.show_exit_dialog = False
+        st.rerun()
+
+st.divider()
+
 if st.session_state.user_role == "被试":
     # ---------- 被试模式 ----------
     # 处理退出确认对话框
@@ -367,6 +392,7 @@ if st.session_state.user_role == "被试":
                 except Exception as e:
                     st.error(f"记录退出失败：{e}")
                 # 重置所有状态
+                st.session_state.user_role = None
                 st.session_state.participant_id = ""
                 st.session_state.messages = get_initial_messages()
                 st.session_state.round_count = 0
@@ -376,7 +402,7 @@ if st.session_state.user_role == "被试":
             if st.button("取消", key="confirm_exit_no"):
                 st.session_state.show_exit_dialog = False
                 st.rerun()
-        st.stop()
+        st.stop()  # 阻止后续内容渲染
 
     # 正常显示被试内容
     if not st.session_state.participant_id:
@@ -410,6 +436,7 @@ if st.session_state.user_role == "被试":
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
+        # ================= 左右两栏比例调整：55% : 45% =================
         col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
@@ -596,6 +623,7 @@ if st.session_state.user_role == "被试":
                     if success:
                         st.toast("✅ 方案已提交成功！", icon="✅")
                         # 提交成功后返回初始页面（角色选择）
+                        st.session_state.user_role = None
                         st.session_state.participant_id = ""
                         st.session_state.messages = get_initial_messages()
                         st.session_state.round_count = 0
@@ -607,7 +635,7 @@ if st.session_state.user_role == "被试":
         st.warning("⚠️ 请输入您的被试编号以开始。")
 
 elif st.session_state.user_role == "研究者":
-    # ---------- 研究者模式（仅数据导出） ----------
+    # ---------- 研究者模式 ----------
     st.subheader("📊 研究者数据导出")
     st.markdown("请输入研究者密码以查看并下载数据。")
     if "export_authorized" not in st.session_state:
@@ -652,6 +680,4 @@ elif st.session_state.user_role == "研究者":
             st.error(f"读取方案数据失败：{e}")
         if st.button("退出研究者模式"):
             st.session_state.export_authorized = False
-            # 清空密码状态，回到被试模式（通过刷新页面，但这里需要跳转）
-            st.query_params.clear()
             st.rerun()
