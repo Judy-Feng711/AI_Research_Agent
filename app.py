@@ -165,8 +165,8 @@ if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
 if "user_role" not in st.session_state:
     st.session_state.user_role = None
-if "exit_confirm" not in st.session_state:
-    st.session_state.exit_confirm = False
+if "show_exit_dialog" not in st.session_state:
+    st.session_state.show_exit_dialog = False
 
 # ================= 6. CSS =================
 st.markdown(
@@ -347,10 +347,12 @@ if st.session_state.user_role is None:
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
+            st.session_state.show_exit_dialog = False
             st.rerun()
         if st.button("研究者", key="btn_researcher", use_container_width=True):
             st.session_state.user_role = "研究者"
             st.session_state.export_authorized = False
+            st.session_state.show_exit_dialog = False
             st.rerun()
     st.stop()
 
@@ -362,13 +364,47 @@ with col_back:
         st.session_state.participant_id = ""
         st.session_state.messages = get_initial_messages()
         st.session_state.round_count = 0
-        st.session_state.exit_confirm = False
+        st.session_state.show_exit_dialog = False
         st.rerun()
 
 st.divider()
 
 if st.session_state.user_role == "被试":
     # ---------- 被试模式 ----------
+    # 处理退出确认对话框
+    if st.session_state.show_exit_dialog:
+        st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
+        col_confirm1, col_confirm2 = st.columns(2)
+        with col_confirm1:
+            if st.button("确认退出", key="confirm_exit_yes"):
+                # 记录退出日志
+                exit_log = {
+                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "participant_id": st.session_state.participant_id,
+                    "round": st.session_state.round_count,
+                    "user_prompt": "退出实验",
+                    "behavior_button": "退出实验",
+                    "ai_response": ""
+                }
+                try:
+                    supabase.table("research_logs").insert(exit_log).execute()
+                    st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
+                except Exception as e:
+                    st.error(f"记录退出失败：{e}")
+                # 重置所有状态
+                st.session_state.user_role = None
+                st.session_state.participant_id = ""
+                st.session_state.messages = get_initial_messages()
+                st.session_state.round_count = 0
+                st.session_state.show_exit_dialog = False
+                st.rerun()
+        with col_confirm2:
+            if st.button("取消", key="confirm_exit_no"):
+                st.session_state.show_exit_dialog = False
+                st.rerun()
+        st.stop()  # 阻止后续内容渲染
+
+    # 正常显示被试内容
     if not st.session_state.participant_id:
         col_id, col_dummy = st.columns([2, 2])
         with col_id:
@@ -389,45 +425,9 @@ if st.session_state.user_role == "被试":
             st.markdown(f"**当前被试：{st.session_state.participant_id}**")
         with col_exit:
             st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
-            # 使用确认弹窗
-            exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=False)
-            if exit_clicked:
-                if not st.session_state.exit_confirm:
-                    # 显示确认信息
-                    st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
-                    col_confirm1, col_confirm2 = st.columns(2)
-                    with col_confirm1:
-                        if st.button("确认退出", key="confirm_exit_yes"):
-                            st.session_state.exit_confirm = True
-                            st.rerun()
-                    with col_confirm2:
-                        if st.button("取消", key="confirm_exit_no"):
-                            st.session_state.exit_confirm = False
-                            st.rerun()
-                    st.stop()
-                else:
-                    # 真正执行退出
-                    exit_log = {
-                        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "participant_id": st.session_state.participant_id,
-                        "round": st.session_state.round_count,
-                        "user_prompt": "退出实验",
-                        "behavior_button": "退出实验",
-                        "ai_response": ""
-                    }
-                    try:
-                        supabase.table("research_logs").insert(exit_log).execute()
-                        st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
-                        # 重置所有状态
-                        st.session_state.user_role = None
-                        st.session_state.participant_id = ""
-                        st.session_state.messages = get_initial_messages()
-                        st.session_state.round_count = 0
-                        st.session_state.exit_confirm = False
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"记录退出失败：{e}")
-                        st.session_state.exit_confirm = False
+            if st.button("🚪 退出实验", key="exit_button", use_container_width=False):
+                st.session_state.show_exit_dialog = True
+                st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
     if st.session_state.participant_id:
