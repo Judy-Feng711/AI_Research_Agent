@@ -265,33 +265,27 @@ st.markdown(
             align-items: flex-start !important;
         }
 
-        /* ========== 角色选择居中且紧凑 ========== */
-        /* 确保 radio 整体居中 */
-        .stRadio {
-            display: flex !important;
-            justify-content: center !important;
+        /* ========== 角色选择：使用按钮式布局，手动居中 ========== */
+        .role-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            align-items: center;
+            margin-top: 0.2rem;
         }
-        /* 水平排列的选项容器居中 */
-        .stRadio > div {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: center !important;
-            gap: 20px !important;
-        }
-        /* 统一 label 高度和字体 */
-        .stRadio label {
+        .role-container .stButton button {
+            height: 32px !important;
+            min-height: 32px !important;
+            max-height: 32px !important;
             font-size: 14px !important;
-            padding: 2px 6px !important;
-            margin: 0 !important;
-            line-height: 1.4 !important;
-            height: 28px !important;
-            display: flex !important;
-            align-items: center !important;
+            padding: 0 20px !important;
+            width: auto !important;
+            line-height: 1 !important;
+            border-radius: 4px !important;
         }
-        /* 缩小 radio 按钮 */
-        .stRadio input[type="radio"] {
-            transform: scale(0.8);
-            margin-right: 4px !important;
+        .role-container .selected {
+            background-color: #4CAF50 !important;
+            color: white !important;
         }
     </style>
     """,
@@ -315,30 +309,30 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 9. 角色选择（使用 radio，强制居中，紧凑） =================
+# ================= 9. 角色选择（使用手动按钮，完美居中） =================
 col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
 with col_radio:
     st.markdown(
         "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
         unsafe_allow_html=True
     )
-    role = st.radio(
-        label="",
-        options=["被试", "研究者"],
-        index=None,  # 默认不选中
-        horizontal=True,
-        key="role_selector_main",
-        label_visibility="collapsed"
-    )
-    if role != st.session_state.user_role:
-        st.session_state.user_role = role
-        if role == "被试":
+    # 自定义容器
+    st.markdown('<div class="role-container">', unsafe_allow_html=True)
+    # 被试按钮
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("被试", key="btn_participant", use_container_width=False):
+            st.session_state.user_role = "被试"
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
-        elif role == "研究者":
+            st.rerun()
+    with col_btn2:
+        if st.button("研究者", key="btn_researcher", use_container_width=False):
+            st.session_state.user_role = "研究者"
             st.session_state.export_authorized = False
-        st.rerun()
+            st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
 
