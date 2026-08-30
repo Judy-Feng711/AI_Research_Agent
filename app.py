@@ -260,14 +260,15 @@ st.markdown(
         }
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
-            top: 110px !important;  /* 微调，适应新比例 */
+            top: 110px !important;
             align-self: flex-start !important;
             height: auto !important;
             max-height: calc(100vh - 110px) !important;
             overflow-y: auto !important;
-            background-color: transparent !important;
+            background-color: #fafafa !important;  /* 右侧栏背景色 */
             padding: 10px !important;
-            border-left: 1px solid #ddd;
+            border-left: 2px solid #ddd !important; /* 边界更明显 */
+            border-radius: 0 8px 8px 0 !important;
         }
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
@@ -436,7 +437,7 @@ if st.session_state.user_role == "被试":
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        # ================= 左右两栏比例调整：55% : 45% =================
+        # ================= 左右两栏比例：55% : 45% =================
         col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
@@ -553,56 +554,109 @@ if st.session_state.user_role == "被试":
             st.markdown("**AI协同研究方案生成记录表（被试填写版）**")
             st.caption("请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。每个模块均有最低字数要求（达标后方可提交）。您可以在交互过程中随时记录，或最后集中整理。")
             with st.form(key="plan_form"):
-                st.markdown("**子任务1：选题与文献发现**")
+                # ---------- 子任务1（奇数：浅蓝） ----------
+                st.markdown(
+                    """
+                    <div style="background-color: #e8f4f8; padding: 6px 12px; border-radius: 4px; margin-bottom: 5px;">
+                        <strong>子任务1：选题与文献发现</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
                 task1_text = st.text_area(
                     "请写清您的核心研究问题、选题依据及所依据的理论视角。（限150字）",
                     value=existing_plan["task1_text"] if existing_plan else "",
-                    height=150,  # 从80改为120
+                    height=80,
                     max_chars=150,
                     key="task1_text"
                 )
                 st.divider()
-                st.markdown("**子任务2：研究规划与设计**")
+
+                # ---------- 子任务2（偶数：浅粉） ----------
+                st.markdown(
+                    """
+                    <div style="background-color: #f5e8f0; padding: 6px 12px; border-radius: 4px; margin-bottom: 5px;">
+                        <strong>子任务2：研究规划与设计</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
                 task2_text = st.text_area(
                     "请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。（限150字）",
                     value=existing_plan["task2_text"] if existing_plan else "",
-                    height=150,  # 从80改为120
+                    height=80,
                     max_chars=150,
                     key="task2_text"
                 )
                 st.divider()
-                st.markdown("**子任务3：实施与数据采集**")
+
+                # ---------- 子任务3（奇数：浅蓝） ----------
+                st.markdown(
+                    """
+                    <div style="background-color: #e8f4f8; padding: 6px 12px; border-radius: 4px; margin-bottom: 5px;">
+                        <strong>子任务3：实施与数据采集</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
                 task3_text = st.text_area(
                     "请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。（限150字）",
                     value=existing_plan["task3_text"] if existing_plan else "",
-                    height=150,  # 从80改为120
+                    height=80,
                     max_chars=150,
                     key="task3_text"
                 )
                 st.divider()
-                st.markdown("**子任务4：数据分析与阐释**")
+
+                # ---------- 子任务4（偶数：浅粉） ----------
+                st.markdown(
+                    """
+                    <div style="background-color: #f5e8f0; padding: 6px 12px; border-radius: 4px; margin-bottom: 5px;">
+                        <strong>子任务4：数据分析与阐释</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
                 task4_text = st.text_area(
                     "请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。（限150字）",
                     value=existing_plan["task4_text"] if existing_plan else "",
-                    height=150,  # 从80改为120
+                    height=80,
                     max_chars=150,
                     key="task4_text"
                 )
                 st.divider()
-                st.markdown("**子任务5：论文撰写与润色**")
+
+                # ---------- 子任务5（奇数：浅蓝） ----------
+                st.markdown(
+                    """
+                    <div style="background-color: #e8f4f8; padding: 6px 12px; border-radius: 4px; margin-bottom: 5px;">
+                        <strong>子任务5：论文撰写与润色</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
                 task5_text = st.text_area(
                     "请粘贴您借助AI撰写或润色后的论文片段（如引言或方法部分）。（限300-500字）",
                     value=existing_plan["task5_text"] if existing_plan else "",
-                    height=200,  # 从80改为120
+                    height=80,
                     max_chars=500,
                     key="task5_text"
                 )
                 st.divider()
-                st.markdown("**子任务6：传播、评估与伦理**")
+
+                # ---------- 子任务6（偶数：浅粉） ----------
+                st.markdown(
+                    """
+                    <div style="background-color: #f5e8f0; padding: 6px 12px; border-radius: 4px; margin-bottom: 5px;">
+                        <strong>子任务6：传播、评估与伦理</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
                 task6_text = st.text_area(
                     "请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）",
                     value=existing_plan["task6_text"] if existing_plan else "",
-                    height=150,  # 从80改为120
+                    height=80,
                     max_chars=150,
                     key="task6_text"
                 )
