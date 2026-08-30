@@ -29,58 +29,73 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# ================= 3. 状态持久化函数（完全基于 research_logs 重建消息） =================
+# ================= 3. 状态持久化函数（修复版：按时间戳重建消息） =================
 def load_participant_state(pid):
     """
-    从 research_logs 表完整重建消息列表（忽略 participant_state 中的 messages）。
-    按 round 排序，重建 user/assistant 成对消息。
-    最后将重建的消息保存回 participant_state 作为缓存。
-    返回 (messages, round_count)
+    从数据库加载被试状态：
+    - 从 research_logs 按时间戳顺序重建完整消息列表
+    - 与 participant_state 存储的消息对比，若一致则直接使用，否则重建并更新
+    - 始终返回 (messages, round_count)
     """
     messages = get_initial_messages()
     round_count = 0
 
     try:
-        # 获取该被试所有有效日志，按 round 升序
+        # 1. 从 research_logs 获取所有有效日志（按时间戳升序）
         log_resp = supabase.table("research_logs")\
             .select("*")\
             .eq("participant_id", pid)\
-            .order("round", desc=False)\
+            .order("timestamp", desc=False)\
             .execute()
         log_data = log_resp.data if log_resp.data else []
 
+        # 统计有效轮数（有效行为 + 非空输入）
         valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-        # 过滤有效对话（有效行为 + 非空输入）
-        valid_logs = []
-        max_round = 0
+        round_count = sum(1 for log in log_data 
+                          if log.get("behavior_button") in valid_behaviors 
+                          and log.get("user_prompt") 
+                          and log.get("user_prompt").strip() != "")
+
+        # 2. 重建消息列表（系统消息 + 所有有效日志的 user/assistant 对）
+        rebuilt = [{"role": "system", "content": SYSTEM_PROMPT}]
         for log in log_data:
             if log.get("behavior_button") in valid_behaviors and log.get("user_prompt") and log.get("user_prompt").strip() != "":
-                valid_logs.append(log)
-                r = log.get("round", 0)
-                if r > max_round:
-                    max_round = r
-        round_count = max_round
-
-        # 重建消息列表
-        if valid_logs:
-            rebuilt = [{"role": "system", "content": SYSTEM_PROMPT}]
-            for log in valid_logs:
                 user_content = log["user_prompt"]
                 ai_content = log.get("ai_response", "")
-                # 添加用户消息
                 rebuilt.append({"role": "user", "content": user_content})
-                # 添加助手消息（如果缺失，使用占位）
+                # 如果 ai_response 缺失，用占位符，但不丢失轮次
                 if ai_content:
                     rebuilt.append({"role": "assistant", "content": ai_content})
                 else:
-                    rebuilt.append({"role": "assistant", "content": "(系统未记录该轮助手回复)"})
-            messages = rebuilt
-        else:
-            # 没有有效日志，使用初始消息
+                    rebuilt.append({"role": "assistant", "content": "(AI响应缺失，请检查日志)"})
+        # 如果只有系统消息，回退到初始消息
+        if len(rebuilt) == 1:
             messages = get_initial_messages()
+        else:
+            messages = rebuilt
 
-        # 将重建的消息保存到 participant_state，以便下次快速加载
-        save_participant_state(pid, messages, round_count)
+        # 3. 尝试从 participant_state 加载存储的消息，并比较是否一致
+        state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
+        if state_resp.data:
+            raw = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
+            if raw:
+                # 比较存储的消息与重建的消息是否一致（检查用户消息数量）
+                stored_user_msgs = [msg for msg in raw if msg["role"] == "user"]
+                if len(stored_user_msgs) == round_count:
+                    # 一致则使用存储的消息
+                    if raw[0].get("role") != "system":
+                        messages = [{"role": "system", "content": SYSTEM_PROMPT}] + raw
+                    else:
+                        messages = raw
+                else:
+                    # 不一致，用重建的消息并更新 participant_state
+                    save_participant_state(pid, messages, round_count)
+            else:
+                # 存储为空，直接保存重建的消息
+                save_participant_state(pid, messages, round_count)
+        else:
+            # 无记录，保存重建的消息
+            save_participant_state(pid, messages, round_count)
 
     except Exception as e:
         st.error(f"⚠️ 加载被试 {pid} 数据失败，请检查网络或刷新重试。错误详情：{e}")
@@ -400,7 +415,7 @@ if st.session_state.user_role == "被试":
                     st.error(f"记录退出失败：{e}")
 
     if st.session_state.participant_id:
-        # 加载或重新加载消息（每次都从数据库重建，但 load_participant_state 会缓存到 participant_state）
+        # 加载或重新加载消息
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
