@@ -266,7 +266,7 @@ st.markdown(
             width: auto !important;
         }
         .role-btn-container .stButton button {
-            width: 60px !important;
+            width: 120px !important;
             height: 34px !important;
             min-height: 34px !important;
             max-height: 34px !important;
@@ -311,7 +311,7 @@ with col_center:
         unsafe_allow_html=True
     )
     # 两个按钮垂直排列，居中
-    if st.button("被试", key="btn_subject", use_container_width=False):
+    if st.button("被试", key="btn_subject", use_container_width=True):
         st.session_state.user_role = "被试"
         st.session_state.participant_id = ""
         st.session_state.messages = get_initial_messages()
@@ -326,7 +326,7 @@ with col_center:
         st.write("")  # 占位，保持间距
 
     # 研究者按钮
-    if st.button("研究者", key="btn_researcher", use_container_width=False):
+    if st.button("研究者", key="btn_researcher", use_container_width=True):
         st.session_state.user_role = "研究者"
         st.session_state.export_authorized = False
         st.rerun()
