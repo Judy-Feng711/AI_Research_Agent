@@ -63,12 +63,10 @@ def load_participant_state(pid):
                 user_content = log["user_prompt"]
                 ai_content = log.get("ai_response", "")
                 rebuilt.append({"role": "user", "content": user_content})
-                # 如果 ai_response 缺失，用占位符，但不丢失轮次
                 if ai_content:
                     rebuilt.append({"role": "assistant", "content": ai_content})
                 else:
                     rebuilt.append({"role": "assistant", "content": "(AI响应缺失，请检查日志)"})
-        # 如果只有系统消息，回退到初始消息
         if len(rebuilt) == 1:
             messages = get_initial_messages()
         else:
@@ -79,22 +77,17 @@ def load_participant_state(pid):
         if state_resp.data:
             raw = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
             if raw:
-                # 比较存储的消息与重建的消息是否一致（检查用户消息数量）
                 stored_user_msgs = [msg for msg in raw if msg["role"] == "user"]
                 if len(stored_user_msgs) == round_count:
-                    # 一致则使用存储的消息
                     if raw[0].get("role") != "system":
                         messages = [{"role": "system", "content": SYSTEM_PROMPT}] + raw
                     else:
                         messages = raw
                 else:
-                    # 不一致，用重建的消息并更新 participant_state
                     save_participant_state(pid, messages, round_count)
             else:
-                # 存储为空，直接保存重建的消息
                 save_participant_state(pid, messages, round_count)
         else:
-            # 无记录，保存重建的消息
             save_participant_state(pid, messages, round_count)
 
     except Exception as e:
@@ -385,7 +378,7 @@ if st.session_state.user_role == "被试":
             )
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
-                st.session_state.messages = None  # 强制重新加载
+                st.session_state.messages = None
                 st.rerun()
     else:
         col_id, col_exit = st.columns([2, 1])
@@ -393,29 +386,51 @@ if st.session_state.user_role == "被试":
             st.markdown(f"**当前被试：{st.session_state.participant_id}**")
         with col_exit:
             st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
+            # 使用确认弹窗
             exit_clicked = st.button("🚪 退出实验", key="exit_button", use_container_width=False)
-            st.markdown('</div>', unsafe_allow_html=True)
             if exit_clicked:
-                exit_log = {
-                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "participant_id": st.session_state.participant_id,
-                    "round": st.session_state.round_count,
-                    "user_prompt": "退出实验",
-                    "behavior_button": "退出实验",
-                    "ai_response": ""
-                }
-                try:
-                    supabase.table("research_logs").insert(exit_log).execute()
-                    st.success("✅ 已记录退出实验，您的研究数据将不会被纳入最终分析。")
-                    st.session_state.participant_id = ""
-                    st.session_state.messages = get_initial_messages()
-                    st.session_state.round_count = 0
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"记录退出失败：{e}")
+                # 使用 st.popover 或 st.confirm？但 Streamlit 没有原生 confirm，我们用 alert 替代
+                # 更优雅：显示一个警告框，用 st.warning + 两个按钮（确认/取消）
+                # 我们通过 session_state 记录是否确认退出
+                if "exit_confirm" not in st.session_state:
+                    st.session_state.exit_confirm = False
+                if not st.session_state.exit_confirm:
+                    # 显示确认信息
+                    st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
+                    col_confirm1, col_confirm2 = st.columns(2)
+                    with col_confirm1:
+                        if st.button("确认退出", key="confirm_exit_yes"):
+                            st.session_state.exit_confirm = True
+                            st.rerun()
+                    with col_confirm2:
+                        if st.button("取消", key="confirm_exit_no"):
+                            st.session_state.exit_confirm = False
+                            st.rerun()
+                    st.stop()  # 阻止后续代码执行
+                else:
+                    # 真正执行退出
+                    exit_log = {
+                        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "participant_id": st.session_state.participant_id,
+                        "round": st.session_state.round_count,
+                        "user_prompt": "退出实验",
+                        "behavior_button": "退出实验",
+                        "ai_response": ""
+                    }
+                    try:
+                        supabase.table("research_logs").insert(exit_log).execute()
+                        st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
+                        st.session_state.participant_id = ""
+                        st.session_state.messages = get_initial_messages()
+                        st.session_state.round_count = 0
+                        st.session_state.exit_confirm = False
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"记录退出失败：{e}")
+                        st.session_state.exit_confirm = False
+            st.markdown('</div>', unsafe_allow_html=True)
 
     if st.session_state.participant_id:
-        # 加载或重新加载消息
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
@@ -605,10 +620,10 @@ if st.session_state.user_role == "被试":
                         task6_text.strip()
                     )
                     if success:
-                        st.success("✅ 方案已提交/更新！")
+                        st.toast("✅ 方案已提交成功！", icon="✅")
                         st.rerun()
                     else:
-                        st.error("❌ 提交失败，请检查数据库是否已添加所需字段。")
+                        st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
     else:
         st.warning("⚠️ 请输入您的被试编号以开始。")
 
