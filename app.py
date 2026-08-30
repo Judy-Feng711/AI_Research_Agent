@@ -555,7 +555,7 @@ if st.session_state.user_role == "被试":
                 st.markdown("**子任务1：选题与文献发现**")
                 task1_text = st.text_area(
                     "请写清您的核心研究问题、选题依据及所依据的理论视角。（限150字）",
-                    value="",
+                    value=existing_plan["task1_text"] if existing_plan else "",
                     height=80,
                     max_chars=150,
                     key="task1_text"
@@ -564,7 +564,7 @@ if st.session_state.user_role == "被试":
                 st.markdown("**子任务2：研究规划与设计**")
                 task2_text = st.text_area(
                     "请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。（限150字）",
-                    value="",
+                    value=existing_plan["task2_text"] if existing_plan else "",
                     height=80,
                     max_chars=150,
                     key="task2_text"
@@ -573,7 +573,7 @@ if st.session_state.user_role == "被试":
                 st.markdown("**子任务3：实施与数据采集**")
                 task3_text = st.text_area(
                     "请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。（限150字）",
-                    value="",
+                    value=existing_plan["task3_text"] if existing_plan else "",
                     height=80,
                     max_chars=150,
                     key="task3_text"
@@ -582,7 +582,7 @@ if st.session_state.user_role == "被试":
                 st.markdown("**子任务4：数据分析与阐释**")
                 task4_text = st.text_area(
                     "请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。（限150字）",
-                    value="",
+                    value=existing_plan["task4_text"] if existing_plan else "",
                     height=80,
                     max_chars=150,
                     key="task4_text"
@@ -591,7 +591,7 @@ if st.session_state.user_role == "被试":
                 st.markdown("**子任务5：论文撰写与润色**")
                 task5_text = st.text_area(
                     "请粘贴您借助AI撰写或润色后的论文片段（如引言或方法部分）。（限300-500字）",
-                    value="",
+                    value=existing_plan["task5_text"] if existing_plan else "",
                     height=80,
                     max_chars=500,
                     key="task5_text"
@@ -600,7 +600,7 @@ if st.session_state.user_role == "被试":
                 st.markdown("**子任务6：传播、评估与伦理**")
                 task6_text = st.text_area(
                     "请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）",
-                    value="",
+                    value=existing_plan["task6_text"] if existing_plan else "",
                     height=80,
                     max_chars=150,
                     key="task6_text"
@@ -621,6 +621,12 @@ if st.session_state.user_role == "被试":
                     )
                     if success:
                         st.toast("✅ 方案已提交成功！", icon="✅")
+                        # 提交成功后返回初始页面（角色选择）
+                        st.session_state.user_role = None
+                        st.session_state.participant_id = ""
+                        st.session_state.messages = get_initial_messages()
+                        st.session_state.round_count = 0
+                        st.session_state.show_exit_dialog = False
                         st.rerun()
                     else:
                         st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
