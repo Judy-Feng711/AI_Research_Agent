@@ -266,7 +266,7 @@ st.markdown(
             width: auto !important;
         }
         .role-btn-container .stButton button {
-            width: 120px !important;
+            width: 100px !important;
             height: 34px !important;
             min-height: 34px !important;
             max-height: 34px !important;
