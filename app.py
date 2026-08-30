@@ -138,7 +138,7 @@ if "prompt_input" not in st.session_state:
 if "user_role" not in st.session_state:
     st.session_state.user_role = None  # 默认未选择
 
-# ================= 6. CSS（保持原有样式，新增角色选择居中样式） =================
+# ================= 6. CSS（保持原有样式，新增一行内联居中样式） =================
 st.markdown(
     """
     <style>
@@ -265,27 +265,47 @@ st.markdown(
             align-items: flex-start !important;
         }
 
-        /* ========== 角色选择：使用按钮式布局，手动居中 ========== */
-        .role-container {
+        /* ========== 角色选择行：标签和选项在一行，整体居中 ========== */
+        .role-row {
             display: flex;
-            justify-content: center;
-            gap: 30px;
+            flex-direction: row;
             align-items: center;
-            margin-top: 0.2rem;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;  /* 防止窗口过窄时换行 */
         }
-        .role-container .stButton button {
-            height: 32px !important;
-            min-height: 32px !important;
-            max-height: 32px !important;
+        .role-row .role-label {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .role-row .stRadio {
+            display: flex !important;
+            flex-direction: row !important;
+        }
+        .role-row .stRadio > div {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 20px !important;
+            align-items: center !important;
+        }
+        .role-row .stRadio label {
             font-size: 14px !important;
-            padding: 0 20px !important;
-            width: auto !important;
-            line-height: 1 !important;
-            border-radius: 4px !important;
+            padding: 2px 6px !important;
+            margin: 0 !important;
+            line-height: 1.4 !important;
+            height: 28px !important;
+            display: flex !important;
+            align-items: center !important;
         }
-        .role-container .selected {
-            background-color: #4CAF50 !important;
-            color: white !important;
+        .role-row .stRadio input[type="radio"] {
+            transform: scale(0.8);
+            margin-right: 4px !important;
+        }
+        /* 让 radio 容器不额外占空间 */
+        .role-row .stRadio {
+            margin: 0 !important;
+            padding: 0 !important;
         }
     </style>
     """,
@@ -309,30 +329,33 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 9. 角色选择（使用手动按钮，完美居中） =================
+# ================= 9. 角色选择（标签和选项在一行，整体居中） =================
 col_space1, col_radio, col_space2 = st.columns([1, 2, 1])
 with col_radio:
+    # 用 div 包裹，flex 行内布局
+    st.markdown('<div class="role-row">', unsafe_allow_html=True)
     st.markdown(
-        "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
+        "<span class='role-label'>请选择您的角色：</span>",
         unsafe_allow_html=True
     )
-    # 自定义容器
-    st.markdown('<div class="role-container">', unsafe_allow_html=True)
-    # 被试按钮
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("被试", key="btn_participant", use_container_width=False):
-            st.session_state.user_role = "被试"
+    role = st.radio(
+        label="",
+        options=["被试", "研究者"],
+        index=None,
+        horizontal=True,
+        key="role_selector_main",
+        label_visibility="collapsed"
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+    if role != st.session_state.user_role:
+        st.session_state.user_role = role
+        if role == "被试":
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
-            st.rerun()
-    with col_btn2:
-        if st.button("研究者", key="btn_researcher", use_container_width=False):
-            st.session_state.user_role = "研究者"
+        elif role == "研究者":
             st.session_state.export_authorized = False
-            st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.rerun()
 
 st.divider()
 
