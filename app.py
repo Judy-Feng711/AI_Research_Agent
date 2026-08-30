@@ -260,10 +260,10 @@ st.markdown(
         }
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
-            top: 120px !important;
+            top: 110px !important;  /* 微调，适应新比例 */
             align-self: flex-start !important;
             height: auto !important;
-            max-height: calc(100vh - 120px) !important;
+            max-height: calc(100vh - 110px) !important;
             overflow-y: auto !important;
             background-color: transparent !important;
             padding: 10px !important;
@@ -436,7 +436,8 @@ if st.session_state.user_role == "被试":
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        col_left, col_right = st.columns([6, 4], gap="large")
+        # ================= 左右两栏比例调整：55% : 45% =================
+        col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
             for msg in st.session_state.messages:
