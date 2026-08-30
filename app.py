@@ -286,59 +286,60 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 固定顶部栏 =================
-st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
-st.markdown(
-    "<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>",
-    unsafe_allow_html=True
-)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ================= 8. 欢迎语 =================
-st.markdown(
-    "<p style='text-align: center; font-size: 18px; white-space: nowrap;'>"
-    "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
-    "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
-    "</p>",
-    unsafe_allow_html=True
-)
-
-# ================= 9. 角色选择（标签在上，按钮垂直居中） =================
-col_space1, col_center, col_space2 = st.columns([1, 1.5, 1])
-with col_center:
+# ================= 7. 首页内容（仅当未选择角色时显示） =================
+if st.session_state.user_role is None:
+    # 固定顶部栏（标题）
+    st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
     st.markdown(
-        "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
+        "<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>",
         unsafe_allow_html=True
     )
-    # 两个按钮垂直排列，居中
-    if st.button("被试", key="btn_subject", use_container_width=True):
-        st.session_state.user_role = "被试"
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # 欢迎语
+    st.markdown(
+        "<p style='text-align: center; font-size: 18px; white-space: nowrap;'>"
+        "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
+        "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
+        "</p>",
+        unsafe_allow_html=True
+    )
+
+    # 角色选择（垂直排列，居中）
+    col_space1, col_center, col_space2 = st.columns([1, 1.5, 1])
+    with col_center:
+        st.markdown(
+            "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
+            unsafe_allow_html=True
+        )
+        # 被试按钮
+        if st.button("被试", key="btn_subject", use_container_width=True):
+            st.session_state.user_role = "被试"
+            st.session_state.participant_id = ""
+            st.session_state.messages = get_initial_messages()
+            st.session_state.round_count = 0
+            st.rerun()
+        # 研究者按钮
+        if st.button("研究者", key="btn_researcher", use_container_width=True):
+            st.session_state.user_role = "研究者"
+            st.session_state.export_authorized = False
+            st.rerun()
+        # 如果已经选择，不会走到这里，所以不需要显示已选标记
+    st.stop()  # 阻止后续内容运行
+
+# ================= 8. 根据角色显示内容（当角色已选择时） =================
+# 在角色内容顶部添加“返回”按钮
+col_back, _ = st.columns([1, 5])
+with col_back:
+    if st.button("← 返回重新选择角色"):
+        st.session_state.user_role = None
         st.session_state.participant_id = ""
         st.session_state.messages = get_initial_messages()
         st.session_state.round_count = 0
         st.rerun()
-    if st.session_state.user_role == "被试":
-        st.markdown(
-            "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
-            unsafe_allow_html=True
-        )
-    else:
-        st.write("")  # 占位，保持间距
 
-    # 研究者按钮
-    if st.button("研究者", key="btn_researcher", use_container_width=True):
-        st.session_state.user_role = "研究者"
-        st.session_state.export_authorized = False
-        st.rerun()
-    if st.session_state.user_role == "研究者":
-        st.markdown(
-            "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
-            unsafe_allow_html=True
-        )
-    else:
-        st.write("")
+st.divider()  # 分隔线
 
-# ================= 10. 根据角色显示内容 =================
 if st.session_state.user_role == "被试":
     # ---------- 被试模式 ----------
     col_id, col_progress, col_exit = st.columns([2, 2, 1])
@@ -642,7 +643,3 @@ elif st.session_state.user_role == "研究者":
         if st.button("退出研究者模式"):
             st.session_state.export_authorized = False
             st.rerun()
-
-else:
-    # 未选择角色
-    st.info("👆 请选择您的角色以继续。")
