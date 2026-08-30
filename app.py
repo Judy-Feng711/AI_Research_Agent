@@ -603,7 +603,6 @@ if st.session_state.user_role == "被试":
                     "请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）",
                     value=existing_plan["task6_text"] if existing_plan else "",
                     height=140,
-                    color="000000",
                     max_chars=150,
                     key="task6_text"
                 )
