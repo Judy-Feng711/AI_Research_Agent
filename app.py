@@ -312,19 +312,16 @@ if st.session_state.user_role is None:
             "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
             unsafe_allow_html=True
         )
-        # 被试按钮
         if st.button("被试", key="btn_subject", use_container_width=True):
             st.session_state.user_role = "被试"
             st.session_state.participant_id = ""
             st.session_state.messages = get_initial_messages()
             st.session_state.round_count = 0
             st.rerun()
-        # 研究者按钮
         if st.button("研究者", key="btn_researcher", use_container_width=True):
             st.session_state.user_role = "研究者"
             st.session_state.export_authorized = False
             st.rerun()
-        # 如果已经选择，不会走到这里，所以不需要显示已选标记
     st.stop()  # 阻止后续内容运行
 
 # ================= 8. 根据角色显示内容（当角色已选择时） =================
@@ -342,7 +339,8 @@ st.divider()  # 分隔线
 
 if st.session_state.user_role == "被试":
     # ---------- 被试模式 ----------
-    col_id, col_progress, col_exit = st.columns([2, 2, 1])
+    # 被试模式下，只显示编号输入和退出按钮（不显示对话进度）
+    col_id, col_exit = st.columns([3, 1])   # 改为两列
     with col_id:
         st.markdown("**👤 被试编号**")
         pid_input = st.text_input(
@@ -358,21 +356,6 @@ if st.session_state.user_role == "被试":
             st.success(f"当前被试：{st.session_state.participant_id}")
         else:
             st.info("请在上方输入编号")
-    with col_progress:
-        st.markdown("**📊 对话进度**")
-        if st.session_state.participant_id:
-            loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
-            st.session_state.messages = loaded_msgs
-            st.session_state.round_count = loaded_round
-            st.metric(label="已完成的对话轮数", value=st.session_state.round_count)
-            if st.session_state.round_count >= 10:
-                st.success("✅ 已达成建议轮数（10轮）")
-            elif st.session_state.round_count >= 8:
-                st.info("💡 接近建议轮数（8-12轮）")
-            else:
-                st.caption("建议完成 8-12 轮对话")
-        else:
-            st.caption("请先输入编号")
     with col_exit:
         if st.session_state.participant_id:
             st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
@@ -402,6 +385,7 @@ if st.session_state.user_role == "被试":
     if not st.session_state.participant_id:
         st.warning("⚠️ 请先在顶部输入您的被试编号！")
     else:
+        # 确保消息已加载（但轮次不显示，仅内部使用）
         if not st.session_state.messages or st.session_state.messages[0].get("role") != "system":
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
