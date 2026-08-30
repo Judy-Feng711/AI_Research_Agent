@@ -128,7 +128,7 @@ if "prompt_input" not in st.session_state:
 if "user_role" not in st.session_state:
     st.session_state.user_role = None
 
-# ================= 6. CSS（与原代码相同） =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
@@ -315,7 +315,6 @@ if st.session_state.user_role is None:
     st.stop()
 
 # ================= 8. 角色内容（选择后显示） =================
-# 返回按钮
 col_back, _ = st.columns([1, 5])
 with col_back:
     if st.button("← 返回重新选择角色"):
@@ -331,8 +330,7 @@ if st.session_state.user_role == "被试":
     # ---------- 被试模式 ----------
     # 顶部：编号输入或显示当前编号 + 退出按钮
     if not st.session_state.participant_id:
-        # 未输入编号：显示输入框
-        col_id, col_dummy = st.columns([2, 2])  # 只占两列，留空一列给退出按钮位置
+        col_id, col_dummy = st.columns([2, 2])
         with col_id:
             st.markdown("**👤 请输入您的被试编号**")
             pid_input = st.text_input(
@@ -343,10 +341,11 @@ if st.session_state.user_role == "被试":
             )
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
+                # 关键修复：重置消息列表，以便重新加载历史消息
+                st.session_state.messages = None
                 st.rerun()
-        # 未输入时，退出按钮不显示（因为无编号可退出）
     else:
-        # 已输入编号：只显示“当前被试：XXX”和退出按钮（隐藏输入框和轮次）
+        # 已输入编号：只显示当前编号和退出按钮
         col_id, col_exit = st.columns([2, 1])
         with col_id:
             st.markdown(f"**当前被试：{st.session_state.participant_id}**")
@@ -373,16 +372,15 @@ if st.session_state.user_role == "被试":
                 except Exception as e:
                     st.error(f"记录退出失败：{e}")
 
-    # 如果已输入编号，显示对话和方案；否则警告
-    if not st.session_state.participant_id:
-        st.warning("⚠️ 请输入您的被试编号以开始。")
-    else:
-        # 加载对话历史（后台记录轮次，但不显示）
-        if not st.session_state.messages or st.session_state.messages[0].get("role") != "system":
+    # 如果有编号，加载并显示对话和方案
+    if st.session_state.participant_id:
+        # 每次重新加载消息（确保历史记录）
+        if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
-            st.session_state.round_count = loaded_round  # 保留，但不显示
+            st.session_state.round_count = loaded_round  # 后台记录
 
+        # 显示对话和方案
         col_left, col_right = st.columns([6, 4], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
@@ -471,7 +469,7 @@ if st.session_state.user_role == "被试":
                                 st.error(f"AI 调用失败：{e}")
                                 st.stop()
                     st.session_state.messages.append({"role": "assistant", "content": ai_reply})
-                    st.session_state.round_count += 1  # 后台累加，不显示
+                    st.session_state.round_count += 1
 
                     log_data = {
                         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -571,6 +569,8 @@ if st.session_state.user_role == "被试":
                         st.rerun()
                     else:
                         st.error("❌ 提交失败，请检查数据库是否已添加所需字段。")
+    else:
+        st.warning("⚠️ 请输入您的被试编号以开始。")
 
 elif st.session_state.user_role == "研究者":
     # ---------- 研究者模式 ----------
