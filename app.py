@@ -255,26 +255,25 @@ st.markdown(
             align-items: flex-start !important;
         }
 
-        /* 角色选择按钮容器居中，按钮缩小到一半宽度（约60px） */
+        /* 角色选择按钮容器居中 */
         .role-btn-container {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
             margin-top: 0.2rem;
         }
         .role-btn-container .stButton {
             width: auto !important;
         }
         .role-btn-container .stButton button {
-            width: 60px !important;   /* 原来120px，缩小为60px */
+            width: 120px !important;
             height: 34px !important;
             min-height: 34px !important;
             max-height: 34px !important;
             font-size: 14px !important;
-            padding: 0 8px !important;
-            border-radius: 6px !important;  /* 保持圆角 */
+            padding: 0 12px !important;
         }
-        /* 悬停灰色背景（默认streamlit自带，无需额外） */
+        /* 选中标记 */
         .selected-badge {
             text-align: center;
             color: #4CAF50;
@@ -304,45 +303,40 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 9. 角色选择（标签在上，按钮在下并居中） =================
-col_space1, col_center, col_space2 = st.columns([1, 2, 1])
+# ================= 9. 角色选择（标签在上，按钮垂直居中） =================
+col_space1, col_center, col_space2 = st.columns([1, 1.5, 1])
 with col_center:
     st.markdown(
         "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
         unsafe_allow_html=True
     )
-    # 两个按钮并排，使用自定义容器实现居中
-    st.markdown('<div class="role-btn-container">', unsafe_allow_html=True)
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("被试", key="btn_subject", use_container_width=False):
-            st.session_state.user_role = "被试"
-            st.session_state.participant_id = ""
-            st.session_state.messages = get_initial_messages()
-            st.session_state.round_count = 0
-            st.rerun()
-        if st.session_state.user_role == "被试":
-            st.markdown(
-                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
-                unsafe_allow_html=True
-            )
-        else:
-            st.write("")
-    with col_btn2:
-        if st.button("研究者", key="btn_researcher", use_container_width=False):
-            st.session_state.user_role = "研究者"
-            st.session_state.export_authorized = False
-            st.rerun()
-        if st.session_state.user_role == "研究者":
-            st.markdown(
-                "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
-                unsafe_allow_html=True
-            )
-        else:
-            st.write("")
-    st.markdown('</div>', unsafe_allow_html=True)
+    # 两个按钮垂直排列，居中
+    if st.button("被试", key="btn_subject", use_container_width=True):
+        st.session_state.user_role = "被试"
+        st.session_state.participant_id = ""
+        st.session_state.messages = get_initial_messages()
+        st.session_state.round_count = 0
+        st.rerun()
+    if st.session_state.user_role == "被试":
+        st.markdown(
+            "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+            unsafe_allow_html=True
+        )
+    else:
+        st.write("")  # 占位，保持间距
 
-st.divider()
+    # 研究者按钮
+    if st.button("研究者", key="btn_researcher", use_container_width=True):
+        st.session_state.user_role = "研究者"
+        st.session_state.export_authorized = False
+        st.rerun()
+    if st.session_state.user_role == "研究者":
+        st.markdown(
+            "<p style='text-align: center; color: #4CAF50; font-weight: bold;'>✅ 已选</p>",
+            unsafe_allow_html=True
+        )
+    else:
+        st.write("")
 
 # ================= 10. 根据角色显示内容 =================
 if st.session_state.user_role == "被试":
