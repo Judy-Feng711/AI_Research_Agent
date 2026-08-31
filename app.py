@@ -489,14 +489,14 @@ else:
                 <h2>📋 知情同意书</h2>
                 <p><strong>研究介绍</strong><br>
                 本研究旨在探索人工智能辅助教育研究的有效性。您的参与完全自愿，您有权随时退出，且不会受到任何不利影响。所有数据将匿名处理，仅用于学术分析。</p>
-                <p><strong>/strong><br</p>
+                <p><strong></strong><br</p>
                 <p><strong>研究内容</strong></p>
                 <ul>
                     <li>您将与AI进行多轮对话，完成六个研究子任务（选题、设计、实施、分析、撰写、传播）。</li>
                     <li>您需要填写一份研究方案记录表。</li>
                     <li>整个实验预计耗时约 <span class="highlight">30-45 分钟</span>。</li>
                 </ul>
-                
+                <p><strong></strong><br</p>
                 <p><strong>风险与收益</strong></p>
                 <ul>
                     <li>无明显风险，但请确保您在安静环境中进行。</li>
