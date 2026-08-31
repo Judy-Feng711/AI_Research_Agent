@@ -472,21 +472,17 @@ else:
                     <li>数据将安全存储，仅研究团队可访问。</li>
                 </ul>
                 <p><strong>联系方式：</strong><br>如有疑问，请联系研究者：xxx@xxx.com</p>
-                <p style="text-align: center;">请您在下方勾选同意声明后，点击按钮参与实验。</p>
+                <p style="text-align: center;">点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。</p>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-        # 复选框 + 按钮组合
-        col_center_check = st.columns([3, 1, 3])[1]
-        with col_center_check:
-            consent_check = st.checkbox("我已阅读并理解知情同意书内容，自愿参与本研究")
-            # 按钮只有在复选框勾选后才可点击
-            if st.button("✅ 我同意并参与实验", use_container_width=True, disabled=not consent_check):
-                if consent_check:
-                    st.session_state.consent_given = True
-                    st.rerun()
+        col_center_btn = st.columns([3, 1, 3])[1]
+        with col_center_btn:
+            if st.button("✅ 我同意并参与实验", use_container_width=True):
+                st.session_state.consent_given = True
+                st.rerun()
         st.stop()
 
     # 已同意，显示主界面
@@ -740,6 +736,7 @@ else:
                         task6_text.strip()
                     )
                     if success:
+                        # 跳转到感谢页
                         st.session_state.experiment_completed = True
                         st.rerun()
                     else:
