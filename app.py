@@ -168,7 +168,7 @@ if "show_exit_dialog" not in st.session_state:
 if "consent_given" not in st.session_state:
     st.session_state.consent_given = False
 if "experiment_completed" not in st.session_state:
-    st.session_state.experiment_completed = False  # 新增状态
+    st.session_state.experiment_completed = False
 
 # ================= 角色判断（使用 URL 参数控制） =================
 query_params = st.query_params
@@ -323,6 +323,30 @@ st.markdown(
             font-size: 14px;
             margin-top: 4px;
         }
+
+        /* 知情同意书卡片样式 */
+        .consent-card {
+            background-color: #f9f9f9;
+            padding: 25px 30px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            margin: 10px 0;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: left;
+        }
+        .consent-card h2 {
+            text-align: center;
+            color: #333;
+        }
+        .consent-card p, .consent-card li {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .consent-card ul {
+            padding-left: 20px;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -410,7 +434,7 @@ else:
             st.session_state.show_exit_dialog = False
             st.session_state.experiment_completed = False
             st.rerun()
-        st.stop()  # 不再显示其他内容
+        st.stop()
 
     # 显示欢迎语（仅当未同意时）
     if not st.session_state.consent_given:
@@ -422,30 +446,34 @@ else:
             unsafe_allow_html=True
         )
 
-        # 知情同意书
-        st.markdown("""
-        **知情同意书**
-
-        本研究旨在探索人工智能辅助教育研究的有效性。您的参与完全自愿，您有权随时退出，且不会受到任何不利影响。所有数据将匿名处理，仅用于学术分析。
-
-        **研究内容**：
-        - 您将与AI进行多轮对话，完成六个研究子任务（选题、设计、实施、分析、撰写、传播）。
-        - 您需要填写一份研究方案记录表。
-        - 整个实验预计耗时约 30-45 分钟。
-
-        **风险与收益**：
-        - 无明显风险，但请确保您在安静环境中进行。
-        - 您的参与将帮助改进AI辅助研究工具，并为教育研究提供宝贵数据。
-
-        **数据保护**：
-        - 您的编号仅用于关联数据，不会泄露个人身份。
-        - 数据将安全存储，仅研究团队可访问。
-
-        **联系方式**：
-        如有疑问，请联系研究者：xxx@xxx.com
-
-        点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。
-        """)
+        # 知情同意书 - 使用卡片样式（居中卡片，内部左对齐）
+        st.markdown(
+            """
+            <div class="consent-card">
+                <h2>知情同意书</h2>
+                <p>本研究旨在探索人工智能辅助教育研究的有效性。您的参与完全自愿，您有权随时退出，且不会受到任何不利影响。所有数据将匿名处理，仅用于学术分析。</p>
+                <p><strong>研究内容：</strong></p>
+                <ul>
+                    <li>您将与AI进行多轮对话，完成六个研究子任务（选题、设计、实施、分析、撰写、传播）。</li>
+                    <li>您需要填写一份研究方案记录表。</li>
+                    <li>整个实验预计耗时约 30-45 分钟。</li>
+                </ul>
+                <p><strong>风险与收益：</strong></p>
+                <ul>
+                    <li>无明显风险，但请确保您在安静环境中进行。</li>
+                    <li>您的参与将帮助改进AI辅助研究工具，并为教育研究提供宝贵数据。</li>
+                </ul>
+                <p><strong>数据保护：</strong></p>
+                <ul>
+                    <li>您的编号仅用于关联数据，不会泄露个人身份。</li>
+                    <li>数据将安全存储，仅研究团队可访问。</li>
+                </ul>
+                <p><strong>联系方式：</strong><br>如有疑问，请联系研究者：xxx@xxx.com</p>
+                <p style="text-align: center;">点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
@@ -706,7 +734,6 @@ else:
                     )
                     if success:
                         st.toast("✅ 方案已提交成功！", icon="✅")
-                        # 设置实验完成状态，显示感谢页面
                         st.session_state.experiment_completed = True
                         st.rerun()
                     else:
