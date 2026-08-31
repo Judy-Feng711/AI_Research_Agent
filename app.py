@@ -417,7 +417,7 @@ else:
         st.markdown(
             """
             <div style="text-align: center; padding: 40px 20px;">
-                <h2 style="color: #4CAF50;">🎉 实验已完成！</h2>
+                <h2 style="color: #4CAF50;">✅ 方案已提交成功！实验已完成！</h2>
                 <p style="font-size: 18px;">感谢您参与本次研究！您的数据已成功保存。</p>
                 <p style="font-size: 16px; color: #666;">您现在可以关闭此页面，或点击下方按钮返回首页。</p>
                 <br>
@@ -736,7 +736,7 @@ else:
                         task6_text.strip()
                     )
                     if success:
-                        # 移除 st.toast，直接跳转到感谢页
+                        # 跳转到感谢页
                         st.session_state.experiment_completed = True
                         st.rerun()
                     else:
