@@ -167,9 +167,10 @@ if "show_exit_dialog" not in st.session_state:
     st.session_state.show_exit_dialog = False
 if "consent_given" not in st.session_state:
     st.session_state.consent_given = False
+if "experiment_completed" not in st.session_state:
+    st.session_state.experiment_completed = False  # 新增状态
 
 # ================= 角色判断（使用 URL 参数控制） =================
-# 检查 URL 参数 ?mode=admin，若存在则进入研究者模式，否则默认为被试
 query_params = st.query_params
 if "mode" in query_params and query_params["mode"] == "admin":
     st.session_state.user_role = "研究者"
@@ -382,13 +383,36 @@ if st.session_state.user_role == "研究者":
             st.error(f"读取方案数据失败：{e}")
         if st.button("退出研究者模式"):
             st.session_state.export_authorized = False
-            # 清空 URL 参数并刷新，回到被试入口
             st.query_params.clear()
             st.rerun()
 
 else:
     # ---------- 被试模式 ----------
-    # 显示欢迎语（仅当未同意或未输入编号时）
+    # 如果实验已完成，显示感谢页面
+    if st.session_state.experiment_completed:
+        st.markdown(
+            """
+            <div style="text-align: center; padding: 40px 20px;">
+                <h2 style="color: #4CAF50;">🎉 实验已完成！</h2>
+                <p style="font-size: 18px;">感谢您参与本次研究！您的数据已成功保存。</p>
+                <p style="font-size: 16px; color: #666;">您现在可以关闭此页面，或点击下方按钮返回首页。</p>
+                <br>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        if st.button("🏠 返回首页"):
+            # 重置所有状态，回到知情同意书
+            st.session_state.consent_given = False
+            st.session_state.participant_id = ""
+            st.session_state.messages = get_initial_messages()
+            st.session_state.round_count = 0
+            st.session_state.show_exit_dialog = False
+            st.session_state.experiment_completed = False
+            st.rerun()
+        st.stop()  # 不再显示其他内容
+
+    # 显示欢迎语（仅当未同意时）
     if not st.session_state.consent_given:
         st.markdown(
             "<p style='text-align: center; font-size: 18px;'>"
@@ -423,13 +447,12 @@ else:
         点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。
         """)
 
-        # 同意按钮
-        col_center_btn = st.columns([3, 1, 3])[1]  # 居中
+        col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
                 st.session_state.consent_given = True
                 st.rerun()
-        st.stop()  # 阻止后续内容显示
+        st.stop()
 
     # 已同意，显示主界面
     # 处理退出确认对话框
@@ -458,6 +481,7 @@ else:
                 st.session_state.messages = get_initial_messages()
                 st.session_state.round_count = 0
                 st.session_state.show_exit_dialog = False
+                st.session_state.experiment_completed = False
                 st.rerun()
         with col_confirm2:
             if st.button("取消", key="confirm_exit_no"):
@@ -682,12 +706,8 @@ else:
                     )
                     if success:
                         st.toast("✅ 方案已提交成功！", icon="✅")
-                        # 提交成功后回到知情同意页面（可选择重置）
-                        st.session_state.consent_given = False
-                        st.session_state.participant_id = ""
-                        st.session_state.messages = get_initial_messages()
-                        st.session_state.round_count = 0
-                        st.session_state.show_exit_dialog = False
+                        # 设置实验完成状态，显示感谢页面
+                        st.session_state.experiment_completed = True
                         st.rerun()
                     else:
                         st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
