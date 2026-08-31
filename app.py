@@ -425,15 +425,18 @@ else:
             """,
             unsafe_allow_html=True
         )
-        if st.button("🏠 返回首页"):
-            # 重置所有状态，回到知情同意书
-            st.session_state.consent_given = False
-            st.session_state.participant_id = ""
-            st.session_state.messages = get_initial_messages()
-            st.session_state.round_count = 0
-            st.session_state.show_exit_dialog = False
-            st.session_state.experiment_completed = False
-            st.rerun()
+        # 使用 columns 居中按钮
+        col_btn_left, col_btn_center, col_btn_right = st.columns([1, 1, 1])
+        with col_btn_center:
+            if st.button("🏠 返回首页", use_container_width=True):
+                # 重置所有状态，回到知情同意书
+                st.session_state.consent_given = False
+                st.session_state.participant_id = ""
+                st.session_state.messages = get_initial_messages()
+                st.session_state.round_count = 0
+                st.session_state.show_exit_dialog = False
+                st.session_state.experiment_completed = False
+                st.rerun()
         st.stop()
 
     # 显示欢迎语（仅当未同意时）
@@ -733,11 +736,10 @@ else:
                         task6_text.strip()
                     )
                     if success:
-                        # 修正：移除文本中的 ✅，只保留 icon
-                        st.toast("方案已提交成功！", icon="✅")
+                        # 移除 st.toast，直接跳转到感谢页
                         st.session_state.experiment_completed = True
                         st.rerun()
                     else:
-                        st.toast("提交失败，请检查数据库字段。", icon="❌")
+                        st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
     else:
         st.warning("⚠️ 请输入您的被试编号以开始。")
