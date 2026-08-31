@@ -324,7 +324,7 @@ st.markdown(
             margin-top: 4px;
         }
 
-        /* 知情同意书卡片样式 - 美化版 */
+        /* 知情同意书卡片样式 - 方案B：纯Markdown配合CSS */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
             padding: 30px 35px;
@@ -336,44 +336,29 @@ st.markdown(
             margin-left: auto;
             margin-right: auto;
             text-align: left;
-            transition: all 0.2s ease;
         }
-        .consent-card h2 {
+        .consent-card h1, .consent-card h2, .consent-card h3 {
             text-align: center;
             color: #1a2a3a;
+        }
+        .consent-card h2 {
             font-size: 26px;
             font-weight: 600;
             margin-top: 0;
             margin-bottom: 20px;
-            letter-spacing: 1px;
             border-bottom: 3px solid #4CAF50;
             padding-bottom: 12px;
         }
-        .consent-card .section-title {
-            font-size: 17px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-top: 18px;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .consent-card .section-title .icon {
-            font-size: 20px;
-        }
-        .consent-card p, .consent-card li {
+        .consent-card p {
             font-size: 15.5px;
             line-height: 1.7;
             color: #2d3748;
         }
         .consent-card ul {
             padding-left: 22px;
-            margin-top: 2px;
-            margin-bottom: 8px;
-        }
-        .consent-card ul li {
-            margin-bottom: 4px;
+            font-size: 15.5px;
+            line-height: 1.7;
+            color: #2d3748;
         }
         .consent-card .highlight {
             background-color: #f0f8ff;
@@ -382,7 +367,7 @@ st.markdown(
             font-weight: 500;
             color: #1a5276;
         }
-        .consent-card .contact-info {
+        .consent-card .contact-box {
             background-color: #eaf4eb;
             padding: 10px 16px;
             border-radius: 8px;
@@ -397,6 +382,13 @@ st.markdown(
             margin-top: 20px;
             padding-top: 16px;
             border-top: 1px dashed #b0c4de;
+        }
+        .consent-card .section-icon {
+            font-weight: 600;
+            font-size: 17px;
+            margin-top: 16px;
+            margin-bottom: 4px;
+            display: block;
         }
     </style>
     """,
@@ -498,42 +490,32 @@ else:
             unsafe_allow_html=True
         )
 
-        # 知情同意书 - 美化版卡片
+        # 知情同意书 - 纯 Markdown + CSS 类（无额外 HTML 标签）
         st.markdown(
             """
             <div class="consent-card">
-                <h2>📋 知情同意书</h2>
+                ## 📋 知情同意书
                 
-                <div class="section-title"><span class="icon">📘</span> 研究介绍</div>
-                <p>本研究旨在探索人工智能辅助教育研究的有效性。您的参与完全自愿，您有权随时退出，且不会受到任何不利影响。所有数据将匿名处理，仅用于学术分析。</p>
+                **研究介绍**  
+                本研究旨在探索人工智能辅助教育研究的有效性。您的参与完全自愿，您有权随时退出，且不会受到任何不利影响。所有数据将匿名处理，仅用于学术分析。
                 
-                <div class="section-title"><span class="icon">📝</span> 研究内容</div>
-                <ul>
-                    <li>您将与AI进行多轮对话，完成六个研究子任务（选题、设计、实施、分析、撰写、传播）。</li>
-                    <li>您需要填写一份研究方案记录表。</li>
-                    <li>整个实验预计耗时约 <span class="highlight">30-45 分钟</span>。</li>
-                </ul>
+                **研究内容**  
+                - 您将与AI进行多轮对话，完成六个研究子任务（选题、设计、实施、分析、撰写、传播）。  
+                - 您需要填写一份研究方案记录表。  
+                - 整个实验预计耗时约 <span class="highlight">30-45 分钟</span>。  
                 
-                <div class="section-title"><span class="icon">⚠️</span> 风险与收益</div>
-                <ul>
-                    <li>无明显风险，但请确保您在安静环境中进行。</li>
-                    <li>您的参与将帮助改进AI辅助研究工具，并为教育研究提供宝贵数据。</li>
-                </ul>
+                **风险与收益**  
+                - 无明显风险，但请确保您在安静环境中进行。  
+                - 您的参与将帮助改进AI辅助研究工具，并为教育研究提供宝贵数据。  
                 
-                <div class="section-title"><span class="icon">🔒</span> 数据保护</div>
-                <ul>
-                    <li>您的编号仅用于关联数据，不会泄露个人身份。</li>
-                    <li>数据将安全存储，仅研究团队可访问。</li>
-                </ul>
+                **数据保护**  
+                - 您的编号仅用于关联数据，不会泄露个人身份。  
+                - 数据将安全存储，仅研究团队可访问。  
                 
-                <div class="section-title"><span class="icon">📧</span> 联系方式</div>
-                <div class="contact-info">
-                    如有疑问，请联系研究者：<strong>xxx@xxx.com</strong>
-                </div>
+                **联系方式**  
+                <div class="contact-box">如有疑问，请联系研究者：<strong>xxx@xxx.com</strong></div>
                 
-                <div class="footer-note">
-                    点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。
-                </div>
+                <div class="footer-note">点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。</div>
             </div>
             """,
             unsafe_allow_html=True
