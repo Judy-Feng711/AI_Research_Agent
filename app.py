@@ -502,16 +502,16 @@ else:
                     <li>无明显风险，但请确保您在安静环境中进行。</li>
                     <li>您的参与将帮助改进AI辅助研究工具，并为教育研究提供宝贵数据。</li>
                 </ul>
-                
+                <p><strong></strong><br</p>
                 <p><strong>数据保护</strong></p>
                 <ul>
                     <li>您的编号仅用于关联数据，不会泄露个人身份。</li>
                     <li>数据将安全存储，仅研究团队可访问。</li>
                 </ul>
-                
+                <p><strong></strong><br</p>
                 <p><strong>联系方式</strong></p>
                 <div class="contact-box">如有疑问，请联系研究者：<strong>xxx@xxx.com</strong></div>
-                
+                <p><strong></strong><br</p>
                 <div class="footer-note">点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。</div>
             </div>
             """,
