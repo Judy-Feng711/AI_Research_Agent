@@ -522,7 +522,7 @@ else:
         col_center_check = st.columns([3, 1, 3])[1]
         with col_center_check:
             consent_check = st.checkbox("我已阅读并理解知情同意书内容，自愿参与本研究")
-            if st.button("✅ 我同意并参与实验", use_container_width=True, disabled=not consent_check):
+            if st.button("同意", use_container_width=True, disabled=not consent_check):
                 if consent_check:
                     st.session_state.consent_given = True
                     st.rerun()
