@@ -733,10 +733,11 @@ else:
                         task6_text.strip()
                     )
                     if success:
-                        st.toast("✅ 方案已提交成功！", icon="✅")
+                        # 修正：移除文本中的 ✅，只保留 icon
+                        st.toast("方案已提交成功！", icon="✅")
                         st.session_state.experiment_completed = True
                         st.rerun()
                     else:
-                        st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
+                        st.toast("提交失败，请检查数据库字段。", icon="❌")
     else:
         st.warning("⚠️ 请输入您的被试编号以开始。")
