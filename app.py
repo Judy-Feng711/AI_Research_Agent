@@ -163,10 +163,18 @@ if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
     st.session_state.prompt_input = ""
-if "user_role" not in st.session_state:
-    st.session_state.user_role = None
 if "show_exit_dialog" not in st.session_state:
     st.session_state.show_exit_dialog = False
+if "consent_given" not in st.session_state:
+    st.session_state.consent_given = False
+
+# ================= 角色判断（使用 URL 参数控制） =================
+# 检查 URL 参数 ?mode=admin，若存在则进入研究者模式，否则默认为被试
+query_params = st.query_params
+if "mode" in query_params and query_params["mode"] == "admin":
+    st.session_state.user_role = "研究者"
+else:
+    st.session_state.user_role = "被试"
 
 # ================= 6. CSS =================
 st.markdown(
@@ -260,7 +268,7 @@ st.markdown(
         }
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
-            top: 110px !important;  /* 微调，适应新比例 */
+            top: 110px !important;
             align-self: flex-start !important;
             height: auto !important;
             max-height: calc(100vh - 110px) !important;
@@ -319,58 +327,111 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 首页内容（仅当未选择角色时显示） =================
-if st.session_state.user_role is None:
-    st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
-    st.markdown(
-        "<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>",
-        unsafe_allow_html=True
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
+# ================= 7. 固定顶部栏（标题） =================
+st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>",
+    unsafe_allow_html=True
+)
+st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown(
-        "<p style='text-align: center; font-size: 18px; white-space: nowrap;'>"
-        "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
-        "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
-        "</p>",
-        unsafe_allow_html=True
-    )
+# ================= 8. 根据角色显示内容 =================
+if st.session_state.user_role == "研究者":
+    # ---------- 研究者模式（仅数据导出） ----------
+    st.subheader("📊 研究者数据导出")
+    st.markdown("请输入研究者密码以查看并下载数据。")
+    if "export_authorized" not in st.session_state:
+        st.session_state.export_authorized = False
+    if not st.session_state.export_authorized:
+        export_pass = st.text_input("请输入研究者密码", type="password", key="export_pass")
+        if st.button("验证", key="verify_export"):
+            if export_pass == st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123"):
+                st.session_state.export_authorized = True
+                st.rerun()
+            else:
+                st.error("密码错误")
+    else:
+        st.success("✅ 已授权，可下载数据")
+        try:
+            response = supabase.table("research_logs").select("*").execute()
+            if response.data:
+                df = pd.DataFrame(response.data)
+                csv_data = df.to_csv(index=False, encoding='utf-8-sig')
+                st.download_button(
+                    label="📥 下载交互日志",
+                    data=csv_data.encode('utf-8-sig'),
+                    file_name="research_logs.csv",
+                    mime="text/csv",
+                    key="dl_logs"
+                )
+        except Exception as e:
+            st.error(f"读取交互数据失败：{e}")
+        try:
+            response_plan = supabase.table("research_plans").select("*").execute()
+            if response_plan.data:
+                df_plan = pd.DataFrame(response_plan.data)
+                csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
+                st.download_button(
+                    label="📥 下载方案数据",
+                    data=csv_plan.encode('utf-8-sig'),
+                    file_name="research_plans.csv",
+                    mime="text/csv",
+                    key="dl_plans"
+                )
+        except Exception as e:
+            st.error(f"读取方案数据失败：{e}")
+        if st.button("退出研究者模式"):
+            st.session_state.export_authorized = False
+            # 清空 URL 参数并刷新，回到被试入口
+            st.query_params.clear()
+            st.rerun()
 
-    col_space1, col_center, col_space2 = st.columns([1, 1.5, 1])
-    with col_center:
+else:
+    # ---------- 被试模式 ----------
+    # 显示欢迎语（仅当未同意或未输入编号时）
+    if not st.session_state.consent_given:
         st.markdown(
-            "<p style='text-align: center; font-size: 16px; font-weight: bold;'>请选择您的角色：</p>",
+            "<p style='text-align: center; font-size: 18px;'>"
+            "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
+            "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
+            "</p>",
             unsafe_allow_html=True
         )
-        if st.button("被试", key="btn_subject", use_container_width=True):
-            st.session_state.user_role = "被试"
-            st.session_state.participant_id = ""
-            st.session_state.messages = get_initial_messages()
-            st.session_state.round_count = 0
-            st.session_state.show_exit_dialog = False
-            st.rerun()
-        if st.button("研究者", key="btn_researcher", use_container_width=True):
-            st.session_state.user_role = "研究者"
-            st.session_state.export_authorized = False
-            st.session_state.show_exit_dialog = False
-            st.rerun()
-    st.stop()
 
-# ================= 8. 角色内容（选择后显示） =================
-col_back, _ = st.columns([1, 5])
-with col_back:
-    if st.button("← 返回重新选择角色"):
-        st.session_state.user_role = None
-        st.session_state.participant_id = ""
-        st.session_state.messages = get_initial_messages()
-        st.session_state.round_count = 0
-        st.session_state.show_exit_dialog = False
-        st.rerun()
+        # 知情同意书
+        st.markdown("""
+        **知情同意书**
 
-st.divider()
+        本研究旨在探索人工智能辅助教育研究的有效性。您的参与完全自愿，您有权随时退出，且不会受到任何不利影响。所有数据将匿名处理，仅用于学术分析。
 
-if st.session_state.user_role == "被试":
-    # ---------- 被试模式 ----------
+        **研究内容**：
+        - 您将与AI进行多轮对话，完成六个研究子任务（选题、设计、实施、分析、撰写、传播）。
+        - 您需要填写一份研究方案记录表。
+        - 整个实验预计耗时约 30-45 分钟。
+
+        **风险与收益**：
+        - 无明显风险，但请确保您在安静环境中进行。
+        - 您的参与将帮助改进AI辅助研究工具，并为教育研究提供宝贵数据。
+
+        **数据保护**：
+        - 您的编号仅用于关联数据，不会泄露个人身份。
+        - 数据将安全存储，仅研究团队可访问。
+
+        **联系方式**：
+        如有疑问，请联系研究者：xxx@xxx.com
+
+        点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。
+        """)
+
+        # 同意按钮
+        col_center_btn = st.columns([3, 1, 3])[1]  # 居中
+        with col_center_btn:
+            if st.button("✅ 我同意并参与实验", use_container_width=True):
+                st.session_state.consent_given = True
+                st.rerun()
+        st.stop()  # 阻止后续内容显示
+
+    # 已同意，显示主界面
     # 处理退出确认对话框
     if st.session_state.show_exit_dialog:
         st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
@@ -391,8 +452,8 @@ if st.session_state.user_role == "被试":
                     st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
                 except Exception as e:
                     st.error(f"记录退出失败：{e}")
-                # 重置所有状态
-                st.session_state.user_role = None
+                # 重置所有状态，回到知情同意页面
+                st.session_state.consent_given = False
                 st.session_state.participant_id = ""
                 st.session_state.messages = get_initial_messages()
                 st.session_state.round_count = 0
@@ -402,7 +463,7 @@ if st.session_state.user_role == "被试":
             if st.button("取消", key="confirm_exit_no"):
                 st.session_state.show_exit_dialog = False
                 st.rerun()
-        st.stop()  # 阻止后续内容渲染
+        st.stop()
 
     # 正常显示被试内容
     if not st.session_state.participant_id:
@@ -436,7 +497,6 @@ if st.session_state.user_role == "被试":
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        # ================= 左右两栏比例调整：55% : 45% =================
         col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
@@ -622,8 +682,8 @@ if st.session_state.user_role == "被试":
                     )
                     if success:
                         st.toast("✅ 方案已提交成功！", icon="✅")
-                        # 提交成功后返回初始页面（角色选择）
-                        st.session_state.user_role = None
+                        # 提交成功后回到知情同意页面（可选择重置）
+                        st.session_state.consent_given = False
                         st.session_state.participant_id = ""
                         st.session_state.messages = get_initial_messages()
                         st.session_state.round_count = 0
@@ -633,51 +693,3 @@ if st.session_state.user_role == "被试":
                         st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
     else:
         st.warning("⚠️ 请输入您的被试编号以开始。")
-
-elif st.session_state.user_role == "研究者":
-    # ---------- 研究者模式 ----------
-    st.subheader("📊 研究者数据导出")
-    st.markdown("请输入研究者密码以查看并下载数据。")
-    if "export_authorized" not in st.session_state:
-        st.session_state.export_authorized = False
-    if not st.session_state.export_authorized:
-        export_pass = st.text_input("请输入研究者密码", type="password", key="export_pass")
-        if st.button("验证", key="verify_export"):
-            if export_pass == st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123"):
-                st.session_state.export_authorized = True
-                st.rerun()
-            else:
-                st.error("密码错误")
-    else:
-        st.success("✅ 已授权，可下载数据")
-        try:
-            response = supabase.table("research_logs").select("*").execute()
-            if response.data:
-                df = pd.DataFrame(response.data)
-                csv_data = df.to_csv(index=False, encoding='utf-8-sig')
-                st.download_button(
-                    label="📥 下载交互日志",
-                    data=csv_data.encode('utf-8-sig'),
-                    file_name="research_logs.csv",
-                    mime="text/csv",
-                    key="dl_logs"
-                )
-        except Exception as e:
-            st.error(f"读取交互数据失败：{e}")
-        try:
-            response_plan = supabase.table("research_plans").select("*").execute()
-            if response_plan.data:
-                df_plan = pd.DataFrame(response_plan.data)
-                csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
-                st.download_button(
-                    label="📥 下载方案数据",
-                    data=csv_plan.encode('utf-8-sig'),
-                    file_name="research_plans.csv",
-                    mime="text/csv",
-                    key="dl_plans"
-                )
-        except Exception as e:
-            st.error(f"读取方案数据失败：{e}")
-        if st.button("退出研究者模式"):
-            st.session_state.export_authorized = False
-            st.rerun()
