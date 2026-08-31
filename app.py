@@ -324,28 +324,79 @@ st.markdown(
             margin-top: 4px;
         }
 
-        /* 知情同意书卡片样式 */
+        /* 知情同意书卡片样式 - 美化版 */
         .consent-card {
-            background-color: #f9f9f9;
-            padding: 25px 30px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
+            background: linear-gradient(145deg, #ffffff, #f5f7fa);
+            padding: 30px 35px;
+            border-radius: 16px;
+            border: 1px solid #e0e5ec;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin: 10px 0;
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
             text-align: left;
+            transition: all 0.2s ease;
         }
         .consent-card h2 {
             text-align: center;
-            color: #333;
+            color: #1a2a3a;
+            font-size: 26px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 12px;
+        }
+        .consent-card .section-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-top: 18px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .consent-card .section-title .icon {
+            font-size: 20px;
         }
         .consent-card p, .consent-card li {
-            font-size: 16px;
-            line-height: 1.6;
+            font-size: 15.5px;
+            line-height: 1.7;
+            color: #2d3748;
         }
         .consent-card ul {
-            padding-left: 20px;
+            padding-left: 22px;
+            margin-top: 2px;
+            margin-bottom: 8px;
+        }
+        .consent-card ul li {
+            margin-bottom: 4px;
+        }
+        .consent-card .highlight {
+            background-color: #f0f8ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            color: #1a5276;
+        }
+        .consent-card .contact-info {
+            background-color: #eaf4eb;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            margin: 12px 0 8px 0;
+        }
+        .consent-card .footer-note {
+            text-align: center;
+            font-size: 15px;
+            font-weight: 500;
+            color: #1a3a5a;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px dashed #b0c4de;
         }
     </style>
     """,
@@ -425,11 +476,9 @@ else:
             """,
             unsafe_allow_html=True
         )
-        # 使用 columns 居中按钮
         col_btn_left, col_btn_center, col_btn_right = st.columns([1, 1, 1])
         with col_btn_center:
             if st.button("🏠 返回首页", use_container_width=True):
-                # 重置所有状态，回到知情同意书
                 st.session_state.consent_given = False
                 st.session_state.participant_id = ""
                 st.session_state.messages = get_initial_messages()
@@ -449,40 +498,55 @@ else:
             unsafe_allow_html=True
         )
 
-        # 知情同意书 - 使用卡片样式（居中卡片，内部左对齐）
+        # 知情同意书 - 美化版卡片
         st.markdown(
             """
             <div class="consent-card">
-                <h2>知情同意书</h2>
+                <h2>📋 知情同意书</h2>
+                
+                <div class="section-title"><span class="icon">📘</span> 研究介绍</div>
                 <p>本研究旨在探索人工智能辅助教育研究的有效性。您的参与完全自愿，您有权随时退出，且不会受到任何不利影响。所有数据将匿名处理，仅用于学术分析。</p>
-                <p><strong>研究内容：</strong></p>
+                
+                <div class="section-title"><span class="icon">📝</span> 研究内容</div>
                 <ul>
                     <li>您将与AI进行多轮对话，完成六个研究子任务（选题、设计、实施、分析、撰写、传播）。</li>
                     <li>您需要填写一份研究方案记录表。</li>
-                    <li>整个实验预计耗时约 30-45 分钟。</li>
+                    <li>整个实验预计耗时约 <span class="highlight">30-45 分钟</span>。</li>
                 </ul>
-                <p><strong>风险与收益：</strong></p>
+                
+                <div class="section-title"><span class="icon">⚠️</span> 风险与收益</div>
                 <ul>
                     <li>无明显风险，但请确保您在安静环境中进行。</li>
                     <li>您的参与将帮助改进AI辅助研究工具，并为教育研究提供宝贵数据。</li>
                 </ul>
-                <p><strong>数据保护：</strong></p>
+                
+                <div class="section-title"><span class="icon">🔒</span> 数据保护</div>
                 <ul>
                     <li>您的编号仅用于关联数据，不会泄露个人身份。</li>
                     <li>数据将安全存储，仅研究团队可访问。</li>
                 </ul>
-                <p><strong>联系方式：</strong><br>如有疑问，请联系研究者：xxx@xxx.com</p>
-                <p style="text-align: center;">点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。</p>
+                
+                <div class="section-title"><span class="icon">📧</span> 联系方式</div>
+                <div class="contact-info">
+                    如有疑问，请联系研究者：<strong>xxx@xxx.com</strong>
+                </div>
+                
+                <div class="footer-note">
+                    点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。
+                </div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-        col_center_btn = st.columns([3, 1, 3])[1]
-        with col_center_btn:
-            if st.button("✅ 我同意并参与实验", use_container_width=True):
-                st.session_state.consent_given = True
-                st.rerun()
+        # 复选框 + 按钮
+        col_center_check = st.columns([3, 1, 3])[1]
+        with col_center_check:
+            consent_check = st.checkbox("我已阅读并理解知情同意书内容，自愿参与本研究")
+            if st.button("✅ 我同意并参与实验", use_container_width=True, disabled=not consent_check):
+                if consent_check:
+                    st.session_state.consent_given = True
+                    st.rerun()
         st.stop()
 
     # 已同意，显示主界面
@@ -492,7 +556,6 @@ else:
         col_confirm1, col_confirm2 = st.columns(2)
         with col_confirm1:
             if st.button("确认退出", key="confirm_exit_yes"):
-                # 记录退出日志
                 exit_log = {
                     "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "participant_id": st.session_state.participant_id,
@@ -506,7 +569,6 @@ else:
                     st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
                 except Exception as e:
                     st.error(f"记录退出失败：{e}")
-                # 重置所有状态，回到知情同意页面
                 st.session_state.consent_given = False
                 st.session_state.participant_id = ""
                 st.session_state.messages = get_initial_messages()
@@ -736,7 +798,6 @@ else:
                         task6_text.strip()
                     )
                     if success:
-                        # 跳转到感谢页
                         st.session_state.experiment_completed = True
                         st.rerun()
                     else:
