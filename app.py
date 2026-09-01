@@ -178,11 +178,6 @@ else:
     st.session_state.user_role = "被试"
 
 # ================= 6. CSS =================
-/* 减小分隔线的上下间距 */
-.stDivider hr {
-    margin-top: 6px !important;
-    margin-bottom: 6px !important;
-}
 st.markdown(
     """
     <style>
@@ -386,6 +381,11 @@ st.markdown(
             margin-top: 20px;
             padding-top: 16px;
             border-top: 1px dashed #b0c4de;
+        }
+        /* 减小分隔线的上下间距 */
+        .stDivider hr {
+            margin-top: 6px !important;
+            margin-bottom: 6px !important;
         }
     </style>
     """,
