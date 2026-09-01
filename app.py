@@ -387,6 +387,32 @@ st.markdown(
             margin-top: 1px !important;
             margin-bottom: 1px !important;
         }
+        /* 减小分隔线的上下间距 */
+        hr {
+            margin-top: 4px !important;
+            margin-bottom: 4px !important;
+        }
+        
+        /* 减小每个子任务外部容器的下边距 */
+        [data-testid="stVerticalBlock"] > .stMarkdown {
+            margin-bottom: 2px !important;
+        }
+        
+        /* 减小 text_area 容器的下边距 */
+        [data-testid="stTextArea"] {
+            margin-bottom: 2px !important;
+        }
+        
+        /* 减小子任务标题的边距 */
+        .task-odd, .task-even {
+            padding: 8px 16px !important;  /* 原来 12px 减小 */
+            margin-bottom: 4px !important;
+        }
+        
+        /* 确保子任务内的 text_area 也没有额外边距 */
+        .task-odd .stTextArea, .task-even .stTextArea {
+            margin-bottom: 0 !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
