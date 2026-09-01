@@ -569,7 +569,7 @@ else:
     if not st.session_state.participant_id:
         col_id, col_dummy = st.columns([2, 2])
         with col_id:
-            st.markdown("**👤 请输入您的被试编号**")
+            st.markdown("**👤 请输入您的编号**")
             pid_input = st.text_input(
                 "输入编号后按回车确认",
                 value="",
