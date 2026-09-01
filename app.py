@@ -427,67 +427,54 @@ st.markdown(
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 根据角色显示内容 =================
-elif st.session_state.user_role == "研究者":
-    # ---------- 研究者模式（居中显示） ----------
-    # 使用三列布局，将内容放在中间列
-    col_space1, col_center, col_space2 = st.columns([1, 2, 1])
-    with col_center:
-        st.subheader("📊 研究者数据导出")
-        st.markdown(
-            "<p style='text-align: center;'>请输入研究者密码以查看并下载数据。</p>",
-            unsafe_allow_html=True
-        )
-        if "export_authorized" not in st.session_state:
-            st.session_state.export_authorized = False
-        if not st.session_state.export_authorized:
-            export_pass = st.text_input(
-                "请输入研究者密码",
-                type="password",
-                key="export_pass",
-                label_visibility="visible"
-            )
-            if st.button("验证", key="verify_export", use_container_width=True):
-                if export_pass == st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123"):
-                    st.session_state.export_authorized = True
-                    st.rerun()
-                else:
-                    st.error("密码错误")
-        else:
-            st.success("✅ 已授权，可下载数据")
-            try:
-                response = supabase.table("research_logs").select("*").execute()
-                if response.data:
-                    df = pd.DataFrame(response.data)
-                    csv_data = df.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(
-                        label="📥 下载交互日志",
-                        data=csv_data.encode('utf-8-sig'),
-                        file_name="research_logs.csv",
-                        mime="text/csv",
-                        key="dl_logs",
-                        use_container_width=True
-                    )
-            except Exception as e:
-                st.error(f"读取交互数据失败：{e}")
-            try:
-                response_plan = supabase.table("research_plans").select("*").execute()
-                if response_plan.data:
-                    df_plan = pd.DataFrame(response_plan.data)
-                    csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(
-                        label="📥 下载方案数据",
-                        data=csv_plan.encode('utf-8-sig'),
-                        file_name="research_plans.csv",
-                        mime="text/csv",
-                        key="dl_plans",
-                        use_container_width=True
-                    )
-            except Exception as e:
-                st.error(f"读取方案数据失败：{e}")
-            if st.button("退出研究者模式", use_container_width=True):
-                st.session_state.export_authorized = False
-                st.query_params.clear()
+if st.session_state.user_role == "研究者":
+    # ---------- 研究者模式（仅数据导出） ----------
+    st.subheader("📊 研究者数据导出")
+    st.markdown("请输入研究者密码以查看并下载数据。")
+    if "export_authorized" not in st.session_state:
+        st.session_state.export_authorized = False
+    if not st.session_state.export_authorized:
+        export_pass = st.text_input("请输入研究者密码", type="password", key="export_pass")
+        if st.button("验证", key="verify_export"):
+            if export_pass == st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123"):
+                st.session_state.export_authorized = True
                 st.rerun()
+            else:
+                st.error("密码错误")
+    else:
+        st.success("✅ 已授权，可下载数据")
+        try:
+            response = supabase.table("research_logs").select("*").execute()
+            if response.data:
+                df = pd.DataFrame(response.data)
+                csv_data = df.to_csv(index=False, encoding='utf-8-sig')
+                st.download_button(
+                    label="📥 下载交互日志",
+                    data=csv_data.encode('utf-8-sig'),
+                    file_name="research_logs.csv",
+                    mime="text/csv",
+                    key="dl_logs"
+                )
+        except Exception as e:
+            st.error(f"读取交互数据失败：{e}")
+        try:
+            response_plan = supabase.table("research_plans").select("*").execute()
+            if response_plan.data:
+                df_plan = pd.DataFrame(response_plan.data)
+                csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
+                st.download_button(
+                    label="📥 下载方案数据",
+                    data=csv_plan.encode('utf-8-sig'),
+                    file_name="research_plans.csv",
+                    mime="text/csv",
+                    key="dl_plans"
+                )
+        except Exception as e:
+            st.error(f"读取方案数据失败：{e}")
+        if st.button("退出研究者模式"):
+            st.session_state.export_authorized = False
+            st.query_params.clear()
+            st.rerun()
 
 else:
     # ---------- 被试模式 ----------
