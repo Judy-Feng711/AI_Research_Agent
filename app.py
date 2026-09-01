@@ -518,14 +518,12 @@ else:
             unsafe_allow_html=True
         )
 
-        # 复选框 + 按钮
-        col_center_check = st.columns([3, 1, 3])[1]
-        with col_center_check:
-            consent_check = st.checkbox("我已阅读并理解知情同意书内容，自愿参与本研究")
-            if st.button("同意", use_container_width=True, disabled=not consent_check):
-                if consent_check:
-                    st.session_state.consent_given = True
-                    st.rerun()
+        # 直接显示“同意”按钮，无需复选框
+        col_center_btn = st.columns([3, 1, 3])[1]
+        with col_center_btn:
+            if st.button("同意", use_container_width=True):
+                st.session_state.consent_given = True
+                st.rerun()
         st.stop()
 
     # 已同意，显示主界面
