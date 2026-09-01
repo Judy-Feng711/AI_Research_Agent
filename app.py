@@ -428,7 +428,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
-    # ---------- 研究者模式（居中，密码输入框缩小，验证按钮在下方） ----------
+    # ---------- 研究者模式（居中，密码框缩小，验证在下方） ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
     with col_center:
         st.subheader("📊 研究者数据导出")
@@ -439,17 +439,19 @@ if st.session_state.user_role == "研究者":
         if "export_authorized" not in st.session_state:
             st.session_state.export_authorized = False
         if not st.session_state.export_authorized:
-            # 密码输入框（占满中间列）
-            export_pass = st.text_input(
-                "密码",
-                type="password",
-                key="export_pass",
-                label_visibility="collapsed",
-                placeholder="请输入密码"
-            )
-            # 验证按钮放在下方，并缩小宽度（使用 columns 居中且占 1/3 宽度）
-            col_btn_left, col_btn_center, col_btn_right = st.columns([1, 1, 1])
-            with col_btn_center:
+            # 密码框居中，宽度约为总宽的 1/2
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                export_pass = st.text_input(
+                    "密码",
+                    type="password",
+                    key="export_pass",
+                    label_visibility="collapsed",
+                    placeholder="请输入密码"
+                )
+            # 验证按钮居中，宽度约为总宽的 1/3
+            col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 2])
+            with col_btn2:
                 if st.button("验证", key="verify_export", use_container_width=True):
                     if export_pass == st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123"):
                         st.session_state.export_authorized = True
