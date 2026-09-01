@@ -384,8 +384,8 @@ st.markdown(
         }
         /* 减小分隔线的上下间距 */
         .stDivider hr {
-            margin-top: 6px !important;
-            margin-bottom: 6px !important;
+            margin-top: 1px !important;
+            margin-bottom: 1px !important;
         }
     </style>
     """,
