@@ -431,8 +431,8 @@ st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 st.markdown(
     """
     <div style="text-align: center;">
-        <h1 style="font-size: 28px; margin-bottom: 0;">📘 教育实证研究全周期智能协同框架</h1>
-        <p style="font-size: 16px; color: #555; margin-top: 4px;">Intelligent Collaborative Framework for Empirical Research in Education (ICFER)</p>
+        <h1 style="font-size: 36px; margin-bottom: 0;">🎓 教育实证研究全周期智能协同框架</h1>
+        <p style="font-size: 20px; color: #555; margin-top: 4px;">Intelligent Collaborative Framework for Empirical Research in Education (ICFER)</p>
     </div>
     """,
     unsafe_allow_html=True
