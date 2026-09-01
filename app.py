@@ -754,7 +754,7 @@ else:
                 task1_text = st.text_area(
                     "请写清您的核心研究问题、选题依据及所依据的理论视角。（限150字）",
                     value=existing_plan["task1_text"] if existing_plan else "",
-                    height=140,
+                    height=160,
                     max_chars=150,
                     key="task1_text"
                 )
@@ -763,7 +763,7 @@ else:
                 task2_text = st.text_area(
                     "请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。（限150字）",
                     value=existing_plan["task2_text"] if existing_plan else "",
-                    height=140,
+                    height=160,
                     max_chars=150,
                     key="task2_text"
                 )
@@ -772,7 +772,7 @@ else:
                 task3_text = st.text_area(
                     "请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。（限150字）",
                     value=existing_plan["task3_text"] if existing_plan else "",
-                    height=140,
+                    height=160,
                     max_chars=150,
                     key="task3_text"
                 )
@@ -781,7 +781,7 @@ else:
                 task4_text = st.text_area(
                     "请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。（限150字）",
                     value=existing_plan["task4_text"] if existing_plan else "",
-                    height=140,
+                    height=160,
                     max_chars=150,
                     key="task4_text"
                 )
@@ -799,7 +799,7 @@ else:
                 task6_text = st.text_area(
                     "请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）",
                     value=existing_plan["task6_text"] if existing_plan else "",
-                    height=140,
+                    height=160,
                     max_chars=150,
                     key="task6_text"
                 )
