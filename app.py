@@ -153,7 +153,7 @@ def save_plan(pid, task1_text, task2_text, task3_text, task4_text, task5_text, t
         return False
 
 # ================= 5. 页面初始化 =================
-st.set_page_config(page_title="EduResearch Copilot", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="教育实证研究全周期智能协同框架", page_icon="📘", layout="wide")
 
 # 强制初始化所有 session_state 变量
 if "participant_id" not in st.session_state:
@@ -427,8 +427,14 @@ st.markdown(
 
 # ================= 7. 固定顶部栏（标题） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
+# 修改为新的学术化标题
 st.markdown(
-    "<h1 style='text-align: center;'>🎓 EduResearch Copilot (教育研究全栈助理)</h1>",
+    """
+    <div style="text-align: center;">
+        <h1 style="font-size: 28px; margin-bottom: 0;">📘 教育实证研究全周期智能协同框架</h1>
+        <p style="font-size: 16px; color: #555; margin-top: 4px;">Intelligent Collaborative Framework for Empirical Research in Education (ICFER)</p>
+    </div>
+    """,
     unsafe_allow_html=True
 )
 st.markdown('</div>', unsafe_allow_html=True)
