@@ -487,30 +487,36 @@ else:
             """
             <div class="consent-card">
                 <h2>📋 知情同意书</h2>
+                <p>尊敬的参与者，您好！在点击“同意”之前，请您仔细阅读以下内容：</p>
                 <p><strong>研究介绍</strong><br>
-                本研究旨在探索人工智能辅助教育研究的有效性。您的参与完全自愿，您有权随时退出，且不会受到任何不利影响。所有数据将匿名处理，仅用于学术分析。</p>
+                请围绕“人工智能时代的教师教育与教师专业发展研究”这一核心议题，结合您自身的学科专长，与 EduResearch Copilot  (教育研究全栈助理)进行约100分钟的深度对话，构思并完成一份实证研究设计方案。</p>
                 <p><strong></strong><br</p>
-                <p><strong>研究内容</strong></p>
+                <p><strong>数据采集</strong></p>
                 <ul>
-                    <li>您将与AI进行多轮对话，完成六个研究子任务（选题、设计、实施、分析、撰写、传播）。</li>
-                    <li>您需要填写一份研究方案记录表。</li>
-                    <li>整个实验预计耗时约 <span class="highlight">30-45 分钟</span>。</li>
+                    <li>您与AI的完整对话日志将被系统自动记录；</li>
+                    <li>您在各阶段填写的研究要点将共同构成您的设计方案。</li>
+                   
                 </ul>
                 <p><strong></strong><br</p>
-                <p><strong>风险与收益</strong></p>
+                <p><strong>隐私保护</strong></p>
                 <ul>
-                    <li>无明显风险，但请确保您在安静环境中进行。</li>
-                    <li>您的参与将帮助改进AI辅助研究工具，并为教育研究提供宝贵数据。</li>
+                    <li>无明显风险，但请确保您在安静环境中进行，分析阶段将进一步去标识化；</li>
+                    <li>数据仅用于学术研究，不用于训练 AI，不提供给第三方，并将在采集完成之日起 3 年内销毁。</li>
                 </ul>
                 <p><strong></strong><br</p>
-                <p><strong>数据保护</strong></p>
-                <ul>
-                    <li>您的编号仅用于关联数据，不会泄露个人身份。</li>
-                    <li>数据将安全存储，仅研究团队可访问。</li>
-                </ul>
+                <p><strong>自愿与退出</strong></p>
+                <p>
+                    实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右上角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
+                </p>
                 <p><strong></strong><br</p>
                 <p><strong>联系方式</strong></p>
-                <div class="contact-box">如有疑问，请联系研究者：<strong>xxx@xxx.com</strong></div>
+                <p><strong>风险与收益</strong></p>
+                <p>
+                   本实验无生理或心理风险。您将获得一次 AI 深度辅助研究体验，及一份量身定制的设计方案初稿。
+                </p>
+                <p><strong></strong><br</p>
+                <p><strong>联系方式</strong></p>
+                <div class="contact-box">如有疑问，请联系研究者：<strong>944577606@qq.com</strong></div>
                 <p><strong></strong><br</p>
                 <div class="footer-note">点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。</div>
             </div>
