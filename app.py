@@ -514,7 +514,9 @@ else:
                 </p>
                 <p><strong></strong><br</p>
                 <p><strong>联系方式</strong></p>
-                <div class="contact-box">如有疑问，请联系研究者：<strong>944577606@qq.com</strong></div>
+                <p>
+                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有疑问，请联系研究者：<strong>944577606@qq.com</strong>
+                </p>
                 <p><strong></strong><br</p>
                 <div class="footer-note">点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。</div>
             </div>
