@@ -567,14 +567,19 @@ else:
 
     # 正常显示被试内容
     if not st.session_state.participant_id:
-        col_id, col_dummy = st.columns([2, 2])
+        # 使用三列布局，将输入框居中
+        col_space1, col_id, col_space2 = st.columns([1, 2, 1])
         with col_id:
-            st.markdown("**👤 请输入您的编号**")
+            st.markdown(
+                "<p style='text-align: center; font-size: 18px; font-weight: bold;'>👤 请输入您的编号</p>",
+                unsafe_allow_html=True
+            )
             pid_input = st.text_input(
                 "输入编号后按回车确认",
                 value="",
                 key="pid_input_top",
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                placeholder="请输入编号，例如 P001"
             )
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
@@ -591,6 +596,7 @@ else:
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
+    # 如果已输入编号，显示对话和方案
     if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
@@ -785,5 +791,3 @@ else:
                         st.rerun()
                     else:
                         st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
-    else:
-        st.warning("⚠️ 请输入您的被试编号以开始。")
