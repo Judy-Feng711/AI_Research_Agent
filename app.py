@@ -382,28 +382,6 @@ st.markdown(
             padding-top: 16px;
             border-top: 1px dashed #b0c4de;
         }
-
-        /* 子任务背景色块 */
-        .task-odd {
-            background-color: #f0f7ff;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            border-left: 4px solid #90b9f0;
-        }
-        .task-even {
-            background-color: #fff5f7;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            border-left: 4px solid #f0a0b0;
-        }
-        .task-odd .stTextArea, .task-even .stTextArea {
-            background-color: transparent !important;
-        }
-        .task-odd label, .task-even label {
-            font-weight: 500;
-        }
     </style>
     """,
     unsafe_allow_html=True
@@ -546,6 +524,7 @@ else:
             unsafe_allow_html=True
         )
 
+        # 直接显示“同意”按钮，无需复选框
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
@@ -588,6 +567,7 @@ else:
 
     # 正常显示被试内容
     if not st.session_state.participant_id:
+        # 使用三列布局，将输入框居中
         col_space1, col_id, col_space2 = st.columns([1, 2, 1])
         with col_id:
             st.markdown(
@@ -616,6 +596,7 @@ else:
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
+    # 如果已输入编号，显示对话和方案
     if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
@@ -738,8 +719,6 @@ else:
             st.markdown("**AI协同研究方案生成记录表**")
             st.caption("请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。每个模块均有最低字数要求（达标后方可提交）。您可以在交互过程中随时记录，或最后集中整理。")
             with st.form(key="plan_form"):
-                # 子任务1（奇数）
-                st.markdown('<div class="task-odd">', unsafe_allow_html=True)
                 st.markdown("**子任务1：选题与文献发现**")
                 task1_text = st.text_area(
                     "请写清您的核心研究问题、选题依据及所依据的理论视角。（限150字）",
@@ -748,11 +727,7 @@ else:
                     max_chars=150,
                     key="task1_text"
                 )
-                st.markdown('</div>', unsafe_allow_html=True)
                 st.divider()
-
-                # 子任务2（偶数）
-                st.markdown('<div class="task-even">', unsafe_allow_html=True)
                 st.markdown("**子任务2：研究规划与设计**")
                 task2_text = st.text_area(
                     "请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。（限150字）",
@@ -761,11 +736,7 @@ else:
                     max_chars=150,
                     key="task2_text"
                 )
-                st.markdown('</div>', unsafe_allow_html=True)
                 st.divider()
-
-                # 子任务3（奇数）
-                st.markdown('<div class="task-odd">', unsafe_allow_html=True)
                 st.markdown("**子任务3：实施与数据采集**")
                 task3_text = st.text_area(
                     "请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。（限150字）",
@@ -774,11 +745,7 @@ else:
                     max_chars=150,
                     key="task3_text"
                 )
-                st.markdown('</div>', unsafe_allow_html=True)
                 st.divider()
-
-                # 子任务4（偶数）
-                st.markdown('<div class="task-even">', unsafe_allow_html=True)
                 st.markdown("**子任务4：数据分析与阐释**")
                 task4_text = st.text_area(
                     "请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。（限150字）",
@@ -787,11 +754,7 @@ else:
                     max_chars=150,
                     key="task4_text"
                 )
-                st.markdown('</div>', unsafe_allow_html=True)
                 st.divider()
-
-                # 子任务5（奇数）
-                st.markdown('<div class="task-odd">', unsafe_allow_html=True)
                 st.markdown("**子任务5：论文撰写与润色**")
                 task5_text = st.text_area(
                     "请粘贴您借助AI撰写或润色后的论文片段（如引言或方法部分）。（限300-500字）",
@@ -800,11 +763,7 @@ else:
                     max_chars=500,
                     key="task5_text"
                 )
-                st.markdown('</div>', unsafe_allow_html=True)
                 st.divider()
-
-                # 子任务6（偶数）
-                st.markdown('<div class="task-even">', unsafe_allow_html=True)
                 st.markdown("**子任务6：传播、评估与伦理**")
                 task6_text = st.text_area(
                     "请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）",
@@ -813,8 +772,6 @@ else:
                     max_chars=150,
                     key="task6_text"
                 )
-                st.markdown('</div>', unsafe_allow_html=True)
-
                 submitted = st.form_submit_button("📤 提交方案")
                 if submitted:
                     if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
