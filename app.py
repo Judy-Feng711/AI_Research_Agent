@@ -495,7 +495,6 @@ else:
                 <ul>
                     <li>您与AI的完整对话日志将被系统自动记录；</li>
                     <li>您在各阶段填写的研究要点将共同构成您的设计方案。</li>
-                   
                 </ul>
                 <p><strong></strong><br</p>
                 <p><strong>隐私保护</strong></p>
