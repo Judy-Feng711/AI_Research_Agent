@@ -487,9 +487,9 @@ else:
             """
             <div class="consent-card">
                 <h2>📋 知情同意书</h2>
-                <p>&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！在点击“同意”之前，请您仔细阅读以下内容：</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！在点击“同意”之前，请您仔细阅读以下内容：</p>
                 <p><strong>研究介绍</strong><br>
-                请围绕“人工智能时代的教师教育与教师专业发展研究”这一核心议题，结合您自身的学科专长，与 EduResearch Copilot  (教育研究全栈助理)进行约100分钟的深度对话，构思并完成一份实证研究设计方案。</p>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;请围绕“人工智能时代的教师教育与教师专业发展研究”这一核心议题，结合您自身的学科专长，与 EduResearch Copilot  (教育研究全栈助理)进行约100分钟的深度对话，构思并完成一份实证研究设计方案。</p>
                 <p><strong></strong><br</p>
                 <p><strong>数据采集</strong></p>
                 <ul>
@@ -505,12 +505,12 @@ else:
                 <p><strong></strong><br</p>
                 <p><strong>自愿与退出</strong></p>
                 <p>
-                    实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右上角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右上角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
                 </p>
                 <p><strong></strong><br</p>
                 <p><strong>风险与收益</strong></p>
                 <p>
-                   本实验无生理或心理风险。您将获得一次 AI 深度辅助研究体验，及一份量身定制的设计方案初稿。
+                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本实验无生理或心理风险。您将获得一次 AI 深度辅助研究体验，及一份量身定制的设计方案初稿。
                 </p>
                 <p><strong></strong><br</p>
                 <p><strong>联系方式</strong></p>
