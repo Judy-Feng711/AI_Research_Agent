@@ -781,11 +781,11 @@ else:
         }
         /* 子任务2 - 浅绿（和第一个不同） */
         textarea[aria-label="请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。（限150字）"] {
-            background-color: #e6ffe6;
+            background-color: #f5e6ff;
         }
         /* 子任务3 - 浅黄 */
         textarea[aria-label="请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。（限150字）"] {
-            background-color: #ffffe0;
+            background-color: #e6f3ff;
         }
         /* 子任务4 - 浅紫 */
         textarea[aria-label="请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。（限150字）"] {
@@ -793,11 +793,11 @@ else:
         }
         /* 子任务5 - 浅粉 */
         textarea[aria-label="请粘贴您借助AI撰写或润色后的论文片段（如引言或方法部分）。（限300-500字）"] {
-            background-color: #ffe6f0;
+            background-color: #e6f3ff;
         }
         /* 子任务6 - 浅青 */
         textarea[aria-label="请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）"] {
-            background-color: #e6faf5;
+            background-color: #f5e6ff;
         }
     </style>
     """,
