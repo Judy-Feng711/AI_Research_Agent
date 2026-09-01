@@ -527,7 +527,7 @@ else:
         # 直接显示“同意”按钮，无需复选框
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
-            if st.button("同意", use_container_width=True):
+            if st.button("✅ 我同意并参与实验", use_container_width=True):
                 st.session_state.consent_given = True
                 st.rerun()
         st.stop()
