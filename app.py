@@ -428,30 +428,35 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
-    # ---------- 研究者模式（居中显示） ----------
-    # 使用三列布局，将内容放在中间列
+    # ---------- 研究者模式（居中，密码框缩小） ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
     with col_center:
         st.subheader("📊 研究者数据导出")
+        # 说明文字（去掉句号）
         st.markdown(
-            "<p style='text-align: center;'>请输入研究者密码以查看并下载数据。</p>",
+            "<p style='text-align: center;'>请输入研究者密码以查看并下载数据</p>",
             unsafe_allow_html=True
         )
         if "export_authorized" not in st.session_state:
             st.session_state.export_authorized = False
         if not st.session_state.export_authorized:
-            export_pass = st.text_input(
-                "请输入研究者密码",
-                type="password",
-                key="export_pass",
-                label_visibility="visible"
-            )
-            if st.button("验证", key="verify_export", use_container_width=True):
-                if export_pass == st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123"):
-                    st.session_state.export_authorized = True
-                    st.rerun()
-                else:
-                    st.error("密码错误")
+            # 密码输入和验证按钮放在一行，输入框占 2/3，按钮占 1/3
+            col_input, col_btn = st.columns([2, 1])
+            with col_input:
+                export_pass = st.text_input(
+                    "密码",
+                    type="password",
+                    key="export_pass",
+                    label_visibility="collapsed",
+                    placeholder="请输入密码"
+                )
+            with col_btn:
+                if st.button("验证", key="verify_export", use_container_width=True):
+                    if export_pass == st.secrets.get("RESEARCHER_PASSWORD", "MyPassword123"):
+                        st.session_state.export_authorized = True
+                        st.rerun()
+                    else:
+                        st.error("密码错误")
         else:
             st.success("✅ 已授权，可下载数据")
             try:
