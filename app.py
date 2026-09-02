@@ -778,7 +778,7 @@ else:
             st.subheader("📝 研究方案填写")
             existing_plan = load_plan(st.session_state.participant_id)
             st.markdown("**AI协同研究方案生成记录表**")
-            st.caption("请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。每个模块均有最低字数要求（达标后方可提交）。您可以在交互过程中随时记录，或最后集中整理。")
+            st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
             with st.form(key="plan_form"):
                 st.markdown("**子任务1：选题与文献发现**")
                 task1_text = st.text_area(
@@ -791,7 +791,7 @@ else:
                 st.divider()
                 st.markdown("**子任务2：研究规划与设计**")
                 task2_text = st.text_area(
-                    "请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。（限150字）",
+                    "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
                     value=existing_plan["task2_text"] if existing_plan else "",
                     height=160,
                     max_chars=150,
@@ -800,7 +800,7 @@ else:
                 st.divider()
                 st.markdown("**子任务3：实施与数据采集**")
                 task3_text = st.text_area(
-                    "请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。（限150字）",
+                    "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
                     value=existing_plan["task3_text"] if existing_plan else "",
                     height=160,
                     max_chars=150,
@@ -809,7 +809,7 @@ else:
                 st.divider()
                 st.markdown("**子任务4：数据分析与阐释**")
                 task4_text = st.text_area(
-                    "请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。（限150字）",
+                    "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
                     value=existing_plan["task4_text"] if existing_plan else "",
                     height=160,
                     max_chars=150,
@@ -818,7 +818,7 @@ else:
                 st.divider()
                 st.markdown("**子任务5：论文撰写与润色**")
                 task5_text = st.text_area(
-                    "请粘贴您借助AI撰写或润色后的论文片段（如引言或方法部分）。（限300-500字）",
+                    "1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
                     value=existing_plan["task5_text"] if existing_plan else "",
                     height=300,
                     max_chars=500,
@@ -827,7 +827,7 @@ else:
                 st.divider()
                 st.markdown("**子任务6：传播、评估与伦理**")
                 task6_text = st.text_area(
-                    "请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）",
+                    "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
                     value=existing_plan["task6_text"] if existing_plan else "",
                     height=160,
                     max_chars=150,
@@ -841,23 +841,23 @@ else:
             background-color: #e6f3ff;
         }
         /* 子任务2 - 浅绿（和第一个不同） */
-        textarea[aria-label="请说明您的研究方法（量化/质性/混合）、研究框架或技术路线。（限150字）"] {
+        textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
             background-color: #f5e6ff;
         }
         /* 子任务3 - 浅黄 */
-        textarea[aria-label="请描述您的数据采集方案（如问卷维度、访谈提纲框架、样本选择等）。（限150字）"] {
+        textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
             background-color: #e6f3ff;
         }
         /* 子任务4 - 浅紫 */
-        textarea[aria-label="请写明您计划使用的数据分析方法（如SPSS、MPLUS、ENA等）及分析思路。（限150字）"] {
+        textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
             background-color: #f5e6ff;
         }
         /* 子任务5 - 浅粉 */
-        textarea[aria-label="请粘贴您借助AI撰写或润色后的论文片段（如引言或方法部分）。（限300-500字）"] {
+        textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
             background-color: #e6f3ff;
         }
         /* 子任务6 - 浅青 */
-        textarea[aria-label="请列出本研究涉及的伦理考量及计划中的成果传播渠道。（限150字）"] {
+        textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
             background-color: #f5e6ff;
         }
     </style>
