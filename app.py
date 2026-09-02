@@ -174,8 +174,6 @@ if "user_role" not in st.session_state:
     st.session_state.user_role = None
 if "export_authorized" not in st.session_state:
     st.session_state.export_authorized = False
-if "show_confirm" not in st.session_state:
-    st.session_state.show_confirm = False
 
 # ================= 角色判断（使用 URL 参数控制） =================
 query_params = st.query_params
@@ -186,7 +184,7 @@ else:
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
-# ================= 6. CSS（美化版） =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
@@ -272,28 +270,20 @@ st.markdown(
             min-width: unset !important;
         }
 
-        /* 左右两栏卡片样式美化 */
-        /* 左侧对话区域：浅灰背景、圆角、边框 */
         [data-testid="stHorizontalBlock"] > div:first-child {
-            background-color: #f9fafb;
-            padding: 15px 15px 20px 15px !important;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            margin-right: 8px;
+            overflow: visible !important;
+            height: auto !important;
         }
-        /* 右侧方案区域：浅灰背景、圆角、边框 */
         [data-testid="stHorizontalBlock"] > div:last-child {
-            background-color: #f9fafb;
-            padding: 15px 15px 20px 15px !important;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            margin-left: 8px;
             position: sticky !important;
             top: 110px !important;
             align-self: flex-start !important;
             height: auto !important;
             max-height: calc(100vh - 110px) !important;
             overflow-y: auto !important;
+            background-color: transparent !important;
+            padding: 10px !important;
+            border-left: 1px solid #ddd;
         }
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
@@ -430,13 +420,7 @@ st.markdown(
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
-        /* 隐藏右下角快捷键提示 */
-        .stTextArea .stTextAreaFooter {
-            display: none !important;
-        }
-        .stTextArea div:last-child {
-            display: none !important;
-        }
+        
     </style>
     """,
     unsafe_allow_html=True
@@ -444,6 +428,7 @@ st.markdown(
 
 # ================= 7. 固定顶部栏（标题） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
+# 修改为新的学术化标题
 st.markdown(
     """
     <div style="text-align: center;">
@@ -466,6 +451,7 @@ if st.session_state.user_role == "研究者":
             unsafe_allow_html=True
         )
         if not st.session_state.export_authorized:
+            # 密码框居中，宽度约为总宽的 1/2
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 export_pass = st.text_input(
@@ -475,6 +461,7 @@ if st.session_state.user_role == "研究者":
                     label_visibility="collapsed",
                     placeholder="请输入密码"
                 )
+            # 验证按钮居中，宽度约为总宽的 1/3
             col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 2])
             with col_btn2:
                 if st.button("验证", key="verify_export", use_container_width=True):
@@ -522,6 +509,7 @@ if st.session_state.user_role == "研究者":
 
 else:
     # ---------- 被试模式 ----------
+    # 如果实验已完成，显示感谢页面
     if st.session_state.experiment_completed:
         st.markdown(
             """
@@ -546,6 +534,7 @@ else:
                 st.rerun()
         st.stop()
 
+    # 显示欢迎语（仅当未同意时）
     if not st.session_state.consent_given:
         st.markdown(
             "<p style='text-align: center; font-size: 18px;'>"
@@ -555,6 +544,7 @@ else:
             unsafe_allow_html=True
         )
 
+        # 知情同意书 - 纯HTML，无Markdown混合
         st.markdown(
             """
             <div class="consent-card">
@@ -577,7 +567,7 @@ else:
                 <p><strong></strong><br</p>
                 <p><strong>自愿与退出</strong></p>
                 <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右下角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右上角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
                 </p>
                 <p><strong></strong><br</p>
                 <p><strong>风险与收益</strong></p>
@@ -596,6 +586,7 @@ else:
             unsafe_allow_html=True
         )
 
+        # 直接显示“同意”按钮，无需复选框
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
@@ -603,6 +594,8 @@ else:
                 st.rerun()
         st.stop()
 
+    # 已同意，显示主界面
+    # 处理退出确认对话框
     if st.session_state.show_exit_dialog:
         st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
         col_confirm1, col_confirm2 = st.columns(2)
@@ -634,7 +627,9 @@ else:
                 st.rerun()
         st.stop()
 
+    # 正常显示被试内容
     if not st.session_state.participant_id:
+        # 使用三列布局，将输入框居中
         col_space1, col_id, col_space2 = st.columns([1, 2, 1])
         with col_id:
             st.markdown(
@@ -653,9 +648,17 @@ else:
                 st.session_state.messages = None
                 st.rerun()
     else:
-        # 顶部不再显示编号，只保留退出按钮（但我们现在将退出按钮移至右侧底部，所以这里完全不显示任何内容）
-        pass
+        col_id, col_exit = st.columns([2, 1])
+        with col_id:
+            pass
+        with col_exit:
+            st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
+            if st.button("🚪 退出实验", key="exit_button", use_container_width=False):
+                st.session_state.show_exit_dialog = True
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
+    # 如果已输入编号，显示对话和方案
     if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
@@ -773,163 +776,111 @@ else:
                     st.rerun()
 
         with col_right:
-            st.subheader("📝 研究方案填写")
+            st.subheader("📝 研究方案填写区")
             existing_plan = load_plan(st.session_state.participant_id)
-            st.markdown("**AI协同研究方案生成记录表**")
+            st.markdown("**AI协同研究方案撰写**")
             st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
-
-            # 检查是否需要显示确认对话框
-            if st.session_state.get("show_confirm", False):
-                st.warning("您还有部分子任务未填写，确定要提交吗？")
-                empty_tasks = []
-                if not st.session_state.get("task1_text", "").strip():
-                    empty_tasks.append("子任务1：选题与文献发现")
-                if not st.session_state.get("task2_text", "").strip():
-                    empty_tasks.append("子任务2：研究规划与设计")
-                if not st.session_state.get("task3_text", "").strip():
-                    empty_tasks.append("子任务3：实施与数据采集")
-                if not st.session_state.get("task4_text", "").strip():
-                    empty_tasks.append("子任务4：数据分析与阐释")
-                if not st.session_state.get("task5_text", "").strip():
-                    empty_tasks.append("子任务5：论文撰写与润色")
-                if not st.session_state.get("task6_text", "").strip():
-                    empty_tasks.append("子任务6：传播、评估与伦理")
-                if empty_tasks:
-                    st.markdown("**以下子任务尚未填写：**")
-                    for task in empty_tasks:
-                        st.markdown(f"- {task}")
-                col_ok, col_cancel = st.columns(2)
-                with col_ok:
-                    if st.button("确认提交", use_container_width=True):
-                        task1_text = st.session_state.get("task1_text", "").strip()
-                        task2_text = st.session_state.get("task2_text", "").strip()
-                        task3_text = st.session_state.get("task3_text", "").strip()
-                        task4_text = st.session_state.get("task4_text", "").strip()
-                        task5_text = st.session_state.get("task5_text", "").strip()
-                        task6_text = st.session_state.get("task6_text", "").strip()
-                        success = save_plan(
-                            st.session_state.participant_id,
-                            task1_text,
-                            task2_text,
-                            task3_text,
-                            task4_text,
-                            task5_text,
-                            task6_text
-                        )
-                        if success:
-                            st.session_state.experiment_completed = True
-                            st.session_state.show_confirm = False
-                            st.rerun()
-                        else:
-                            st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
-                            st.session_state.show_confirm = False
-                            st.rerun()
-                with col_cancel:
-                    if st.button("取消", use_container_width=True):
-                        st.session_state.show_confirm = False
+            with st.form(key="plan_form"):
+                st.markdown("**子任务1：选题与文献发现**")
+                task1_text = st.text_area(
+                    "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
+                    value=existing_plan["task1_text"] if existing_plan else "",
+                    height=160,
+                    # max_chars=150,
+                    key="task1_text"
+                )
+                st.divider()
+                st.markdown("**子任务2：研究规划与设计**")
+                task2_text = st.text_area(
+                    "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
+                    value=existing_plan["task2_text"] if existing_plan else "",
+                    height=160,
+                    # max_chars=150,
+                    key="task2_text"
+                )
+                st.divider()
+                st.markdown("**子任务3：实施与数据采集**")
+                task3_text = st.text_area(
+                    "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
+                    value=existing_plan["task3_text"] if existing_plan else "",
+                    height=160,
+                    # max_chars=150,
+                    key="task3_text"
+                )
+                st.divider()
+                st.markdown("**子任务4：数据分析与阐释**")
+                task4_text = st.text_area(
+                    "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
+                    value=existing_plan["task4_text"] if existing_plan else "",
+                    height=160,
+                    # max_chars=150,
+                    key="task4_text"
+                )
+                st.divider()
+                st.markdown("**子任务5：论文撰写与润色**")
+                task5_text = st.text_area(
+                    "1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
+                    value=existing_plan["task5_text"] if existing_plan else "",
+                    height=300,
+                    # max_chars=500,
+                    key="task5_text"
+                )
+                st.divider()
+                st.markdown("**子任务6：传播、评估与伦理**")
+                task6_text = st.text_area(
+                    "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
+                    value=existing_plan["task6_text"] if existing_plan else "",
+                    height=160,
+                    # max_chars=150,
+                    key="task6_text"
+                )
+                st.markdown(
+    """
+    <style>
+        /* 子任务1 - 浅蓝 */
+        textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
+            background-color: #e6f3ff;
+        }
+        /* 子任务2 - 浅绿（和第一个不同） */
+        textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+        /* 子任务3 - 浅黄 */
+        textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
+            background-color: #e6f3ff;
+        }
+        /* 子任务4 - 浅紫 */
+        textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+        /* 子任务5 - 浅粉 */
+        textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
+            background-color: #e6f3ff;
+        }
+        /* 子任务6 - 浅青 */
+        textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+                submitted = st.form_submit_button("📤 提交方案")
+                if submitted:
+                    if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
+                                task4_text.strip(), task5_text.strip(), task6_text.strip()]):
+                        st.warning("建议填写所有子任务，以完善研究方案。")
+                    success = save_plan(
+                        st.session_state.participant_id,
+                        task1_text.strip(),
+                        task2_text.strip(),
+                        task3_text.strip(),
+                        task4_text.strip(),
+                        task5_text.strip(),
+                        task6_text.strip()
+                    )
+                    if success:
+                        st.session_state.experiment_completed = True
                         st.rerun()
-                st.stop()
-            else:
-                with st.form(key="plan_form"):
-                    st.markdown("**子任务1：选题与文献发现**")
-                    task1_text = st.text_area(
-                        "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
-                        value=existing_plan["task1_text"] if existing_plan else "",
-                        height=160,
-                        key="task1_text"
-                    )
-                    st.divider()
-                    st.markdown("**子任务2：研究规划与设计**")
-                    task2_text = st.text_area(
-                        "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
-                        value=existing_plan["task2_text"] if existing_plan else "",
-                        height=160,
-                        key="task2_text"
-                    )
-                    st.divider()
-                    st.markdown("**子任务3：实施与数据采集**")
-                    task3_text = st.text_area(
-                        "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
-                        value=existing_plan["task3_text"] if existing_plan else "",
-                        height=160,
-                        key="task3_text"
-                    )
-                    st.divider()
-                    st.markdown("**子任务4：数据分析与阐释**")
-                    task4_text = st.text_area(
-                        "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
-                        value=existing_plan["task4_text"] if existing_plan else "",
-                        height=160,
-                        key="task4_text"
-                    )
-                    st.divider()
-                    st.markdown("**子任务5：论文撰写与润色**")
-                    task5_text = st.text_area(
-                        "1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
-                        value=existing_plan["task5_text"] if existing_plan else "",
-                        height=300,
-                        key="task5_text"
-                    )
-                    st.divider()
-                    st.markdown("**子任务6：传播、评估与伦理**")
-                    task6_text = st.text_area(
-                        "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
-                        value=existing_plan["task6_text"] if existing_plan else "",
-                        height=160,
-                        key="task6_text"
-                    )
-                    st.markdown(
-                        """
-                        <style>
-                            textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
-                                background-color: #e6f3ff;
-                            }
-                            textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
-                                background-color: #f5e6ff;
-                            }
-                            textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
-                                background-color: #e6f3ff;
-                            }
-                            textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
-                                background-color: #f5e6ff;
-                            }
-                            textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
-                                background-color: #e6f3ff;
-                            }
-                            textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
-                                background-color: #f5e6ff;
-                            }
-                        </style>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                    submitted = st.form_submit_button("📤 提交方案")
-                    if submitted:
-                        fields = [task1_text.strip(), task2_text.strip(), task3_text.strip(),
-                                  task4_text.strip(), task5_text.strip(), task6_text.strip()]
-                        if all(fields):
-                            success = save_plan(
-                                st.session_state.participant_id,
-                                task1_text.strip(),
-                                task2_text.strip(),
-                                task3_text.strip(),
-                                task4_text.strip(),
-                                task5_text.strip(),
-                                task6_text.strip()
-                            )
-                            if success:
-                                st.session_state.experiment_completed = True
-                                st.rerun()
-                            else:
-                                st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
-                        else:
-                            st.session_state.show_confirm = True
-                            st.rerun()
-
-            # ---------- 退出实验按钮（放在右侧底部） ----------
-            st.divider()
-            col_exit_btn_center, col_exit_btn_right = st.columns([3, 1])
-            with col_exit_btn_right:
-                if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
-                    st.session_state.show_exit_dialog = True
-                    st.rerun()
+                    else:
+                        st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
