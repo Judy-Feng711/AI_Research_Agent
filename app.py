@@ -408,6 +408,15 @@ st.markdown(
             margin-bottom: 0 !important;
         }
         
+        /* 左侧对话容器样式 - 与右侧子任务框对齐 */
+        .chat-container {
+            background-color: #f9fafb;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            margin-top: 8px;
+        }
+        
     </style>
     """,
     unsafe_allow_html=True
@@ -634,7 +643,10 @@ else:
 
         col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
-            st.subheader("💬 AI 学术助手对话")
+            st.subheader("💬 智能对话交互区")
+            # 对话容器（包含消息和输入表单）
+            st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+            # 显示历史消息
             for msg in st.session_state.messages:
                 if msg["role"] != "system":
                     with st.chat_message(msg["role"]):
@@ -741,6 +753,7 @@ else:
                         st.session_state.round_count
                     )
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)  # 关闭 chat-container
 
         with col_right:
             st.subheader("📝 研究方案填写区")
