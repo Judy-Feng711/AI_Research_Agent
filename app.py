@@ -188,7 +188,6 @@ else:
 st.markdown(
     """
     <style>
-        
         .top-fixed {
             position: sticky;
             top: 0;
@@ -636,10 +635,12 @@ else:
         col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
+            # 历史消息循环（添加角色标签）
             for msg in st.session_state.messages:
-                if msg["role"] != "system":
-                    with st.chat_message(msg["role"]):
-                        st.markdown(msg["content"])
+                if msg["role"] == "user":
+                    st.markdown(f"**🧑 我：** {msg['content']}")
+                elif msg["role"] == "assistant":
+                    st.markdown(f"**🤖 AI：** {msg['content']}")
 
             with st.form(key="prompt_form", clear_on_submit=True):
                 user_input = st.text_area(
@@ -700,11 +701,8 @@ else:
 
                     full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
 
-                    with st.chat_message("user"):
-                        if file_content:
-                            st.markdown(f"📎 **已附加文档**，提问：{user_input}")
-                        else:
-                            st.markdown(f"**[{clicked_behavior}]** {user_input}")
+                    # 显示用户消息（带标签）
+                    st.markdown(f"**🧑 我：** {full_user_message}")
 
                     st.session_state.messages.append({"role": "user", "content": full_user_message})
 
@@ -716,7 +714,8 @@ else:
                                     messages=st.session_state.messages
                                 )
                                 ai_reply = response.choices[0].message.content
-                                st.markdown(ai_reply)
+                                # 显示 AI 回复（带标签）
+                                st.markdown(f"**🤖 AI：** {ai_reply}")
                             except Exception as e:
                                 st.error(f"AI 调用失败：{e}")
                                 st.stop()
