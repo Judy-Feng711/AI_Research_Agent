@@ -188,6 +188,24 @@ else:
 st.markdown(
     """
     <style>
+        /* 用户消息气泡：浅蓝右对齐 */
+        .user-msg .stChatMessage {
+            background-color: #e3f2fd !important;
+            border-radius: 12px !important;
+            padding: 10px !important;
+            margin-bottom: 8px !important;
+            max-width: 85% !important;
+            margin-left: auto !important;
+        }
+        /* AI 消息气泡：浅灰左对齐 */
+        .assistant-msg .stChatMessage {
+            background-color: #f5f5f5 !important;
+            border-radius: 12px !important;
+            padding: 10px !important;
+            margin-bottom: 8px !important;
+            max-width: 85% !important;
+            margin-right: auto !important;
+        }
         .top-fixed {
             position: sticky;
             top: 0;
