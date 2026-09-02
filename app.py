@@ -420,6 +420,10 @@ st.markdown(
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
+        /* 隐藏右下角快捷键提示 */
+        .stTextArea textarea + div {
+            display: none !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
