@@ -202,7 +202,7 @@ st.markdown(
         }
 
         [data-testid="stHorizontalBlock"] {
-            gap: 6 !important;
+            gap: 10 !important;
         }
         [data-testid="stHorizontalBlock"] .stColumn {
             border-left: none !important;
