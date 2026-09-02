@@ -257,19 +257,6 @@ st.markdown(
             align-items: center !important;
         }
 
-        .exit-button-container {
-            display: flex !important;
-            justify-content: flex-end !important;
-            align-items: center !important;
-            height: 100%;
-        }
-        .exit-button-container .stButton button {
-            width: auto !important;
-            padding-left: 12px !important;
-            padding-right: 12px !important;
-            min-width: unset !important;
-        }
-
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
@@ -412,7 +399,7 @@ st.markdown(
         
         /* 减小子任务标题的边距 */
         .task-odd, .task-even {
-            padding: 8px 16px !important;  /* 原来 12px 减小 */
+            padding: 8px 16px !important;
             margin-bottom: 4px !important;
         }
         
@@ -428,7 +415,6 @@ st.markdown(
 
 # ================= 7. 固定顶部栏（标题） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
-# 修改为新的学术化标题
 st.markdown(
     """
     <div style="text-align: center;">
@@ -451,7 +437,6 @@ if st.session_state.user_role == "研究者":
             unsafe_allow_html=True
         )
         if not st.session_state.export_authorized:
-            # 密码框居中，宽度约为总宽的 1/2
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 export_pass = st.text_input(
@@ -461,7 +446,6 @@ if st.session_state.user_role == "研究者":
                     label_visibility="collapsed",
                     placeholder="请输入密码"
                 )
-            # 验证按钮居中，宽度约为总宽的 1/3
             col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 2])
             with col_btn2:
                 if st.button("验证", key="verify_export", use_container_width=True):
@@ -509,7 +493,6 @@ if st.session_state.user_role == "研究者":
 
 else:
     # ---------- 被试模式 ----------
-    # 如果实验已完成，显示感谢页面
     if st.session_state.experiment_completed:
         st.markdown(
             """
@@ -534,7 +517,6 @@ else:
                 st.rerun()
         st.stop()
 
-    # 显示欢迎语（仅当未同意时）
     if not st.session_state.consent_given:
         st.markdown(
             "<p style='text-align: center; font-size: 18px;'>"
@@ -544,7 +526,6 @@ else:
             unsafe_allow_html=True
         )
 
-        # 知情同意书 - 纯HTML，无Markdown混合
         st.markdown(
             """
             <div class="consent-card">
@@ -567,7 +548,7 @@ else:
                 <p><strong></strong><br</p>
                 <p><strong>自愿与退出</strong></p>
                 <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右下角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击页面最下方的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
                 </p>
                 <p><strong></strong><br</p>
                 <p><strong>风险与收益</strong></p>
@@ -586,7 +567,6 @@ else:
             unsafe_allow_html=True
         )
 
-        # 直接显示“同意”按钮，无需复选框
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
@@ -594,8 +574,6 @@ else:
                 st.rerun()
         st.stop()
 
-    # 已同意，显示主界面
-    # 处理退出确认对话框
     if st.session_state.show_exit_dialog:
         st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
         col_confirm1, col_confirm2 = st.columns(2)
@@ -627,9 +605,7 @@ else:
                 st.rerun()
         st.stop()
 
-    # 正常显示被试内容
     if not st.session_state.participant_id:
-        # 使用三列布局，将输入框居中
         col_space1, col_id, col_space2 = st.columns([1, 2, 1])
         with col_id:
             st.markdown(
@@ -648,10 +624,9 @@ else:
                 st.session_state.messages = None
                 st.rerun()
     else:
-        # 顶部不再显示编号和退出按钮（退出按钮移至右侧底部）
+        # 顶部不再显示编号和退出按钮
         pass
 
-    # 如果已输入编号，显示对话和方案
     if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
@@ -875,10 +850,11 @@ else:
                     else:
                         st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
 
-            # ---------- 退出实验按钮（放在右侧栏底部，居中） ----------
-            st.divider()
-            col_exit1, col_exit2, col_exit3 = st.columns([1, 2, 1])
-            with col_exit2:
-                if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
-                    st.session_state.show_exit_dialog = True
-                    st.rerun()
+    # ---------- 退出实验按钮（放在整个页面的最底部，居中） ----------
+    if st.session_state.participant_id:
+        st.divider()
+        col_exit1, col_exit2, col_exit3 = st.columns([1, 2, 1])
+        with col_exit2:
+            if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
+                st.session_state.show_exit_dialog = True
+                st.rerun()
