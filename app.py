@@ -184,7 +184,7 @@ else:
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
-# ================= 6. CSS =================
+# ================= 6. CSS（只增加左侧列的右侧内边距，不加分隔线） =================
 st.markdown(
     """
     <style>
@@ -202,7 +202,7 @@ st.markdown(
         }
 
         [data-testid="stHorizontalBlock"] {
-            gap: 6 !important;
+            gap: 0 !important;
         }
         [data-testid="stHorizontalBlock"] .stColumn {
             border-left: none !important;
@@ -257,10 +257,16 @@ st.markdown(
             align-items: center !important;
         }
 
+        /* 只对左侧列增加右侧内边距，不添加分隔线 */
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
+            padding-right: 30px !important;  /* 增加右侧空白 */
+            padding-left: 15px !important;   /* 保持左侧内边距 */
+            padding-top: 15px !important;
+            padding-bottom: 15px !important;
         }
+        /* 右侧列保持原样 */
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
             top: 110px !important;
@@ -269,8 +275,8 @@ st.markdown(
             max-height: calc(100vh - 110px) !important;
             overflow-y: auto !important;
             background-color: transparent !important;
-            padding: 10px !important;
-            border-left: 1px solid #ddd;
+            padding: 15px 15px 15px 15px !important;
+            border-left: none !important;
         }
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
@@ -845,7 +851,7 @@ else:
 
         # ---------- 退出实验按钮（放在整个页面的最底部，居中） ----------
         st.divider()
-        col_exit1, col_exit_center, col_exit2 = st.columns([4 , 1 , 4])
+        col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
         with col_exit_center:
             if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
                 st.session_state.show_exit_dialog = True
