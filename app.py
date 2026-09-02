@@ -845,7 +845,7 @@ else:
 
         # ---------- 退出实验按钮（放在整个页面的最底部，居中） ----------
         st.divider()
-        col_exit1, col_exit_center, col_exit2 = st.columns([3 , 1 , 3])
+        col_exit1, col_exit_center, col_exit2 = st.columns([4 , 1 , 4])
         with col_exit_center:
             if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
                 st.session_state.show_exit_dialog = True
