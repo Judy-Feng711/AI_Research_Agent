@@ -184,7 +184,7 @@ else:
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
-# ================= 6. CSS（修正版：仅对最外层两栏添加边框，不影响内部嵌套列） =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
@@ -201,7 +201,9 @@ st.markdown(
             border-right: none !important;
         }
 
-        /* 全局重置：移除所有列边框（后续再单独为最外层添加） */
+        [data-testid="stHorizontalBlock"] {
+            gap: 0 !important;
+        }
         [data-testid="stHorizontalBlock"] .stColumn {
             border-left: none !important;
             border-right: none !important;
@@ -222,7 +224,6 @@ st.markdown(
             border: none !important;
         }
 
-        /* 修复五个行为按钮列中的第五个按钮位置 */
         [data-testid="stHorizontalBlock"] .stColumn:nth-child(5) {
             justify-content: flex-start !important;
             align-items: stretch !important;
@@ -234,7 +235,6 @@ st.markdown(
             padding-top: 0 !important;
         }
 
-        /* 统一按钮样式 */
         .stButton button,
         .stForm button[type="submit"] {
             height: 38px !important;
@@ -257,17 +257,11 @@ st.markdown(
             align-items: center !important;
         }
 
-        /* ---------- 关键修复：仅对最外层左右两栏添加边框和内边距 ---------- */
-        /* 使用 > 选择器只影响直接子列，避免影响内部嵌套的列 */
-        [data-testid="stHorizontalBlock"] > .stColumn:first-child {
-            border-right: 2px solid #d1d5db !important;
-            padding: 15px 20px 15px 15px !important;
+        [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
         }
-        [data-testid="stHorizontalBlock"] > .stColumn:last-child {
-            border-left: none !important;
-            padding: 15px 15px 15px 20px !important;
+        [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
             top: 110px !important;
             align-self: flex-start !important;
@@ -275,19 +269,21 @@ st.markdown(
             max-height: calc(100vh - 110px) !important;
             overflow-y: auto !important;
             background-color: transparent !important;
+            padding: 10px !important;
+            border-left: 1px solid #ddd;
         }
-        [data-testid="stHorizontalBlock"] > .stColumn:last-child::-webkit-scrollbar {
+        [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
         }
-        [data-testid="stHorizontalBlock"] > .stColumn:last-child::-webkit-scrollbar-track {
+        [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 5px;
         }
-        [data-testid="stHorizontalBlock"] > .stColumn:last-child::-webkit-scrollbar-thumb {
+        [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar-thumb {
             background: #888;
             border-radius: 5px;
         }
-        [data-testid="stHorizontalBlock"] > .stColumn:last-child::-webkit-scrollbar-thumb:hover {
+        [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
         [data-testid="stHorizontalBlock"] {
@@ -849,7 +845,7 @@ else:
 
         # ---------- 退出实验按钮（放在整个页面的最底部，居中） ----------
         st.divider()
-        col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
+        col_exit1, col_exit_center, col_exit2 = st.columns([4 , 1 , 4])
         with col_exit_center:
             if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
                 st.session_state.show_exit_dialog = True
