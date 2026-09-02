@@ -567,7 +567,7 @@ else:
                 <p><strong></strong><br</p>
                 <p><strong>自愿与退出</strong></p>
                 <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右上角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右下角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
                 </p>
                 <p><strong></strong><br</p>
                 <p><strong>风险与收益</strong></p>
@@ -648,15 +648,8 @@ else:
                 st.session_state.messages = None
                 st.rerun()
     else:
-        col_id, col_exit = st.columns([2, 1])
-        with col_id:
-            pass
-        with col_exit:
-            st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
-            if st.button("🚪 退出实验", key="exit_button", use_container_width=False):
-                st.session_state.show_exit_dialog = True
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
+        # 顶部不再显示编号和退出按钮（退出按钮移至右侧底部）
+        pass
 
     # 如果已输入编号，显示对话和方案
     if st.session_state.participant_id:
@@ -786,7 +779,6 @@ else:
                     "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
                     value=existing_plan["task1_text"] if existing_plan else "",
                     height=160,
-                    # max_chars=150,
                     key="task1_text"
                 )
                 st.divider()
@@ -795,7 +787,6 @@ else:
                     "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
                     value=existing_plan["task2_text"] if existing_plan else "",
                     height=160,
-                    # max_chars=150,
                     key="task2_text"
                 )
                 st.divider()
@@ -804,7 +795,6 @@ else:
                     "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
                     value=existing_plan["task3_text"] if existing_plan else "",
                     height=160,
-                    # max_chars=150,
                     key="task3_text"
                 )
                 st.divider()
@@ -813,7 +803,6 @@ else:
                     "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
                     value=existing_plan["task4_text"] if existing_plan else "",
                     height=160,
-                    # max_chars=150,
                     key="task4_text"
                 )
                 st.divider()
@@ -822,7 +811,6 @@ else:
                     "1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
                     value=existing_plan["task5_text"] if existing_plan else "",
                     height=300,
-                    # max_chars=500,
                     key="task5_text"
                 )
                 st.divider()
@@ -831,7 +819,6 @@ else:
                     "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
                     value=existing_plan["task6_text"] if existing_plan else "",
                     height=160,
-                    # max_chars=150,
                     key="task6_text"
                 )
                 st.markdown(
@@ -865,7 +852,10 @@ else:
     """,
     unsafe_allow_html=True
 )
-                submitted = st.form_submit_button("📤 提交方案")
+                # 提交按钮右对齐
+                col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
+                with col_submit_btn_right:
+                    submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
                 if submitted:
                     if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
                                 task4_text.strip(), task5_text.strip(), task6_text.strip()]):
@@ -884,3 +874,11 @@ else:
                         st.rerun()
                     else:
                         st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
+
+            # ---------- 退出实验按钮（放在右侧栏底部，居中） ----------
+            st.divider()
+            col_exit1, col_exit2, col_exit3 = st.columns([1, 2, 1])
+            with col_exit2:
+                if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
+                    st.session_state.show_exit_dialog = True
+                    st.rerun()
