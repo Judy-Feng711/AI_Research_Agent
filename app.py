@@ -184,7 +184,7 @@ else:
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
-# ================= 6. CSS（美化版，移除卡片边框，保留分隔线） =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
@@ -201,23 +201,15 @@ st.markdown(
             border-right: none !important;
         }
 
-        /* 增加左右两栏间距和分隔线 */
         [data-testid="stHorizontalBlock"] {
-            gap: 20px !important;
+            gap: 0 !important;
         }
-        [data-testid="stHorizontalBlock"] .stColumn:first-child {
-            border-right: 1px solid #e5e7eb;
-            padding-right: 20px !important;
-        }
-        [data-testid="stHorizontalBlock"] .stColumn:last-child {
-            padding-left: 20px !important;
-        }
-
         [data-testid="stHorizontalBlock"] .stColumn {
             border-left: none !important;
             border-right: none !important;
             box-shadow: none !important;
             background: transparent !important;
+            padding: 0 1px !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: flex-start !important;
@@ -258,9 +250,6 @@ st.markdown(
             line-height: 1.2 !important;
             font-size: 14px !important;
             text-align: center !important;
-            border: 1px solid #d1d5db !important;
-            outline: none !important;
-            box-shadow: none !important;
         }
         .stButton {
             height: 38px !important;
@@ -281,26 +270,20 @@ st.markdown(
             min-width: unset !important;
         }
 
-        /* 左右两栏卡片样式（无外部边框） */
         [data-testid="stHorizontalBlock"] > div:first-child {
-            background-color: #f9fafb;
-            padding: 15px 15px 20px 15px !important;
-            border-radius: 12px;
-            border: none !important;  /* 移除边框 */
-            margin-right: 0;
+            overflow: visible !important;
+            height: auto !important;
         }
         [data-testid="stHorizontalBlock"] > div:last-child {
-            background-color: #f9fafb;
-            padding: 15px 15px 20px 15px !important;
-            border-radius: 12px;
-            border: none !important;  /* 移除边框 */
-            margin-left: 0;
             position: sticky !important;
             top: 110px !important;
             align-self: flex-start !important;
             height: auto !important;
             max-height: calc(100vh - 110px) !important;
             overflow-y: auto !important;
+            background-color: transparent !important;
+            padding: 10px !important;
+            border-left: 1px solid #ddd;
         }
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
@@ -429,7 +412,7 @@ st.markdown(
         
         /* 减小子任务标题的边距 */
         .task-odd, .task-even {
-            padding: 8px 16px !important;
+            padding: 8px 16px !important;  /* 原来 12px 减小 */
             margin-bottom: 4px !important;
         }
         
@@ -437,6 +420,7 @@ st.markdown(
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
+        
     </style>
     """,
     unsafe_allow_html=True
@@ -444,6 +428,7 @@ st.markdown(
 
 # ================= 7. 固定顶部栏（标题） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
+# 修改为新的学术化标题
 st.markdown(
     """
     <div style="text-align: center;">
@@ -466,6 +451,7 @@ if st.session_state.user_role == "研究者":
             unsafe_allow_html=True
         )
         if not st.session_state.export_authorized:
+            # 密码框居中，宽度约为总宽的 1/2
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 export_pass = st.text_input(
@@ -475,6 +461,7 @@ if st.session_state.user_role == "研究者":
                     label_visibility="collapsed",
                     placeholder="请输入密码"
                 )
+            # 验证按钮居中，宽度约为总宽的 1/3
             col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 2])
             with col_btn2:
                 if st.button("验证", key="verify_export", use_container_width=True):
@@ -522,6 +509,7 @@ if st.session_state.user_role == "研究者":
 
 else:
     # ---------- 被试模式 ----------
+    # 如果实验已完成，显示感谢页面
     if st.session_state.experiment_completed:
         st.markdown(
             """
@@ -546,6 +534,7 @@ else:
                 st.rerun()
         st.stop()
 
+    # 显示欢迎语（仅当未同意时）
     if not st.session_state.consent_given:
         st.markdown(
             "<p style='text-align: center; font-size: 18px;'>"
@@ -555,6 +544,7 @@ else:
             unsafe_allow_html=True
         )
 
+        # 知情同意书 - 纯HTML，无Markdown混合
         st.markdown(
             """
             <div class="consent-card">
@@ -596,6 +586,7 @@ else:
             unsafe_allow_html=True
         )
 
+        # 直接显示“同意”按钮，无需复选框
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
@@ -603,6 +594,8 @@ else:
                 st.rerun()
         st.stop()
 
+    # 已同意，显示主界面
+    # 处理退出确认对话框
     if st.session_state.show_exit_dialog:
         st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
         col_confirm1, col_confirm2 = st.columns(2)
@@ -634,7 +627,9 @@ else:
                 st.rerun()
         st.stop()
 
+    # 正常显示被试内容
     if not st.session_state.participant_id:
+        # 使用三列布局，将输入框居中
         col_space1, col_id, col_space2 = st.columns([1, 2, 1])
         with col_id:
             st.markdown(
@@ -653,16 +648,24 @@ else:
                 st.session_state.messages = None
                 st.rerun()
     else:
-        # 顶部不再显示编号，退出按钮移至右侧底部
-        pass
+        col_id, col_exit = st.columns([2, 1])
+        with col_id:
+            pass
+        with col_exit:
+            st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
+            if st.button("🚪 退出实验", key="exit_button", use_container_width=False):
+                st.session_state.show_exit_dialog = True
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
+    # 如果已输入编号，显示对话和方案
     if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        col_left, col_right = st.columns([55, 45], gap="medium")
+        col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
             for msg in st.session_state.messages:
@@ -773,9 +776,9 @@ else:
                     st.rerun()
 
         with col_right:
-            st.subheader("📝 研究方案填写")
+            st.subheader("📝 研究方案填写区")
             existing_plan = load_plan(st.session_state.participant_id)
-            st.markdown("**AI协同研究方案生成记录表**")
+            st.markdown("**AI协同研究方案撰写**")
             st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
             with st.form(key="plan_form"):
                 st.markdown("**子任务1：选题与文献发现**")
@@ -783,6 +786,7 @@ else:
                     "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
                     value=existing_plan["task1_text"] if existing_plan else "",
                     height=160,
+                    # max_chars=150,
                     key="task1_text"
                 )
                 st.divider()
@@ -791,6 +795,7 @@ else:
                     "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
                     value=existing_plan["task2_text"] if existing_plan else "",
                     height=160,
+                    # max_chars=150,
                     key="task2_text"
                 )
                 st.divider()
@@ -799,6 +804,7 @@ else:
                     "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
                     value=existing_plan["task3_text"] if existing_plan else "",
                     height=160,
+                    # max_chars=150,
                     key="task3_text"
                 )
                 st.divider()
@@ -807,6 +813,7 @@ else:
                     "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
                     value=existing_plan["task4_text"] if existing_plan else "",
                     height=160,
+                    # max_chars=150,
                     key="task4_text"
                 )
                 st.divider()
@@ -815,6 +822,7 @@ else:
                     "1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
                     value=existing_plan["task5_text"] if existing_plan else "",
                     height=300,
+                    # max_chars=500,
                     key="task5_text"
                 )
                 st.divider()
@@ -823,33 +831,40 @@ else:
                     "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
                     value=existing_plan["task6_text"] if existing_plan else "",
                     height=160,
+                    # max_chars=150,
                     key="task6_text"
                 )
                 st.markdown(
-                    """
-                    <style>
-                        textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
-                            background-color: #e6f3ff;
-                        }
-                        textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
-                            background-color: #f5e6ff;
-                        }
-                        textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
-                            background-color: #e6f3ff;
-                        }
-                        textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
-                            background-color: #f5e6ff;
-                        }
-                        textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
-                            background-color: #e6f3ff;
-                        }
-                        textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
-                            background-color: #f5e6ff;
-                        }
-                    </style>
-                    """,
-                    unsafe_allow_html=True
-                )
+    """
+    <style>
+        /* 子任务1 - 浅蓝 */
+        textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
+            background-color: #e6f3ff;
+        }
+        /* 子任务2 - 浅绿（和第一个不同） */
+        textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+        /* 子任务3 - 浅黄 */
+        textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
+            background-color: #e6f3ff;
+        }
+        /* 子任务4 - 浅紫 */
+        textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+        /* 子任务5 - 浅粉 */
+        textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
+            background-color: #e6f3ff;
+        }
+        /* 子任务6 - 浅青 */
+        textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
                 submitted = st.form_submit_button("📤 提交方案")
                 if submitted:
                     if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
