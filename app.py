@@ -184,7 +184,7 @@ else:
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
-# ================= 6. CSS（新增用户/AI消息头像位置样式） =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
@@ -408,13 +408,6 @@ st.markdown(
             margin-bottom: 0 !important;
         }
         
-        /* ---------- 新增：用户消息头像靠右，AI消息头像靠左 ---------- */
-        .user-msg [data-testid="stChatMessage"] {
-            flex-direction: row-reverse !important;
-        }
-        .assistant-msg [data-testid="stChatMessage"] {
-            flex-direction: row !important;
-        }
     </style>
     """,
     unsafe_allow_html=True
@@ -642,16 +635,10 @@ else:
         col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
-            # 历史消息循环（已添加头像位置包裹）
             for msg in st.session_state.messages:
                 if msg["role"] != "system":
-                    if msg["role"] == "user":
-                        st.markdown('<div class="user-msg">', unsafe_allow_html=True)
-                    else:
-                        st.markdown('<div class="assistant-msg">', unsafe_allow_html=True)
                     with st.chat_message(msg["role"]):
                         st.markdown(msg["content"])
-                    st.markdown('</div>', unsafe_allow_html=True)
 
             with st.form(key="prompt_form", clear_on_submit=True):
                 user_input = st.text_area(
@@ -712,19 +699,14 @@ else:
 
                     full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
 
-                    # 用户消息（头像靠右）
-                    st.markdown('<div class="user-msg">', unsafe_allow_html=True)
                     with st.chat_message("user"):
                         if file_content:
                             st.markdown(f"📎 **已附加文档**，提问：{user_input}")
                         else:
                             st.markdown(f"**[{clicked_behavior}]** {user_input}")
-                    st.markdown('</div>', unsafe_allow_html=True)
 
                     st.session_state.messages.append({"role": "user", "content": full_user_message})
 
-                    # AI 消息（头像靠左）
-                    st.markdown('<div class="assistant-msg">', unsafe_allow_html=True)
                     with st.chat_message("assistant"):
                         with st.spinner("思考中..."):
                             try:
@@ -737,7 +719,6 @@ else:
                             except Exception as e:
                                 st.error(f"AI 调用失败：{e}")
                                 st.stop()
-                    st.markdown('</div>', unsafe_allow_html=True)
                     st.session_state.messages.append({"role": "assistant", "content": ai_reply})
                     st.session_state.round_count += 1
 
