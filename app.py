@@ -257,10 +257,14 @@ st.markdown(
             align-items: center !important;
         }
 
+        /* 左侧列：添加右边框，增大内边距 */
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
+            border-right: 2px solid #d1d5db !important;
+            padding: 15px 20px 15px 15px !important;
         }
+        /* 右侧列：移除左边框，增大左侧内边距以平衡 */
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
             top: 110px !important;
@@ -269,8 +273,8 @@ st.markdown(
             max-height: calc(100vh - 110px) !important;
             overflow-y: auto !important;
             background-color: transparent !important;
-            padding: 10px !important;
-            border-left: 1px solid #ddd;
+            padding: 15px 15px 15px 20px !important;
+            border-left: none !important;
         }
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
