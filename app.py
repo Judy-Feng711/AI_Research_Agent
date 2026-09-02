@@ -785,7 +785,7 @@ else:
                     "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
                     value=existing_plan["task1_text"] if existing_plan else "",
                     height=160,
-                    max_chars=150,
+                    # max_chars=150,
                     key="task1_text"
                 )
                 st.divider()
@@ -794,7 +794,7 @@ else:
                     "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
                     value=existing_plan["task2_text"] if existing_plan else "",
                     height=160,
-                    max_chars=150,
+                    # max_chars=150,
                     key="task2_text"
                 )
                 st.divider()
@@ -803,7 +803,7 @@ else:
                     "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
                     value=existing_plan["task3_text"] if existing_plan else "",
                     height=160,
-                    max_chars=150,
+                    # max_chars=150,
                     key="task3_text"
                 )
                 st.divider()
@@ -812,7 +812,7 @@ else:
                     "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
                     value=existing_plan["task4_text"] if existing_plan else "",
                     height=160,
-                    max_chars=150,
+                    # max_chars=150,
                     key="task4_text"
                 )
                 st.divider()
@@ -821,7 +821,7 @@ else:
                     "1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
                     value=existing_plan["task5_text"] if existing_plan else "",
                     height=300,
-                    max_chars=500,
+                    # max_chars=500,
                     key="task5_text"
                 )
                 st.divider()
@@ -830,7 +830,7 @@ else:
                     "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
                     value=existing_plan["task6_text"] if existing_plan else "",
                     height=160,
-                    max_chars=150,
+                    # max_chars=150,
                     key="task6_text"
                 )
                 st.markdown(
