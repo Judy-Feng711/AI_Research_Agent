@@ -260,8 +260,6 @@ st.markdown(
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
-            border-right: 2px solid #d1d5db !important;   /* 新增分隔线 */
-            padding-right: 20px !important;               /* 适当增加右侧内边距（可选） */
         }
         
         [data-testid="stHorizontalBlock"] > div:last-child {
@@ -273,7 +271,7 @@ st.markdown(
             overflow-y: auto !important;
             background-color: transparent !important;
             padding: 10px !important;
-            border-left: none !important;                 /* 移除左边框，避免双重线 */
+            border-left: 1px solid #ddd;
         }
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
