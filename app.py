@@ -782,7 +782,7 @@ else:
             with st.form(key="plan_form"):
                 st.markdown("**子任务1：选题与文献发现**")
                 task1_text = st.text_area(
-                    "请写清您的核心研究问题、选题依据及所依据的理论视角。（限150字）",
+                    "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
                     value=existing_plan["task1_text"] if existing_plan else "",
                     height=160,
                     max_chars=150,
