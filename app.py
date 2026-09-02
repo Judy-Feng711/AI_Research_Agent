@@ -257,19 +257,6 @@ st.markdown(
             align-items: center !important;
         }
 
-        .exit-button-container {
-            display: flex !important;
-            justify-content: flex-end !important;
-            align-items: center !important;
-            height: 100%;
-        }
-        .exit-button-container .stButton button {
-            width: auto !important;
-            padding-left: 12px !important;
-            padding-right: 12px !important;
-            min-width: unset !important;
-        }
-
         [data-testid="stHorizontalBlock"] > div:first-child {
             overflow: visible !important;
             height: auto !important;
@@ -428,7 +415,6 @@ st.markdown(
 
 # ================= 7. 固定顶部栏（标题） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
-# 修改为新的学术化标题
 st.markdown(
     """
     <div style="text-align: center;">
@@ -451,7 +437,6 @@ if st.session_state.user_role == "研究者":
             unsafe_allow_html=True
         )
         if not st.session_state.export_authorized:
-            # 密码框居中，宽度约为总宽的 1/2
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 export_pass = st.text_input(
@@ -461,7 +446,6 @@ if st.session_state.user_role == "研究者":
                     label_visibility="collapsed",
                     placeholder="请输入密码"
                 )
-            # 验证按钮居中，宽度约为总宽的 1/3
             col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 2])
             with col_btn2:
                 if st.button("验证", key="verify_export", use_container_width=True):
@@ -509,7 +493,6 @@ if st.session_state.user_role == "研究者":
 
 else:
     # ---------- 被试模式 ----------
-    # 如果实验已完成，显示感谢页面
     if st.session_state.experiment_completed:
         st.markdown(
             """
@@ -534,7 +517,6 @@ else:
                 st.rerun()
         st.stop()
 
-    # 显示欢迎语（仅当未同意时）
     if not st.session_state.consent_given:
         st.markdown(
             "<p style='text-align: center; font-size: 18px;'>"
@@ -544,7 +526,6 @@ else:
             unsafe_allow_html=True
         )
 
-        # 知情同意书 - 纯HTML，无Markdown混合
         st.markdown(
             """
             <div class="consent-card">
@@ -586,7 +567,6 @@ else:
             unsafe_allow_html=True
         )
 
-        # 直接显示“同意”按钮，无需复选框
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
@@ -594,8 +574,6 @@ else:
                 st.rerun()
         st.stop()
 
-    # 已同意，显示主界面
-    # 处理退出确认对话框
     if st.session_state.show_exit_dialog:
         st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
         col_confirm1, col_confirm2 = st.columns(2)
@@ -627,9 +605,7 @@ else:
                 st.rerun()
         st.stop()
 
-    # 正常显示被试内容
     if not st.session_state.participant_id:
-        # 使用三列布局，将输入框居中
         col_space1, col_id, col_space2 = st.columns([1, 2, 1])
         with col_id:
             st.markdown(
@@ -648,10 +624,8 @@ else:
                 st.session_state.messages = None
                 st.rerun()
     else:
-        # 顶部不再显示编号和退出按钮（退出按钮移至右侧底部）
-        pass
+        pass  # 顶部不再显示编号
 
-    # 如果已输入编号，显示对话和方案
     if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
@@ -824,27 +798,21 @@ else:
                 st.markdown(
     """
     <style>
-        /* 子任务1 - 浅蓝 */
         textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
             background-color: #e6f3ff;
         }
-        /* 子任务2 - 浅绿（和第一个不同） */
         textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
             background-color: #f5e6ff;
         }
-        /* 子任务3 - 浅黄 */
         textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
             background-color: #e6f3ff;
         }
-        /* 子任务4 - 浅紫 */
         textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
             background-color: #f5e6ff;
         }
-        /* 子任务5 - 浅粉 */
         textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
             background-color: #e6f3ff;
         }
-        /* 子任务6 - 浅青 */
         textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
             background-color: #f5e6ff;
         }
@@ -875,10 +843,10 @@ else:
                     else:
                         st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
 
-            # ---------- 退出实验按钮（放在右侧栏底部，右对齐，宽度与提交按钮一致） ----------
-            st.divider()
-            col_exit_left, col_exit_right = st.columns([3, 1])
-            with col_exit_right:
-                if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
-                    st.session_state.show_exit_dialog = True
-                    st.rerun()
+        # ---------- 退出实验按钮（放在整个页面的最底部，居中） ----------
+        st.divider()
+        col_exit1, col_exit_center, col_exit2 = st.columns([1, 2, 1])
+        with col_exit_center:
+            if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
+                st.session_state.show_exit_dialog = True
+                st.rerun()
