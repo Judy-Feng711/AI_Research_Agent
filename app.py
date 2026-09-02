@@ -184,7 +184,7 @@ else:
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
-# ================= 6. CSS（美化版 + 增加左右分隔） =================
+# ================= 6. CSS（美化版，移除卡片边框，保留分隔线） =================
 st.markdown(
     """
     <style>
@@ -258,6 +258,9 @@ st.markdown(
             line-height: 1.2 !important;
             font-size: 14px !important;
             text-align: center !important;
+            border: 1px solid #d1d5db !important;
+            outline: none !important;
+            box-shadow: none !important;
         }
         .stButton {
             height: 38px !important;
@@ -278,19 +281,19 @@ st.markdown(
             min-width: unset !important;
         }
 
-        /* 左右两栏卡片样式美化 */
+        /* 左右两栏卡片样式（无外部边框） */
         [data-testid="stHorizontalBlock"] > div:first-child {
             background-color: #f9fafb;
             padding: 15px 15px 20px 15px !important;
             border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            margin-right: 0;  /* 移除原有 margin，由 gap 控制 */
+            border: none !important;  /* 移除边框 */
+            margin-right: 0;
         }
         [data-testid="stHorizontalBlock"] > div:last-child {
             background-color: #f9fafb;
             padding: 15px 15px 20px 15px !important;
             border-radius: 12px;
-            border: 1px solid #e5e7eb;
+            border: none !important;  /* 移除边框 */
             margin-left: 0;
             position: sticky !important;
             top: 110px !important;
@@ -659,7 +662,6 @@ else:
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        # 左右两栏比例 55% : 45%，并使用 medium 间距
         col_left, col_right = st.columns([55, 45], gap="medium")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
