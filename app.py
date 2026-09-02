@@ -649,7 +649,7 @@ else:
     else:
         col_id, col_exit = st.columns([2, 1])
         with col_id:
-            st.markdown(f"**当前被试：{st.session_state.participant_id}**")
+            pass
         with col_exit:
             st.markdown('<div class="exit-button-container">', unsafe_allow_html=True)
             if st.button("🚪 退出实验", key="exit_button", use_container_width=False):
