@@ -184,7 +184,7 @@ else:
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
-# ================= 6. CSS（左右两栏卡片样式统一） =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
@@ -257,16 +257,10 @@ st.markdown(
             align-items: center !important;
         }
 
-        /* 左右两栏卡片样式统一 */
-        [data-testid="stHorizontalBlock"] > div:first-child,
-        [data-testid="stHorizontalBlock"] > div:last-child {
-            background-color: #f9fafb;
-            padding: 15px 15px 20px 15px !important;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            margin: 0 !important;
+        [data-testid="stHorizontalBlock"] > div:first-child {
+            overflow: visible !important;
+            height: auto !important;
         }
-
         [data-testid="stHorizontalBlock"] > div:last-child {
             position: sticky !important;
             top: 110px !important;
@@ -274,6 +268,9 @@ st.markdown(
             height: auto !important;
             max-height: calc(100vh - 110px) !important;
             overflow-y: auto !important;
+            background-color: transparent !important;
+            padding: 10px !important;
+            border-left: 1px solid #ddd;
         }
         [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
             width: 6px;
@@ -294,11 +291,6 @@ st.markdown(
             min-height: 0 !important;
             overflow: visible !important;
             align-items: flex-start !important;
-            gap: 20px !important; /* 增加左右间距，保持分隔感 */
-        }
-        /* 增加左右分隔线 */
-        [data-testid="stHorizontalBlock"] .stColumn:first-child {
-            border-right: 1px solid #e5e7eb !important;
         }
 
         .role-btn-container {
@@ -407,7 +399,7 @@ st.markdown(
         
         /* 减小子任务标题的边距 */
         .task-odd, .task-even {
-            padding: 8px 16px !important;
+            padding: 8px 16px !important;  /* 原来 12px 减小 */
             margin-bottom: 4px !important;
         }
         
@@ -642,21 +634,7 @@ else:
 
         col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
-            # ----- 左侧对话区域（卡片内部） -----
-            # 标题：智能对话交互区（与右侧格式一致）
-            st.subheader("💬 智能对话交互区")
-            # 说明文字（类似右侧的 caption）
-            st.caption("请根据您的研究需求，与AI进行深度对话。您可以在交互过程中随时记录要点，或最后集中整理。")
-            # 欢迎语（作为普通文本）
-            st.markdown(
-                "<p style='font-size: 15px; color: #2d3748;'>"
-                "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
-                "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
-                "请详细告诉我您的要求。"
-                "</p>",
-                unsafe_allow_html=True
-            )
-            # 历史消息（保持原样）
+            st.subheader("💬 AI 学术助手对话")
             for msg in st.session_state.messages:
                 if msg["role"] != "system":
                     with st.chat_message(msg["role"]):
@@ -765,7 +743,6 @@ else:
                     st.rerun()
 
         with col_right:
-            # 右侧方案填写区域（保持不变）
             st.subheader("📝 研究方案填写区")
             existing_plan = load_plan(st.session_state.participant_id)
             st.markdown("**AI协同研究方案撰写**")
