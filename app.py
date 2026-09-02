@@ -776,9 +776,9 @@ else:
                     st.rerun()
 
         with col_right:
-            st.subheader("📝 研究方案填写")
+            st.subheader("📝 研究方案填写区")
             existing_plan = load_plan(st.session_state.participant_id)
-            st.markdown("**AI协同研究方案生成记录表**")
+            st.markdown("**AI协同研究方案撰写**")
             st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
             with st.form(key="plan_form"):
                 st.markdown("**子任务1：选题与文献发现**")
