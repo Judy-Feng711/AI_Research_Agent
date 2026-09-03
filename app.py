@@ -483,7 +483,7 @@ st.markdown(
             transform: translate(-50%, -50%);
         }
         /* 隐藏 text_area 右下角的快捷键提示 */
-        .stTextAreaFooter {
+        .stTextArea [data-testid="stTextArea"] + div {
             display: none !important;
         }
     </style>
