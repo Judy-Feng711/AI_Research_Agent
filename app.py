@@ -482,9 +482,12 @@ st.markdown(
             left: 50%;
             transform: translate(-50%, -50%);
         }
-        /* 隐藏 text_area 右下角的快捷键提示 */
-        .stTextArea [data-testid="stTextArea"] + div {
-            display: none !important;
+        
+        /* 隐藏所有输入框（text_area/text_input）右下角的 "Press Ctrl+Enter to submit" 提示 */
+        [data-testid="InputInstructions"] {
+            visibility: hidden !important;
+            color: transparent !important;
+            opacity: 0 !important;
         }
     </style>
     """,
