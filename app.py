@@ -626,7 +626,7 @@ else:
 
     if not st.session_state.consent_given:
         st.markdown(
-            "<p style='text-align: center; font-size: 18px;'>"
+            "<p style='text-align: center; font-size: 16px;'>"
             "您好！我是本研究“人工智能时代的教师教育与教师专业发展研究”配置的AI学术助手。本研究旨在探索AI赋能教育研究的方法论路径。在与您正式协作前，请您仔细阅读并签署下方的《知情同意书》，以确认了解本次交互的数据使用范围与您的权益保障。如您同意，我们将在点击确认后进入正式研究环节。"
 
             "</p>",
