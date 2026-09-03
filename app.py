@@ -29,34 +29,22 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# ================= 3. 状态持久化函数（修复版：按时间戳重建消息） =================
+# ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
-    """
-    从数据库加载被试状态：
-    - 从 research_logs 按时间戳顺序重建完整消息列表
-    - 与 participant_state 存储的消息对比，若一致则直接使用，否则重建并更新
-    - 始终返回 (messages, round_count)
-    """
     messages = get_initial_messages()
     round_count = 0
-
     try:
-        # 1. 从 research_logs 获取所有有效日志（按时间戳升序）
         log_resp = supabase.table("research_logs")\
             .select("*")\
             .eq("participant_id", pid)\
             .order("timestamp", desc=False)\
             .execute()
         log_data = log_resp.data if log_resp.data else []
-
-        # 统计有效轮数（有效行为 + 非空输入）
         valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
         round_count = sum(1 for log in log_data 
                           if log.get("behavior_button") in valid_behaviors 
                           and log.get("user_prompt") 
                           and log.get("user_prompt").strip() != "")
-
-        # 2. 重建消息列表（系统消息 + 所有有效日志的 user/assistant 对）
         rebuilt = [{"role": "system", "content": SYSTEM_PROMPT}]
         for log in log_data:
             if log.get("behavior_button") in valid_behaviors and log.get("user_prompt") and log.get("user_prompt").strip() != "":
@@ -71,8 +59,6 @@ def load_participant_state(pid):
             messages = get_initial_messages()
         else:
             messages = rebuilt
-
-        # 3. 尝试从 participant_state 加载存储的消息，并比较是否一致
         state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
         if state_resp.data:
             raw = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
@@ -89,12 +75,10 @@ def load_participant_state(pid):
                 save_participant_state(pid, messages, round_count)
         else:
             save_participant_state(pid, messages, round_count)
-
     except Exception as e:
         st.error(f"⚠️ 加载被试 {pid} 数据失败，请检查网络或刷新重试。错误详情：{e}")
         messages = get_initial_messages()
         round_count = 0
-
     return messages, round_count
 
 def save_participant_state(pid, messages, round_count):
@@ -117,7 +101,7 @@ def get_initial_messages():
         {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"}
     ]
 
-# ================= 4. 方案数据函数（6个子任务） =================
+# ================= 4. 方案数据函数 =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
@@ -155,7 +139,6 @@ def save_plan(pid, task1_text, task2_text, task3_text, task4_text, task5_text, t
 # ================= 5. 页面初始化 =================
 st.set_page_config(page_title="教育实证研究全周期智能协同框架", page_icon="📘", layout="wide")
 
-# 强制初始化所有 session_state 变量
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
 if "messages" not in st.session_state:
@@ -175,12 +158,10 @@ if "user_role" not in st.session_state:
 if "export_authorized" not in st.session_state:
     st.session_state.export_authorized = False
 
-# ================= 角色判断（使用 URL 参数控制） =================
 query_params = st.query_params
 if "mode" in query_params and query_params["mode"] == "admin":
     st.session_state.user_role = "研究者"
 else:
-    # 如果已经选择过角色，则保留，否则默认被试
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
@@ -319,7 +300,6 @@ st.markdown(
             margin-top: 4px;
         }
 
-        /* 知情同意书卡片样式 - 纯HTML方案 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
             padding: 30px 35px;
@@ -377,44 +357,67 @@ st.markdown(
             padding-top: 16px;
             border-top: 1px dashed #b0c4de;
         }
-        /* 减小分隔线的上下间距 */
         .stDivider hr {
             margin-top: 1px !important;
             margin-bottom: 1px !important;
         }
-        /* 减小分隔线的上下间距 */
         hr {
             margin-top: 4px !important;
             margin-bottom: 4px !important;
         }
-        
-        /* 减小每个子任务外部容器的下边距 */
         [data-testid="stVerticalBlock"] > .stMarkdown {
             margin-bottom: 2px !important;
         }
-        
-        /* 减小 text_area 容器的下边距 */
         [data-testid="stTextArea"] {
             margin-bottom: 2px !important;
         }
-        
-        /* 减小子任务标题的边距 */
         .task-odd, .task-even {
-            padding: 8px 16px !important;  /* 原来 12px 减小 */
+            padding: 8px 16px !important;
             margin-bottom: 4px !important;
         }
-        
-        /* 确保子任务内的 text_area 也没有额外边距 */
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
         
+        /* ========== 新增样式：输入框与上传文档的组合容器 ========== */
+        .input-upload-wrapper {
+            background-color: #f0f2f6;
+            border-radius: 12px;
+            padding: 10px 15px 10px 15px;
+            margin-bottom: 8px;
+        }
+        .input-upload-wrapper .stTextArea textarea {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 8px 0 !important;
+        }
+        .input-upload-wrapper .stFileUploader {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .input-upload-wrapper .stFileUploader button {
+            background-color: transparent;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            padding: 4px 12px;
+            font-size: 14px;
+            color: #555;
+        }
+        .input-upload-wrapper .stFileUploader button:hover {
+            background-color: #e6e6e6;
+        }
+        /* 确保上传按钮不占过多宽度 */
+        .input-upload-wrapper .stFileUploader > div {
+            width: auto !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# ================= 7. 固定顶部栏（标题） =================
+# ================= 7. 固定顶部栏 =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 st.markdown(
     """
@@ -429,7 +432,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
-    # ---------- 研究者模式（居中，密码框缩小，验证在下方） ----------
+    # ---------- 研究者模式 ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
     with col_center:
         st.markdown("<h3 style='text-align: center;'>📊 研究者数据导出</h3>", unsafe_allow_html=True)
@@ -625,7 +628,7 @@ else:
                 st.session_state.messages = None
                 st.rerun()
     else:
-        pass  # 顶部不再显示编号
+        pass
 
     if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
@@ -642,25 +645,32 @@ else:
                         st.markdown(msg["content"])
 
             with st.form(key="prompt_form", clear_on_submit=True):
-                # 1. 上传文档（放在输入框上方）
-                uploaded_file = st.file_uploader(
-                    "📎 上传文档",
-                    type=["pdf", "docx"],
-                    help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
-                    key="file_uploader_simple"
-                )
-                if uploaded_file is not None:
-                    st.caption(f"已选择：{uploaded_file.name}")
+                # ---------- 新布局：灰色圆角矩形包含输入框和上传文档 ----------
+                st.markdown('<div class="input-upload-wrapper">', unsafe_allow_html=True)
+                # 两列：左列输入框，右列上传文档按钮（右对齐）
+                col_input, col_upload = st.columns([7, 1])
+                with col_input:
+                    user_input = st.text_area(
+                        "在这里输入您的提示词 (Prompt)：",
+                        height=100,
+                        key="prompt_input",
+                        label_visibility="collapsed"
+                    )
+                with col_upload:
+                    # 占位，使上传按钮垂直居中
+                    st.write("")  # 占位
+                    uploaded_file = st.file_uploader(
+                        "📎 上传文档",
+                        type=["pdf", "docx"],
+                        help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
+                        key="file_uploader_simple",
+                        label_visibility="collapsed"
+                    )
+                    if uploaded_file is not None:
+                        st.caption(f"已选择：{uploaded_file.name}")
+                st.markdown('</div>', unsafe_allow_html=True)
 
-                # 2. 输入框
-                user_input = st.text_area(
-                    "在这里输入您的提示词 (Prompt)：",
-                    height=100,
-                    key="prompt_input",
-                    label_visibility="collapsed"
-                )
-
-                # 3. 五个行为按钮（紧贴输入框下方）
+                # 五个行为按钮（紧贴下方）
                 st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
                 col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                 clicked_behavior = None
@@ -825,7 +835,6 @@ else:
     """,
     unsafe_allow_html=True
 )
-                # 提交按钮右对齐
                 col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
                 with col_submit_btn_right:
                     submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
@@ -848,7 +857,6 @@ else:
                     else:
                         st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
 
-        # ---------- 退出实验按钮（放在整个页面的最底部，居中） ----------
         st.divider()
         col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
         with col_exit_center:
