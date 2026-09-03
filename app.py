@@ -29,6 +29,9 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
+# 初始欢迎语（提取为常量，供 get_initial_messages 与页面展示复用，避免重复维护）
+INITIAL_GREETING = "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
+
 # ================= 3. 状态持久化函数（修复版：按时间戳重建消息） =================
 def load_participant_state(pid):
     """
@@ -114,7 +117,7 @@ def save_participant_state(pid, messages, round_count):
 def get_initial_messages():
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"}
+        {"role": "assistant", "content": INITIAL_GREETING}
     ]
 
 # ================= 4. 方案数据函数（6个子任务） =================
@@ -482,13 +485,43 @@ st.markdown(
             left: 50%;
             transform: translate(-50%, -50%);
         }
-        
+
         /* 隐藏所有输入框（text_area/text_input）右下角的 "Press Ctrl+Enter to submit" 提示 */
         [data-testid="InputInstructions"] {
             visibility: hidden !important;
             color: transparent !important;
             opacity: 0 !important;
         }
+
+        /* ========== 左侧「研究人机交互区」对话内容：圆角矩形容器 ========== */
+        .st-key-chat_display_box {
+            border: 1px solid #e2e5ea;
+            border-radius: 14px;
+            background-color: #fafbfc;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            max-height: 560px;
+            overflow-y: auto;
+        }
+        .st-key-chat_display_box::-webkit-scrollbar {
+            width: 6px;
+        }
+        .st-key-chat_display_box::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+        .st-key-chat_display_box::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 5px;
+        }
+        .st-key-chat_display_box::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        /* 圆角框内的聊天气泡容器不需要再额外加下边距 */
+        .st-key-chat_display_box [data-testid="stChatMessage"] {
+            margin-bottom: 6px !important;
+        }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -715,11 +748,25 @@ else:
 
         col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
-            st.subheader("💬 AI 学术助手对话")
-            for msg in st.session_state.messages:
-                if msg["role"] != "system":
+            # ---------- 与右侧「研究方案填写区」保持格式对称 ----------
+            st.subheader("💬 研究人机交互区")
+            st.markdown("**AI 学术助手对话**")
+            st.caption(INITIAL_GREETING)
+
+            # ---------- 对话内容：圆角矩形框展示 ----------
+            with st.container(key="chat_display_box"):
+                has_dialogue = False
+                for msg in st.session_state.messages:
+                    if msg["role"] == "system":
+                        continue
+                    # 跳过初始欢迎语（已作为上方 caption 展示，避免重复）
+                    if msg["role"] == "assistant" and msg["content"] == INITIAL_GREETING:
+                        continue
+                    has_dialogue = True
                     with st.chat_message(msg["role"]):
                         st.markdown(msg["content"])
+                if not has_dialogue:
+                    st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
 
             with st.form(key="prompt_form", clear_on_submit=True):
                 # 1&2. 输入框 + 右下角小图标上传文档（放在同一个容器内实现叠放效果）
