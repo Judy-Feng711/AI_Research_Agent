@@ -319,6 +319,23 @@ st.markdown(
             margin-top: 4px;
         }
 
+        /* ========== 知情同意页：顶部引导语横幅（与下方卡片同宽、居中） ==========
+           解决“文字贯穿全屏、与下方窄卡片不协调”的问题：
+           限制最大宽度为 800px，并用 margin: auto 让其在 wide 布局下居中，
+           与 .consent-card 保持一致的视觉宽度，形成一个统一的信息模块。 */
+        .intro-banner {
+            max-width: 800px;
+            margin: 24px auto 14px auto;
+            padding: 16px 24px;
+            background-color: #f7f9fc;
+            border: 1px solid #e0e5ec;
+            border-radius: 12px;
+            font-size: 15.5px;
+            line-height: 1.7;
+            color: #2d3748;
+            text-align: left;
+        }
+
         /* 知情同意书卡片样式 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
@@ -326,10 +343,8 @@ st.markdown(
             border-radius: 16px;
             border: 1px solid #e0e5ec;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin: 10px 0;
+            margin: 10px auto 10px auto;
             max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
             text-align: left;
         }
         .consent-card h2 {
@@ -625,11 +640,16 @@ else:
         st.stop()
 
     if not st.session_state.consent_given:
+        # ---------- 顶部引导语：用 .intro-banner 样式，与下方知情同意书卡片同宽居中 ----------
         st.markdown(
-            "<p style='text-align: center; font-size: 16px;'>"
-            "您好！我是本研究“人工智能时代的教师教育与教师专业发展研究”配置的AI学术助手。本研究旨在探索AI赋能教育研究的方法论路径。在与您正式协作前，请您仔细阅读并签署下方的《知情同意书》，以确认了解本次交互的数据使用范围与您的权益保障。如您同意，我们将在点击确认后进入正式研究环节。"
-
-            "</p>",
+            """
+            <div class="intro-banner">
+                您好！我是本研究"人工智能时代的教师教育与教师专业发展研究"配置的AI学术助手。
+                本研究旨在探索AI赋能教育研究的方法论路径。在与您正式协作前，请您仔细阅读并签署
+                下方的《知情同意书》，以确认了解本次交互的数据使用范围与您的权益保障。
+                如您同意，我们将在点击确认后进入正式研究环节。
+            </div>
+            """,
             unsafe_allow_html=True
         )
 
