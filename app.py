@@ -458,9 +458,7 @@ st.markdown(
 
         /* ========== 左侧「研究人机交互区」：聊天记录 + 输入区域 合并为一个整体的灰色圆角矩形 ==========
            不再分成两个独立卡片，而是用一个容器把「对话消息列表」与「输入表单（文本框+图标+按钮）」
-           一起包裹起来，视觉上是一个不可分割的整体。
-           注意：这里不再设置 max-height / overflow-y，滚动统一交给外层 main_row 的整栏滚动条处理，
-           避免出现"框内滚动 + 整栏滚动"的双重滚动条问题。 */
+           一起包裹起来，视觉上是一个不可分割的整体。 */
         .st-key-unified_chat_box {
             border: 1px solid #e2e5ea;
             border-radius: 14px;
@@ -482,19 +480,22 @@ st.markdown(
             margin-top: 10px;
         }
 
-        /* ========== 核心：让「研究人机交互区」与「研究方案填写区」严格等高对齐 ==========
-           只作用于用 st.container(key="main_row") 包裹的这一行 st.columns()，
-           不影响页面上其他按钮行（角色选择、退出实验、下载按钮等）的布局。
-           两栏被强制设为完全相同的高度，各自独立出现垂直滚动条，
-           这样无论内容多少，顶部与底部都会精确对齐在同一条线上。
-           如与实际页面顶部留白不完全贴合，可微调下面的 180px 数值。 */
+        /* ========== 核心：让「研究人机交互区」与「研究方案填写区」自然等高对齐 ==========
+           说明：之前这里给两栏都强制设置了 height: calc(100vh - 180px)，
+           不管实际内容有多少，都要撑到接近整屏那么高，导致内容较少时
+           下方出现大片"莫名其妙"的空白（右侧的分隔线也会跟着一直拖到底部）。
+           现在去掉这个强制 height，只保留 max-height 作为"上限"：
+           - 内容少 → 两栏会自动按 flex 的 align-items:stretch 规则，
+             变成和"内容较多的那一栏"一样高（差距通常很小，不会有大片空白）；
+           - 内容多、超过视口高度 → 触发 max-height + overflow-y:auto，
+             栏内部出现滚动条，不会把整个页面撑得过长。
+           如仍觉得两栏留白略有差异，可只微调 180px 这个数值。 */
         .st-key-main_row [data-testid="stHorizontalBlock"] {
             align-items: stretch !important;
             height: auto !important;
             overflow: visible !important;
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn {
-            height: calc(100vh - 180px) !important;
             max-height: calc(100vh - 180px) !important;
             overflow-y: auto !important;
             padding: 10px !important;
