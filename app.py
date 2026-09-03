@@ -174,10 +174,6 @@ if "user_role" not in st.session_state:
     st.session_state.user_role = None
 if "export_authorized" not in st.session_state:
     st.session_state.export_authorized = False
-if "uploaded_file_obj" not in st.session_state:
-    st.session_state.uploaded_file_obj = None
-if "uploaded_file_name" not in st.session_state:
-    st.session_state.uploaded_file_name = None
 
 # ================= 角色判断（使用 URL 参数控制） =================
 query_params = st.query_params
@@ -323,7 +319,7 @@ st.markdown(
             margin-top: 4px;
         }
 
-        /* 知情同意书卡片样式 */
+        /* 知情同意书卡片样式 - 纯HTML方案 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
             padding: 30px 35px;
@@ -381,61 +377,109 @@ st.markdown(
             padding-top: 16px;
             border-top: 1px dashed #b0c4de;
         }
+        /* 减小分隔线的上下间距 */
         .stDivider hr {
             margin-top: 1px !important;
             margin-bottom: 1px !important;
         }
+        /* 减小分隔线的上下间距 */
         hr {
             margin-top: 4px !important;
             margin-bottom: 4px !important;
         }
+        
+        /* 减小每个子任务外部容器的下边距 */
         [data-testid="stVerticalBlock"] > .stMarkdown {
             margin-bottom: 2px !important;
         }
+        
+        /* 减小 text_area 容器的下边距 */
         [data-testid="stTextArea"] {
             margin-bottom: 2px !important;
         }
+        
+        /* 减小子任务标题的边距 */
         .task-odd, .task-even {
-            padding: 8px 16px !important;
+            padding: 8px 16px !important;  /* 原来 12px 减小 */
             margin-bottom: 4px !important;
         }
+        
+        /* 确保子任务内的 text_area 也没有额外边距 */
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
 
-        /* 附件图标：让它看起来位于 text_area 右下角 */
-        div[data-testid="stPopover"] {
-            position: absolute !important;
-            right: 10px !important;
-            bottom: 10px !important;
-            z-index: 10 !important;
-            margin: 0 !important;
+        /* ========== 输入框内嵌上传图标 ========== */
+
+        /* 容器设为相对定位，作为图标的定位基准 */
+        .st-key-input_wrapper {
+            position: relative;
         }
 
-        /* 图标按钮外观 */
-        div[data-testid="stPopover"] > button {
-            background: rgba(255, 255, 255, 0.95) !important;
-            border: 1px solid #d0d0d0 !important;
-            border-radius: 8px !important;
-            height: 32px !important;
-            width: 32px !important;
-            min-height: 32px !important;
+        /* 给文本域右下角预留空间，避免文字被图标遮挡 */
+        .st-key-input_wrapper textarea {
+            padding-right: 46px !important;
+            padding-bottom: 42px !important;
+        }
+
+        /* 文件上传组件整体：绝对定位到文本框右下角，尺寸缩小 */
+        .st-key-input_wrapper [data-testid="stFileUploader"] {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            width: 34px;
+            height: 34px;
+            z-index: 30;
+            overflow: hidden;
+        }
+
+        /* 隐藏 file_uploader 的 label 文字与帮助小图标 */
+        .st-key-input_wrapper [data-testid="stFileUploader"] label,
+        .st-key-input_wrapper [data-testid="stFileUploader"] [data-testid="stTooltipIcon"] {
+            display: none !important;
+        }
+
+        /* 拖拽区域整体缩小、去除边框和内边距 */
+        .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] {
+            background: transparent !important;
+            border: none !important;
             padding: 0 !important;
-            font-size: 18px !important;
-            line-height: 1 !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-            transition: background 0.15s ease-in-out !important;
+            margin: 0 !important;
+            min-height: 34px !important;
+            height: 34px !important;
+            width: 34px !important;
         }
 
-        div[data-testid="stPopover"] > button:hover {
-            background: #f5f5f5 !important;
+        /* 隐藏“Drag and drop file here / Limit 200MB...”提示文字及默认图标 */
+        .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] > div:first-child {
+            display: none !important;
         }
 
-        /* 为 text_area 的父容器设置相对定位 */
-        .attachment-wrapper {
-            position: relative !important;
-            width: 100% !important;
+        /* 把“Browse files”按钮改造成圆形的回形针图标按钮 */
+        .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button {
+            width: 34px !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            background-color: #f0f2f6 !important;
+            border: 1px solid #d0d4da !important;
+            color: transparent !important;
+            position: relative;
         }
+        .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button:hover {
+            background-color: #e2e5ea !important;
+        }
+        .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button::after {
+            content: "📎";
+            font-size: 15px;
+            color: #333;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -456,7 +500,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
-    # ---------- 研究者模式 ----------
+    # ---------- 研究者模式（居中，密码框缩小，验证在下方） ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
     with col_center:
         st.markdown("<h3 style='text-align: center;'>📊 研究者数据导出</h3>", unsafe_allow_html=True)
@@ -542,8 +586,6 @@ else:
                 st.session_state.round_count = 0
                 st.session_state.show_exit_dialog = False
                 st.session_state.experiment_completed = False
-                st.session_state.uploaded_file_obj = None
-                st.session_state.uploaded_file_name = None
                 st.rerun()
         st.stop()
 
@@ -563,28 +605,34 @@ else:
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！在点击“同意”之前，请您仔细阅读以下内容：</p>
                 <p><strong>研究介绍</strong><br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;请围绕“人工智能时代的教师教育与教师专业发展研究”这一核心议题，结合您自身的学科专长，与 EduResearch Copilot  (教育研究全栈助理)进行约100分钟的深度对话，构思并完成一份实证研究设计方案。</p>
+                <p><strong></strong><br</p>
                 <p><strong>数据采集</strong></p>
                 <ul>
                     <li>您与AI的完整对话日志将被系统自动记录；</li>
                     <li>您在各阶段填写的研究要点将共同构成您的设计方案。</li>
                 </ul>
+                <p><strong></strong><br</p>
                 <p><strong>隐私保护</strong></p>
                 <ul>
                     <li>无明显风险，但请确保您在安静环境中进行，分析阶段将进一步去标识化；</li>
                     <li>数据仅用于学术研究，不用于训练 AI，不提供给第三方，并将在采集完成之日起 3 年内销毁。</li>
                 </ul>
+                <p><strong></strong><br</p>
                 <p><strong>自愿与退出</strong></p>
                 <p>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右下角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
                 </p>
+                <p><strong></strong><br</p>
                 <p><strong>风险与收益</strong></p>
                 <p>
                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本实验无生理或心理风险。您将获得一次 AI 深度辅助研究体验，及一份量身定制的设计方案初稿。
                 </p>
+                <p><strong></strong><br</p>
                 <p><strong>联系方式</strong></p>
                 <p>
                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有疑问，请联系研究者：<strong>944577606@qq.com</strong>
                 </p>
+                <p><strong></strong><br</p>
                 <div class="footer-note">点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。</div>
             </div>
             """,
@@ -622,8 +670,6 @@ else:
                 st.session_state.round_count = 0
                 st.session_state.show_exit_dialog = False
                 st.session_state.experiment_completed = False
-                st.session_state.uploaded_file_obj = None
-                st.session_state.uploaded_file_name = None
                 st.rerun()
         with col_confirm2:
             if st.button("取消", key="confirm_exit_no"):
@@ -650,7 +696,7 @@ else:
                 st.session_state.messages = None
                 st.rerun()
     else:
-        pass
+        pass  # 顶部不再显示编号
 
     if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
@@ -667,38 +713,26 @@ else:
                         st.markdown(msg["content"])
 
             with st.form(key="prompt_form", clear_on_submit=True):
-                # 1. 文本输入框 + 附件图标（看起来在框内右下角）
-                st.markdown('<div class="attachment-wrapper">', unsafe_allow_html=True)
-
-                user_input = st.text_area(
-                    "在这里输入您的提示词 (Prompt)：",
-                    height=100,
-                    key="prompt_input",
-                    label_visibility="collapsed"
-                )
-
-                # 附件图标（Popover）
-                with st.popover("📎", help="上传 PDF 或 Word (.pdf, .docx) 文档"):
+                # 1&2. 输入框 + 右下角小图标上传文档（放在同一个容器内实现叠放效果）
+                with st.container(key="input_wrapper"):
+                    user_input = st.text_area(
+                        "在这里输入您的提示词 (Prompt)：",
+                        height=100,
+                        key="prompt_input",
+                        label_visibility="collapsed",
+                        placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
+                    )
                     uploaded_file = st.file_uploader(
                         "上传文档",
                         type=["pdf", "docx"],
-                        key="file_uploader_popover",
-                        label_visibility="collapsed",
+                        key="file_uploader_simple",
+                        label_visibility="collapsed"
                     )
-                    if uploaded_file is not None:
-                        # 只有当文件名变化时才更新，避免不必要的 rerun
-                        if st.session_state.uploaded_file_name != uploaded_file.name:
-                            st.session_state.uploaded_file_obj = uploaded_file
-                            st.session_state.uploaded_file_name = uploaded_file.name
-                            st.rerun()
 
-                st.markdown('</div>', unsafe_allow_html=True)
+                if uploaded_file is not None:
+                    st.caption(f"📎 已附加文档：{uploaded_file.name}")
 
-                # 显示已附加的文件
-                if st.session_state.uploaded_file_name:
-                    st.caption(f"📎 已附加：{st.session_state.uploaded_file_name}")
-
-                # 3. 五个行为按钮
+                # 3. 五个行为按钮（紧贴输入框下方）
                 st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
                 col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                 clicked_behavior = None
@@ -719,44 +753,28 @@ else:
                         st.stop()
 
                     file_content = ""
-                    attached_file = st.session_state.uploaded_file_obj
-                    attached_name = st.session_state.uploaded_file_name or ""
-
-                    if attached_file is not None and attached_name:
-                        try:
-                            # 重置文件指针
+                    if uploaded_file is not None:
+                        file_name = uploaded_file.name
+                        if file_name.endswith(".pdf"):
                             try:
-                                attached_file.seek(0)
-                            except Exception:
-                                pass
+                                reader = PdfReader(uploaded_file)
+                                for page in reader.pages:
+                                    text = page.extract_text()
+                                    if text:
+                                        file_content += text + "\n"
+                            except Exception as e:
+                                st.error(f"PDF 解析失败：{e}")
+                        elif file_name.endswith(".docx"):
+                            try:
+                                doc = docx.Document(uploaded_file)
+                                for para in doc.paragraphs:
+                                    file_content += para.text + "\n"
+                            except Exception as e:
+                                st.error(f"Word 解析失败：{e}")
+                        if file_content and len(file_content) > 5000:
+                            file_content = file_content[:5000] + "\n...[内容已截断]"
 
-                            if attached_name.endswith(".pdf"):
-                                try:
-                                    reader = PdfReader(attached_file)
-                                    for page in reader.pages:
-                                        text = page.extract_text()
-                                        if text:
-                                            file_content += text + "\n"
-                                except Exception as e:
-                                    st.error(f"PDF 解析失败：{e}")
-                            elif attached_name.endswith(".docx"):
-                                try:
-                                    doc = docx.Document(attached_file)
-                                    for para in doc.paragraphs:
-                                        file_content += para.text + "\n"
-                                except Exception as e:
-                                    st.error(f"Word 解析失败：{e}")
-
-                            if file_content and len(file_content) > 5000:
-                                file_content = file_content[:5000] + "\n...[内容已截断]"
-                        except Exception as e:
-                            st.error(f"读取上传文件失败：{e}")
-
-                    full_user_message = (
-                        f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}"
-                        if file_content
-                        else user_input
-                    )
+                    full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
 
                     with st.chat_message("user"):
                         if file_content:
@@ -764,9 +782,7 @@ else:
                         else:
                             st.markdown(f"**[{clicked_behavior}]** {user_input}")
 
-                    st.session_state.messages.append(
-                        {"role": "user", "content": full_user_message}
-                    )
+                    st.session_state.messages.append({"role": "user", "content": full_user_message})
 
                     with st.chat_message("assistant"):
                         with st.spinner("思考中..."):
@@ -780,7 +796,6 @@ else:
                             except Exception as e:
                                 st.error(f"AI 调用失败：{e}")
                                 st.stop()
-
                     st.session_state.messages.append({"role": "assistant", "content": ai_reply})
                     st.session_state.round_count += 1
 
@@ -858,30 +873,30 @@ else:
                     key="task6_text"
                 )
                 st.markdown(
-                    """
-                    <style>
-                        textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
-                            background-color: #e6f3ff;
-                        }
-                        textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
-                            background-color: #f5e6ff;
-                        }
-                        textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
-                            background-color: #e6f3ff;
-                        }
-                        textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
-                            background-color: #f5e6ff;
-                        }
-                        textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
-                            background-color: #e6f3ff;
-                        }
-                        textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
-                            background-color: #f5e6ff;
-                        }
-                    </style>
-                    """,
-                    unsafe_allow_html=True
-                )
+    """
+    <style>
+        textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
+            background-color: #e6f3ff;
+        }
+        textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+        textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
+            background-color: #e6f3ff;
+        }
+        textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+        textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
+            background-color: #e6f3ff;
+        }
+        textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
                 # 提交按钮右对齐
                 col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
                 with col_submit_btn_right:
@@ -905,7 +920,7 @@ else:
                     else:
                         st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
 
-        # ---------- 退出实验按钮（居中） ----------
+        # ---------- 退出实验按钮（放在整个页面的最底部，居中） ----------
         st.divider()
         col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
         with col_exit_center:
