@@ -633,7 +633,7 @@ else:
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        col_left, col_right = st.columns([55, 45], gap="large")
+        col_left, col_right = st.columns([50, 50], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
             for msg in st.session_state.messages:
