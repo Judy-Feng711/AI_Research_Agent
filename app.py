@@ -29,6 +29,9 @@ SYSTEM_PROMPT = """您是一个名为“全栈式教育研究学术助理”的�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
+# 初始欢迎语（提取为常量，供 get_initial_messages 与页面展示复用，避免重复维护）
+INITIAL_GREETING = "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
+
 # ================= 3. 状态持久化函数（修复版：按时间戳重建消息） =================
 def load_participant_state(pid):
     """
@@ -114,7 +117,7 @@ def save_participant_state(pid, messages, round_count):
 def get_initial_messages():
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "assistant", "content": "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"}
+        {"role": "assistant", "content": INITIAL_GREETING}
     ]
 
 # ================= 4. 方案数据函数（6个子任务） =================
@@ -382,6 +385,7 @@ st.markdown(
             margin-top: 1px !important;
             margin-bottom: 1px !important;
         }
+        /* 减小分隔线的上下间距 */
         hr {
             margin-top: 4px !important;
             margin-bottom: 4px !important;
@@ -399,7 +403,7 @@ st.markdown(
         
         /* 减小子任务标题的边距 */
         .task-odd, .task-even {
-            padding: 8px 16px !important;
+            padding: 8px 16px !important;  /* 原来 12px 减小 */
             margin-bottom: 4px !important;
         }
         
@@ -409,13 +413,20 @@ st.markdown(
         }
 
         /* ========== 输入框内嵌上传图标 ========== */
+
+        /* 容器设为相对定位，作为图标的定位基准 */
         .st-key-input_wrapper {
             position: relative;
         }
+
+        /* 给文本域右下角预留空间，避免文字被图标遮挡 */
         .st-key-input_wrapper textarea {
             padding-right: 46px !important;
             padding-bottom: 42px !important;
         }
+
+        /* 文件上传组件整体：绝对定位到文本框右下角，尺寸缩小
+           bottom 值调大 => 图标位置相应上移 */
         .st-key-input_wrapper [data-testid="stFileUploader"] {
             position: absolute;
             right: 10px;
@@ -425,10 +436,14 @@ st.markdown(
             z-index: 30;
             overflow: hidden;
         }
+
+        /* 隐藏 file_uploader 的 label 文字与帮助小图标 */
         .st-key-input_wrapper [data-testid="stFileUploader"] label,
         .st-key-input_wrapper [data-testid="stFileUploader"] [data-testid="stTooltipIcon"] {
             display: none !important;
         }
+
+        /* 拖拽区域整体缩小、去除边框和内边距 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] {
             background: transparent !important;
             border: none !important;
@@ -438,9 +453,13 @@ st.markdown(
             height: 34px !important;
             width: 34px !important;
         }
+
+        /* 隐藏“Drag and drop file here / Limit 200MB...”提示文字及默认图标 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] > div:first-child {
             display: none !important;
         }
+
+        /* 把“Browse files”按钮改造成透明底的回形针图标按钮（去除灰色背景与边框） */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button {
             width: 34px !important;
             height: 34px !important;
@@ -467,36 +486,42 @@ st.markdown(
             transform: translate(-50%, -50%);
         }
 
-        /* ========== 隐藏 Ctrl+Enter 提示 ========== */
-        [data-testid="stTextAreaContainer"] > div:last-child,
-        div[data-testid="stForm"] [data-testid="stTextArea"] + div {
-            display: none !important;
+        /* 隐藏所有输入框（text_area/text_input）右下角的 "Press Ctrl+Enter to submit" 提示 */
+        [data-testid="InputInstructions"] {
+            visibility: hidden !important;
+            color: transparent !important;
+            opacity: 0 !important;
         }
 
-        /* ========== 人机交互区圆角矩形框 ========== */
-        .chat-card {
-            border: 1px solid #e5e7eb;
+        /* ========== 左侧「研究人机交互区」对话内容：圆角矩形容器 ========== */
+        .st-key-chat_display_box {
+            border: 1px solid #e2e5ea;
             border-radius: 14px;
-            padding: 14px 16px 10px 16px;
             background-color: #fafbfc;
-            min-height: 420px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            max-height: 560px;
+            overflow-y: auto;
         }
-        
-        /* 让对话气泡在卡片内有合适的间距 */
-        .chat-card [data-testid="stChatMessage"] {
-            margin-bottom: 4px !important;
+        .st-key-chat_display_box::-webkit-scrollbar {
+            width: 6px;
         }
-        
-        /* 表单在卡片底部区域的间距微调 */
-        .chat-card .stForm {
-            margin-top: auto !important;
-            padding-top: 6px !important;
-            border-top: 1px dashed #e0e0e0 !important;
+        .st-key-chat_display_box::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
         }
+        .st-key-chat_display_box::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 5px;
+        }
+        .st-key-chat_display_box::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        /* 圆角框内的聊天气泡容器不需要再额外加下边距 */
+        .st-key-chat_display_box [data-testid="stChatMessage"] {
+            margin-bottom: 6px !important;
+        }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -517,7 +542,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
-    # ---------- 研究者模式 ----------
+    # ---------- 研究者模式（居中，密码框缩小，验证在下方） ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
     with col_center:
         st.markdown("<h3 style='text-align: center;'>📊 研究者数据导出</h3>", unsafe_allow_html=True)
@@ -622,28 +647,34 @@ else:
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！在点击“同意”之前，请您仔细阅读以下内容：</p>
                 <p><strong>研究介绍</strong><br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;请围绕“人工智能时代的教师教育与教师专业发展研究”这一核心议题，结合您自身的学科专长，与 EduResearch Copilot  (教育研究全栈助理)进行约100分钟的深度对话，构思并完成一份实证研究设计方案。</p>
+                <p><strong></strong><br</p>
                 <p><strong>数据采集</strong></p>
                 <ul>
                     <li>您与AI的完整对话日志将被系统自动记录；</li>
                     <li>您在各阶段填写的研究要点将共同构成您的设计方案。</li>
                 </ul>
+                <p><strong></strong><br</p>
                 <p><strong>隐私保护</strong></p>
                 <ul>
                     <li>无明显风险，但请确保您在安静环境中进行，分析阶段将进一步去标识化；</li>
                     <li>数据仅用于学术研究，不用于训练 AI，不提供给第三方，并将在采集完成之日起 3 年内销毁。</li>
                 </ul>
+                <p><strong></strong><br</p>
                 <p><strong>自愿与退出</strong></p>
                 <p>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实验全程秉持自愿原则。如果您在过程中感到任何不适或希望终止，可随时点击界面右下角的“退出实验”按钮，退出后将立即停止记录，已产生的日志不再纳入后续数据分析。
                 </p>
+                <p><strong></strong><br</p>
                 <p><strong>风险与收益</strong></p>
                 <p>
                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本实验无生理或心理风险。您将获得一次 AI 深度辅助研究体验，及一份量身定制的设计方案初稿。
                 </p>
+                <p><strong></strong><br</p>
                 <p><strong>联系方式</strong></p>
                 <p>
                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有疑问，请联系研究者：<strong>944577606@qq.com</strong>
                 </p>
+                <p><strong></strong><br</p>
                 <div class="footer-note">点击下方“同意”即表示您已阅读并理解上述内容，自愿参与本研究。</div>
             </div>
             """,
@@ -717,26 +748,32 @@ else:
 
         col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
-            st.subheader("AI 学术助手对话")
-            st.caption(
-                "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
-            )
+            # ---------- 与右侧「研究方案填写区」保持格式对称 ----------
+            st.subheader("💬 研究人机交互区")
+            st.markdown("**AI 学术助手对话**")
+            st.caption(INITIAL_GREETING)
 
-            st.markdown('<div class="chat-card">', unsafe_allow_html=True)
-
-            # 显示对话历史（包含初始的 AI 问候语）
-            for msg in st.session_state.messages:
-                if msg["role"] != "system":
+            # ---------- 对话内容：圆角矩形框展示 ----------
+            with st.container(key="chat_display_box"):
+                has_dialogue = False
+                for msg in st.session_state.messages:
+                    if msg["role"] == "system":
+                        continue
+                    # 跳过初始欢迎语（已作为上方 caption 展示，避免重复）
+                    if msg["role"] == "assistant" and msg["content"] == INITIAL_GREETING:
+                        continue
+                    has_dialogue = True
                     with st.chat_message(msg["role"]):
                         st.markdown(msg["content"])
+                if not has_dialogue:
+                    st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
 
-            # 输入与行为按钮表单
             with st.form(key="prompt_form", clear_on_submit=True):
-                # 1&2. 输入框 + 右下角小图标上传文档
+                # 1&2. 输入框 + 右下角小图标上传文档（放在同一个容器内实现叠放效果）
                 with st.container(key="input_wrapper"):
                     user_input = st.text_area(
                         "在这里输入您的提示词 (Prompt)：",
-                        height=120,
+                        height=150,
                         key="prompt_input",
                         label_visibility="collapsed",
                         placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
@@ -751,7 +788,7 @@ else:
                 if uploaded_file is not None:
                     st.caption(f"📎 已附加文档：{uploaded_file.name}")
 
-                # 3. 五个行为按钮
+                # 3. 五个行为按钮（紧贴输入框下方）
                 st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
                 col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                 clicked_behavior = None
@@ -795,26 +832,29 @@ else:
 
                     full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
 
-                    # 将用户消息添加到会话
+                    with st.chat_message("user"):
+                        if file_content:
+                            st.markdown(f"📎 **已附加文档**，提问：{user_input}")
+                        else:
+                            st.markdown(f"**[{clicked_behavior}]** {user_input}")
+
                     st.session_state.messages.append({"role": "user", "content": full_user_message})
 
-                    # 调用 AI
-                    try:
+                    with st.chat_message("assistant"):
                         with st.spinner("思考中..."):
-                            response = client.chat.completions.create(
-                                model="deepseek-v4-pro",
-                                messages=st.session_state.messages
-                            )
-                            ai_reply = response.choices[0].message.content
-                    except Exception as e:
-                        st.error(f"AI 调用失败：{e}")
-                        st.stop()
-
-                    # 添加 AI 回复
+                            try:
+                                response = client.chat.completions.create(
+                                    model="deepseek-v4-pro",
+                                    messages=st.session_state.messages
+                                )
+                                ai_reply = response.choices[0].message.content
+                                st.markdown(ai_reply)
+                            except Exception as e:
+                                st.error(f"AI 调用失败：{e}")
+                                st.stop()
                     st.session_state.messages.append({"role": "assistant", "content": ai_reply})
                     st.session_state.round_count += 1
 
-                    # 日志记录
                     log_data = {
                         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "participant_id": st.session_state.participant_id,
@@ -835,12 +875,11 @@ else:
                     )
                     st.rerun()
 
-            st.markdown('</div>', unsafe_allow_html=True)
-
         with col_right:
-            st.subheader("AI协同研究方案撰写")
-            st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
+            st.subheader("📝 研究方案填写区")
             existing_plan = load_plan(st.session_state.participant_id)
+            st.markdown("**AI协同研究方案撰写**")
+            st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
             with st.form(key="plan_form"):
                 st.markdown("**子任务1：选题与文献发现**")
                 task1_text = st.text_area(
@@ -890,30 +929,30 @@ else:
                     key="task6_text"
                 )
                 st.markdown(
-                    """
-                    <style>
-                        textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
-                            background-color: #e6f3ff;
-                        }
-                        textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
-                            background-color: #f5e6ff;
-                        }
-                        textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
-                            background-color: #e6f3ff;
-                        }
-                        textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
-                            background-color: #f5e6ff;
-                        }
-                        textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
-                            background-color: #e6f3ff;
-                        }
-                        textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
-                            background-color: #f5e6ff;
-                        }
-                    </style>
-                    """,
-                    unsafe_allow_html=True
-                )
+    """
+    <style>
+        textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
+            background-color: #e6f3ff;
+        }
+        textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+        textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
+            background-color: #e6f3ff;
+        }
+        textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+        textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
+            background-color: #e6f3ff;
+        }
+        textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
+            background-color: #f5e6ff;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
                 # 提交按钮右对齐
                 col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
                 with col_submit_btn_right:
