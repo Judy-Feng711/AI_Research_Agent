@@ -642,23 +642,25 @@ else:
                         st.markdown(msg["content"])
 
             with st.form(key="prompt_form", clear_on_submit=True):
+                # 1. 上传文档（放在输入框上方）
+                uploaded_file = st.file_uploader(
+                    "📎 上传文档",
+                    type=["pdf", "docx"],
+                    help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
+                    key="file_uploader_simple"
+                )
+                if uploaded_file is not None:
+                    st.caption(f"已选择：{uploaded_file.name}")
+
+                # 2. 输入框
                 user_input = st.text_area(
                     "在这里输入您的提示词 (Prompt)：",
                     height=100,
                     key="prompt_input",
                     label_visibility="collapsed"
                 )
-                # ========== 修改点：上传文档按钮增加图标 ==========
-                uploaded_file = st.file_uploader(
-                    "📎 上传文档",  # 添加图标
-                    type=["pdf", "docx"],
-                    help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
-                    key="file_uploader_simple"
-                )
-                # =================================================
-                if uploaded_file is not None:
-                    st.caption(f"已选择：{uploaded_file.name}")
 
+                # 3. 五个行为按钮（紧贴输入框下方）
                 st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
                 col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                 clicked_behavior = None
@@ -848,7 +850,7 @@ else:
 
         # ---------- 退出实验按钮（放在整个页面的最底部，居中） ----------
         st.divider()
-        col_exit1, col_exit_center, col_exit2 = st.columns([4 , 1 , 4])
+        col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
         with col_exit_center:
             if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
                 st.session_state.show_exit_dialog = True
