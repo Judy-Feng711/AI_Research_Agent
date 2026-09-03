@@ -422,11 +422,12 @@ st.markdown(
             padding-bottom: 42px !important;
         }
 
-        /* 文件上传组件整体：绝对定位到文本框右下角，尺寸缩小 */
+        /* 文件上传组件整体：绝对定位到文本框右下角，尺寸缩小
+           bottom 值调大 => 图标位置相应上移 */
         .st-key-input_wrapper [data-testid="stFileUploader"] {
             position: absolute;
             right: 10px;
-            bottom: 10px;
+            bottom: 18px;
             width: 34px;
             height: 34px;
             z-index: 30;
@@ -455,20 +456,22 @@ st.markdown(
             display: none !important;
         }
 
-        /* 把“Browse files”按钮改造成圆形的回形针图标按钮 */
+        /* 把“Browse files”按钮改造成透明底的回形针图标按钮（去除灰色背景与边框） */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button {
             width: 34px !important;
             height: 34px !important;
             min-height: 34px !important;
             padding: 0 !important;
             border-radius: 50% !important;
-            background-color: #f0f2f6 !important;
-            border: 1px solid #d0d4da !important;
+            background-color: transparent !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
             color: transparent !important;
             position: relative;
         }
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button:hover {
-            background-color: #e2e5ea !important;
+            background-color: rgba(0, 0, 0, 0.06) !important;
         }
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button::after {
             content: "📎";
@@ -717,7 +720,7 @@ else:
                 with st.container(key="input_wrapper"):
                     user_input = st.text_area(
                         "在这里输入您的提示词 (Prompt)：",
-                        height=150,
+                        height=100,
                         key="prompt_input",
                         label_visibility="collapsed",
                         placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
