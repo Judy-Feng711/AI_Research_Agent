@@ -633,7 +633,7 @@ else:
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        col_left, col_right = st.columns([50, 50], gap="large")
+        col_left, col_right = st.columns([55, 45], gap="large")
         with col_left:
             st.subheader("💬 AI 学术助手对话")
             for msg in st.session_state.messages:
@@ -648,12 +648,14 @@ else:
                     key="prompt_input",
                     label_visibility="collapsed"
                 )
+                # ========== 修改点：上传文档按钮增加图标 ==========
                 uploaded_file = st.file_uploader(
-                    "上传文档",
+                    "📎 上传文档",  # 添加图标
                     type=["pdf", "docx"],
                     help="快速模式下，仅识别图片与文件中的文字最多50个，每个100 MB",
                     key="file_uploader_simple"
                 )
+                # =================================================
                 if uploaded_file is not None:
                     st.caption(f"已选择：{uploaded_file.name}")
 
