@@ -264,17 +264,32 @@ st.markdown(
             overflow: visible !important;
             height: auto !important;
         }
-
-        /* 说明：此前这里对“最后一列”（右侧研究方案填写区）单独设置了
-           position: sticky + max-height + overflow-y，会导致两列高度增长逻辑不同，
-           左右出现明显的错位。现已移除吸顶与高度限制，让两列按正常文档流对齐生长。 */
+        
         [data-testid="stHorizontalBlock"] > div:last-child {
+            position: sticky !important;
+            top: 110px !important;
             align-self: flex-start !important;
+            height: auto !important;
+            max-height: calc(100vh - 110px) !important;
+            overflow-y: auto !important;
             background-color: transparent !important;
             padding: 10px !important;
             border-left: 1px solid #ddd;
         }
-
+        [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar {
+            width: 6px;
+        }
+        [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+        [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+        [data-testid="stHorizontalBlock"] > div:last-child::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
         [data-testid="stHorizontalBlock"] {
             height: auto !important;
             min-height: 0 !important;
@@ -478,20 +493,13 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ========== 左侧「研究人机交互区」：统一的灰色圆角矩形卡片样式 ==========
-           聊天记录框（chat_display_box）与输入区域框（input_display_box）
-           共用同一套外观（边框、圆角、底色、内边距），保持视觉一致 */
-        .st-key-chat_display_box,
-        .st-key-input_display_box {
+        /* ========== 左侧「研究人机交互区」对话内容：圆角矩形容器 ========== */
+        .st-key-chat_display_box {
             border: 1px solid #e2e5ea;
             border-radius: 14px;
             background-color: #fafbfc;
             padding: 16px 18px;
             margin-bottom: 12px;
-        }
-
-        /* 聊天记录框：允许滚动，限制最大高度 */
-        .st-key-chat_display_box {
             max-height: 560px;
             overflow-y: auto;
         }
@@ -512,12 +520,6 @@ st.markdown(
         /* 圆角框内的聊天气泡容器不需要再额外加下边距 */
         .st-key-chat_display_box [data-testid="stChatMessage"] {
             margin-bottom: 6px !important;
-        }
-
-        /* 输入区域框：不限制高度，完整显示文本框+图标+按钮 */
-        .st-key-input_display_box {
-            margin-top: 4px;
-            margin-bottom: 0 !important;
         }
 
     </style>
@@ -767,41 +769,39 @@ else:
                     st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
 
             with st.form(key="prompt_form", clear_on_submit=True):
-                # ---------- 输入区域：与聊天记录框同款灰色圆角矩形容器 ----------
-                with st.container(key="input_display_box"):
-                    # 1&2. 输入框 + 右下角小图标上传文档（放在同一个容器内实现叠放效果）
-                    with st.container(key="input_wrapper"):
-                        user_input = st.text_area(
-                            "在这里输入您的提示词 (Prompt)：",
-                            height=150,
-                            key="prompt_input",
-                            label_visibility="collapsed",
-                            placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
-                        )
-                        uploaded_file = st.file_uploader(
-                            "上传文档",
-                            type=["pdf", "docx"],
-                            key="file_uploader_simple",
-                            label_visibility="collapsed"
-                        )
+                # 1&2. 输入框 + 右下角小图标上传文档（放在同一个容器内实现叠放效果）
+                with st.container(key="input_wrapper"):
+                    user_input = st.text_area(
+                        "在这里输入您的提示词 (Prompt)：",
+                        height=150,
+                        key="prompt_input",
+                        label_visibility="collapsed",
+                        placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
+                    )
+                    uploaded_file = st.file_uploader(
+                        "上传文档",
+                        type=["pdf", "docx"],
+                        key="file_uploader_simple",
+                        label_visibility="collapsed"
+                    )
 
-                    if uploaded_file is not None:
-                        st.caption(f"📎 已附加文档：{uploaded_file.name}")
+                if uploaded_file is not None:
+                    st.caption(f"📎 已附加文档：{uploaded_file.name}")
 
-                    # 3. 五个行为按钮（紧贴输入框下方，同样包在灰色框内）
-                    st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
-                    col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
-                    clicked_behavior = None
-                    if col_b1.form_submit_button("获取基础信息"):
-                        clicked_behavior = "获取基础信息"
-                    elif col_b2.form_submit_button("规范语言/格式"):
-                        clicked_behavior = "规范语言/格式"
-                    elif col_b3.form_submit_button("微调研究逻辑"):
-                        clicked_behavior = "微调研究逻辑"
-                    elif col_b4.form_submit_button("重构研究方案"):
-                        clicked_behavior = "重构研究方案"
-                    elif col_b5.form_submit_button("拓展研究思路"):
-                        clicked_behavior = "拓展研究思路"
+                # 3. 五个行为按钮（紧贴输入框下方）
+                st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
+                col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
+                clicked_behavior = None
+                if col_b1.form_submit_button("获取基础信息"):
+                    clicked_behavior = "获取基础信息"
+                elif col_b2.form_submit_button("规范语言/格式"):
+                    clicked_behavior = "规范语言/格式"
+                elif col_b3.form_submit_button("微调研究逻辑"):
+                    clicked_behavior = "微调研究逻辑"
+                elif col_b4.form_submit_button("重构研究方案"):
+                    clicked_behavior = "重构研究方案"
+                elif col_b5.form_submit_button("拓展研究思路"):
+                    clicked_behavior = "拓展研究思路"
 
                 if clicked_behavior:
                     if not user_input or user_input.strip() == "":
