@@ -482,7 +482,10 @@ st.markdown(
             left: 50%;
             transform: translate(-50%, -50%);
         }
-
+        /* 隐藏 text_area 右下角的快捷键提示 */
+        .stTextAreaFooter {
+            display: none !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
