@@ -702,7 +702,7 @@ else:
                     <p>如果您对本次研究有任何疑问、顾虑，或在参与过程中遇到任何问题，欢迎随时联系我们的研究负责人：</p>
                     <ul>
                         <li><strong>研究负责人</strong>：周榕 副教授（陕西师范大学教育学部）</li>
-                        <li><strong>联系邮箱</strong>：944577606@qq.com</li>
+                        <li><strong>联系邮箱</strong>：rzhou@snnu.edu.cn</li>
                         <li><strong>联系电话</strong>：13309296061</li>
                     </ul>
                 </div>
