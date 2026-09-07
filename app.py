@@ -644,7 +644,7 @@ else:
                 <h2>📋 知情同意书</h2>
                 <p><strong>研究主题：人工智能辅助教育研究的特征与机制研究</strong></p>
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击“同意”按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
-
+<p><strong></strong><br</p>
                 <p><strong>一、 这项研究是关于什么的？</strong></p>
                 <p>本研究致力于探索教育研究者（如您）在实际科研工作中如何与生成式人工智能（AI）协同工作。我们将通过观察您与AI共同完成一项研究设计任务的过程，来分析您的行为模式、思维过程及主观感受。最终，本研究的成果将有助于制定更负责任、更可解释的AI使用指南，为高校和相关机构的科研培训提供依据。</p>
                 <p><strong>本次实验的具体任务</strong>：您将与我们的智能研究助理 <strong>ICFER（教育实证研究全周期智能协同框架，Intelligent Collaborative Framework for Empirical Research in Education）</strong> 进行大约 <strong>100分钟</strong> 的深度对话。</p>
