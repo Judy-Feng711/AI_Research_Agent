@@ -675,13 +675,13 @@ else:
                 <h2>📋 知情同意书</h2>
                 <p style="text-align:center; color:#888; font-size:13px; margin-top:-10px;">版本号：v1.0_ICFER_2026　|　生效日期：2026-09-20</p>
                 <p><strong>研究主题：人工智能辅助教育研究的特征与机制研究</strong></p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击"同意"按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击"同意"按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
 <p><strong></strong><br</p>
                 <p><strong>一、这项研究是关于什么的？</strong></p>
-                <p>本研究致力于探索教育研究者（如您）在实际科研工作中如何与生成式人工智能（AI）协同工作。我们将通过观察您与 AI 共同完成一项研究设计任务的过程，来分析您的行为模式、思维过程及主观感受。最终，本研究的成果将有助于制定更负责任、更可解释的 AI 使用指南，为高校和相关机构的科研培训提供依据。</p>
-                <p><strong>本次实验的具体任务</strong>：您将与我们的智能研究助理 <strong>ICFER（教育实证研究全周期智能协同框架，Intelligent Collaborative Framework for Empirical Research in Education）</strong> 进行大约 <strong>100 分钟</strong> 的深度对话。</p>
-                <p>在对话中，您将围绕统一主题 <strong>"人工智能时代的教师教育与教师专业发展研究"</strong> ，结合您自身的学科专长（如学科教学、教育技术、教育管理等），从中选定一个具体的研究切入点，并在 ICFER 的辅助下构思并完成一份完整的实证研究设计方案。</p>
-                <p><em>特别说明</em>：这项设计任务是实验环节中的一次模拟任务，您所完成的设计方案仅用于本研究分析，不会用于课程评价、科研考核、职称评定或真实学术成果提交。实验中使用的材料均为统一编撰并经过脱敏处理，不要求您提交个人真实论文、未公开数据、评审材料或其他涉及个人、单位及科研保密的信息。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本研究致力于探索教育研究者（如您）在实际科研工作中如何与生成式人工智能（AI）协同工作。我们将通过观察您与 AI 共同完成一项研究设计任务的过程，来分析您的行为模式、思维过程及主观感受。最终，本研究的成果将有助于制定更负责任、更可解释的 AI 使用指南，为高校和相关机构的科研培训提供依据。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>本次实验的具体任务</strong>：您将与我们的智能研究助理 <strong>ICFER（教育实证研究全周期智能协同框架，Intelligent Collaborative Framework for Empirical Research in Education）</strong> 进行大约 <strong>100 分钟</strong> 的深度对话。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在对话中，您将围绕统一主题 <strong>"人工智能时代的教师教育与教师专业发展研究"</strong> ，结合您自身的学科专长（如学科教学、教育技术、教育管理等），从中选定一个具体的研究切入点，并在 ICFER 的辅助下构思并完成一份完整的实证研究设计方案。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>特别说明</em>：这项设计任务是实验环节中的一次模拟任务，您所完成的设计方案仅用于本研究分析，不会用于课程评价、科研考核、职称评定或真实学术成果提交。实验中使用的材料均为统一编撰并经过脱敏处理，不要求您提交个人真实论文、未公开数据、评审材料或其他涉及个人、单位及科研保密的信息。</p>
 <p><strong></strong><br</p>
                 <p><strong>二、参与过程会发生什么？</strong></p>
                 <ul>
@@ -691,7 +691,7 @@ else:
                 </ul>
 <p><strong></strong><br</p>
                 <p><strong>三、我的数据会被怎么处理？安全吗？</strong></p>
-                <p>我们深知您学术成果与个人隐私的重要性，并承诺采取最高标准的保护措施。所有数据将严格遵循科研伦理规范进行处理：</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们深知您学术成果与个人隐私的重要性，并承诺采取最高标准的保护措施。所有数据将严格遵循科研伦理规范进行处理：</p>
                 <ul>
                     <li><strong>用途限定</strong>：所有收集的数据<strong>仅用于本项目的学术分析</strong>，不会用于任何商业目的，也不会被用于训练 AI 模型。</li>
                     <li><strong>匿名化处理（去标识化）</strong>：在分析前，所有数据（包括对话日志）都将进行严格的匿名化处理，即删除您的姓名、联系方式、单位等可直接识别您身份的信息。最终公开发表的研究成果中，仅会呈现无法识别个体的引语或任务示例。</li>
@@ -719,7 +719,7 @@ else:
                 </ul>
 <p><strong></strong><br</p>
                 <p><strong>五、我可以随时退出吗？</strong></p>
-                <p><strong>当然可以。</strong> 参与本研究完全基于您的自愿原则。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>当然可以。</strong> 参与本研究完全基于您的自愿原则。</p>
                 <ul>
                     <li>在实验过程中，如果您感到任何不适或希望终止，可随时点击界面正下方的 <strong>"退出实验"</strong> 按钮。</li>
                     <li>退出后，系统将<strong>立即停止数据记录</strong>，您已产生的对话日志将<strong>不再纳入后续数据分析</strong>，且不会对您产生任何不利影响（如影响您的工作评价、学业指导关系或资源获取）。</li>
@@ -727,7 +727,7 @@ else:
                 </ul>
 <p><strong></strong><br</p>
                 <p><strong>六、研究成果会分享给我吗？</strong></p>
-                <p><strong>会的。</strong> 研究结束后，我们承诺在不泄露个人隐私的前提下，通过电子邮件等方式向有需要的参与者分享一份总体研究发现摘要，以及负责任使用 AI 的实践建议。您可以在知情同意时自主选择是否接收研究结果。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>会的。</strong> 研究结束后，我们承诺在不泄露个人隐私的前提下，通过电子邮件等方式向有需要的参与者分享一份总体研究发现摘要，以及负责任使用 AI 的实践建议。您可以在知情同意时自主选择是否接收研究结果。</p>
 <p><strong></strong><br</p>
                 <p><strong>七、如有疑问可以联系谁？</strong></p>
                 <div class="contact-box">
