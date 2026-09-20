@@ -17,20 +17,20 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= 2. 系统提示词 =================
-SYSTEM_PROMPT = """您是一个名为"全栈式教育研究学术助理"的高级 AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
+SYSTEM_PROMPT = """您是一个名为"全栈式教育研究学术助理"的高级AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
 核心能力与任务模块：
 1. 选题与文献发现：辅助梳理文献脉络，对比不同教育理论（如建构主义与行为主义），精准分析研究空白。
 2. 研究规划与设计：从教育心理学、课程论等多重视角构建分析框架，对比个案研究、行动研究等方法的适用性。
 3. 实施与数据采集：协助开发访谈提纲等收集工具，指出并规避表述偏差及伦理风险。
-4. 数据分析与阐释：提供 Python/R 等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
+4. 数据分析与阐释：提供Python/R等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
 5. 论文撰写与润色：辅助母语润色，检查专业术语一致性，并模拟"严苛审稿人"视角提出批判性修改意见。
 6. 传播、评估与伦理：辅助提炼实践建议，主动规避文化/性别等偏见，模拟同行质疑进行答辩演练。
 互动规则：
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# 初始欢迎语（提取为常量，供 get_initial_messages 与页面展示复用，避免重复维护）
-INITIAL_GREETING = "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论 Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
+# 初始欢迎语
+INITIAL_GREETING = "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
@@ -54,9 +54,9 @@ def load_participant_state(pid):
 
         # 统计有效轮数（有效行为 + 非空输入）
         valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-        round_count = sum(1 for log in log_data 
-                          if log.get("behavior_button") in valid_behaviors 
-                          and log.get("user_prompt") 
+        round_count = sum(1 for log in log_data
+                          if log.get("behavior_button") in valid_behaviors
+                          and log.get("user_prompt")
                           and log.get("user_prompt").strip() != "")
 
         # 2. 重建消息列表（系统消息 + 所有有效日志的 user/assistant 对）
@@ -69,7 +69,7 @@ def load_participant_state(pid):
                 if ai_content:
                     rebuilt.append({"role": "assistant", "content": ai_content})
                 else:
-                    rebuilt.append({"role": "assistant", "content": "(AI 响应缺失，请检查日志)"})
+                    rebuilt.append({"role": "assistant", "content": "(AI响应缺失，请检查日志)"})
         if len(rebuilt) == 1:
             messages = get_initial_messages()
         else:
@@ -139,7 +139,7 @@ def save_consent_record(pid):
         st.error(f"⚠️ 保存同意记录失败：{e}")
         return False
 
-# ================= 4. 方案数据函数（6 个子任务） =================
+# ================= 4. 方案数据函数（6个子任务） =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
@@ -181,7 +181,7 @@ st.set_page_config(page_title="教育实证研究全周期智能协同框架", p
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
 if "messages" not in st.session_state:
-    st.session_state.messages = get_initial_messages()
+    st.session_state.messages = None  # 修改为 None，确保第一次加载
 if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
@@ -304,7 +304,7 @@ st.markdown(
             margin-top: 4px;
         }
 
-        /* 知情同意书卡片样式 - 纯 HTML 方案 */
+        /* 知情同意书卡片样式 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
             padding: 30px 35px;
@@ -372,42 +372,36 @@ st.markdown(
             margin-top: 4px !important;
             margin-bottom: 4px !important;
         }
-        
+
         /* 减小每个子任务外部容器的下边距 */
         [data-testid="stVerticalBlock"] > .stMarkdown {
             margin-bottom: 2px !important;
         }
-        
+
         /* 减小 text_area 容器的下边距 */
         [data-testid="stTextArea"] {
             margin-bottom: 2px !important;
         }
-        
+
         /* 减小子任务标题的边距 */
         .task-odd, .task-even {
             padding: 8px 16px !important;
             margin-bottom: 4px !important;
         }
-        
+
         /* 确保子任务内的 text_area 也没有额外边距 */
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
 
-        /* ========== 输入框内嵌上传图标 ========== */
-
-        /* 容器设为相对定位，作为图标的定位基准 */
+        /* 输入框内嵌上传图标 */
         .st-key-input_wrapper {
             position: relative;
         }
-
-        /* 给文本域右下角预留空间，避免文字被图标遮挡 */
         .st-key-input_wrapper textarea {
             padding-right: 46px !important;
             padding-bottom: 42px !important;
         }
-
-        /* 文件上传组件整体：绝对定位到文本框右下角，尺寸缩小 */
         .st-key-input_wrapper [data-testid="stFileUploader"] {
             position: absolute;
             right: 10px;
@@ -417,14 +411,10 @@ st.markdown(
             z-index: 30;
             overflow: hidden;
         }
-
-        /* 隐藏 file_uploader 的 label 文字与帮助小图标 */
         .st-key-input_wrapper [data-testid="stFileUploader"] label,
         .st-key-input_wrapper [data-testid="stFileUploader"] [data-testid="stTooltipIcon"] {
             display: none !important;
         }
-
-        /* 拖拽区域整体缩小、去除边框和内边距 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] {
             background: transparent !important;
             border: none !important;
@@ -434,13 +424,9 @@ st.markdown(
             height: 34px !important;
             width: 34px !important;
         }
-
-        /* 隐藏"Drag and drop file here / Limit 200MB..."提示文字及默认图标 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] > div:first-child {
             display: none !important;
         }
-
-        /* 把"Browse files"按钮改造成透明底的回形针图标按钮 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button {
             width: 34px !important;
             height: 34px !important;
@@ -466,15 +452,13 @@ st.markdown(
             left: 50%;
             transform: translate(-50%, -50%);
         }
-
-        /* 隐藏所有输入框右下角的提示 */
         [data-testid="InputInstructions"] {
             visibility: hidden !important;
             color: transparent !important;
             opacity: 0 !important;
         }
 
-        /* ========== 左侧聊天记录 + 输入区域合并 ========== */
+        /* 左侧聊天记录 + 输入区域合并 */
         .st-key-unified_chat_box {
             border: 1px solid #e2e5ea;
             border-radius: 14px;
@@ -492,7 +476,7 @@ st.markdown(
             margin-top: 10px;
         }
 
-        /* ========== 左右两栏高度控制 ========== */
+        /* 左右两栏高度控制 */
         .st-key-main_row [data-testid="stHorizontalBlock"] {
             align-items: flex-start !important;
             height: auto !important;
@@ -525,7 +509,6 @@ st.markdown(
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-
     </style>
     """,
     unsafe_allow_html=True
@@ -627,7 +610,7 @@ if st.session_state.user_role == "研究者":
 
 else:
     # ---------- 被试模式 ----------
-    
+
     # 【1】检查实验是否已完成
     if st.session_state.experiment_completed:
         st.markdown(
@@ -646,14 +629,14 @@ else:
             if st.button("🏠 返回首页", use_container_width=True):
                 st.session_state.consent_given = False
                 st.session_state.participant_id = ""
-                st.session_state.messages = get_initial_messages()
+                st.session_state.messages = None
                 st.session_state.round_count = 0
                 st.session_state.show_exit_dialog = False
                 st.session_state.experiment_completed = False
                 st.rerun()
         st.stop()
 
-    # 【2】先检查是否输入了 Participant ID（移到同意书之前！）
+    # 【2】先检查是否输入了 Participant ID
     if not st.session_state.participant_id:
         st.markdown(
             """
@@ -677,10 +660,12 @@ else:
             )
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
+                # 立即加载历史数据
+                st.session_state.messages, st.session_state.round_count = load_participant_state(st.session_state.participant_id)
                 st.rerun()
         st.stop()
 
-    # 【3】再检查是否已同意（此时 participant_id 一定存在）
+    # 【3】再检查是否已同意
     if not st.session_state.consent_given:
         # 显示当前参与者编号
         st.markdown(
@@ -770,9 +755,7 @@ else:
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
                 st.session_state.consent_given = True
-                save_consent_record(st.session_state.participant_id)  # ✅ 保存同意记录到数据库
-                st.session_state.messages = get_initial_messages()
-                st.session_state.round_count = 0
+                save_consent_record(st.session_state.participant_id)  # 保存同意记录
                 st.rerun()
         st.stop()
 
@@ -797,7 +780,7 @@ else:
                     st.error(f"记录退出失败：{e}")
                 st.session_state.consent_given = False
                 st.session_state.participant_id = ""
-                st.session_state.messages = get_initial_messages()
+                st.session_state.messages = None
                 st.session_state.round_count = 0
                 st.session_state.show_exit_dialog = False
                 st.session_state.experiment_completed = False
@@ -808,9 +791,9 @@ else:
                 st.rerun()
         st.stop()
 
-    # 【5】主实验界面（原有代码完全不变）
+    # 【5】主实验界面
     if st.session_state.participant_id:
-        if st.session_state.messages is None or not st.session_state.messages:
+        if st.session_state.messages is None:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
@@ -943,52 +926,52 @@ else:
             with col_right:
                 st.subheader("📝 研究方案填写区")
                 existing_plan = load_plan(st.session_state.participant_id)
-                st.markdown("**AI 协同研究方案撰写**")
-                st.caption("任务共分为 6 个递进环节，请根据您与 AI 的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
+                st.markdown("**AI协同研究方案撰写**")
+                st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
                 with st.form(key="plan_form"):
-                    st.markdown("**子任务 1：选题与文献发现**")
+                    st.markdown("**子任务1：选题与文献发现**")
                     task1_text = st.text_area(
-                        "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议 150 字左右）",
+                        "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
                         value=existing_plan["task1_text"] if existing_plan else "",
                         height=160,
                         key="task1_text"
                     )
                     st.divider()
-                    st.markdown("**子任务 2：研究规划与设计**")
+                    st.markdown("**子任务2：研究规划与设计**")
                     task2_text = st.text_area(
-                        "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议 150 字左右）",
+                        "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
                         value=existing_plan["task2_text"] if existing_plan else "",
                         height=160,
                         key="task2_text"
                     )
                     st.divider()
-                    st.markdown("**子任务 3：实施与数据采集**")
+                    st.markdown("**子任务3：实施与数据采集**")
                     task3_text = st.text_area(
-                        "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议 150 字左右）",
+                        "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
                         value=existing_plan["task3_text"] if existing_plan else "",
                         height=160,
                         key="task3_text"
                     )
                     st.divider()
-                    st.markdown("**子任务 4：数据分析与阐释**")
+                    st.markdown("**子任务4：数据分析与阐释**")
                     task4_text = st.text_area(
-                        "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议 150 字左右）",
+                        "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
                         value=existing_plan["task4_text"] if existing_plan else "",
                         height=160,
                         key="task4_text"
                     )
                     st.divider()
-                    st.markdown("**子任务 5：论文撰写与润色**")
+                    st.markdown("**子任务5：论文撰写与润色**")
                     task5_text = st.text_area(
-                        "1.研究的创新点（2-3 项）；2.研究存在的不足（2-3 项）。（建议 300-500 字左右）",
+                        "1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
                         value=existing_plan["task5_text"] if existing_plan else "",
                         height=300,
                         key="task5_text"
                     )
                     st.divider()
-                    st.markdown("**子任务 6：传播、评估与伦理**")
+                    st.markdown("**子任务6：传播、评估与伦理**")
                     task6_text = st.text_area(
-                        "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI 使用披露等）。（建议 150 字左右）",
+                        "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
                         value=existing_plan["task6_text"] if existing_plan else "",
                         height=160,
                         key="task6_text"
@@ -996,22 +979,22 @@ else:
                     st.markdown(
         """
         <style>
-            textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议 150 字左右）"] {
+            textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
                 background-color: #e6f3ff;
             }
-            textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议 150 字左右）"] {
+            textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
                 background-color: #f5e6ff;
             }
-            textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议 150 字左右）"] {
+            textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
                 background-color: #e6f3ff;
             }
-            textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议 150 字左右）"] {
+            textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
                 background-color: #f5e6ff;
             }
-            textarea[aria-label="1.研究的创新点（2-3 项）；2.研究存在的不足（2-3 项）。（建议 300-500 字左右）"] {
+            textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
                 background-color: #e6f3ff;
             }
-            textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI 使用披露等）。（建议 150 字左右）"] {
+            textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
                 background-color: #f5e6ff;
             }
         </style>
