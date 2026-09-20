@@ -279,7 +279,7 @@ st.markdown(
             border: 1px solid #e0e5ec;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin: 10px 0;
-            max-width: 800px;
+            max-width: 1000px;
             margin-left: auto;
             margin-right: auto;
             text-align: left;
