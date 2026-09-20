@@ -131,7 +131,7 @@ def save_consent_record(pid):
         data = {
             "participant_id": pid.strip(),
             "consent_timestamp": datetime.datetime.now().isoformat(),
-            "consent_version": "v1.0_ICFER_2024"
+            "consent_version": "v1.0_ICFER_2026"
         }
         supabase.table("consent_records").insert(data).execute()
         return True
