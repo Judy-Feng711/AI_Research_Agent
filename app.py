@@ -644,7 +644,7 @@ else:
             """,
             unsafe_allow_html=True
         )
-        col_space1, col_id, col_space2 = st.columns([1, 2, 1])
+        col_space1, col_id, col_space2 = st.columns([2, 1, 2])
         with col_id:
             pid_input = st.text_input(
                 "研究编号",
