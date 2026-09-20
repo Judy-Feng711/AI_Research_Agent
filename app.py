@@ -694,6 +694,7 @@ else:
             """
             <div class="consent-card">
                 <h2>📋 知情同意书</h2>
+                <p style="text-align:center; color:#888; font-size:13px; margin-top:-10px;">版本号：v1.0_ICFER_2026　|　生效日期：2026-09-20</p>
                 <p><strong>研究主题：人工智能辅助教育研究的特征与机制研究</strong></p>
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击"同意"按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
 <p><strong></strong><br</p>
