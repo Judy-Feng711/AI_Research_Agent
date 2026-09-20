@@ -5,9 +5,8 @@ from openai import OpenAI
 import pandas as pd
 import datetime
 import json
-import time
-import uuid  # 新增：用于生成唯一参与者ID
 from supabase import create_client, Client
+import time
 
 # ================= 1. 核心配置区 =================
 DEEPSEEK_API_KEY = st.secrets["DEEPSEEK_API_KEY"]
@@ -18,20 +17,20 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= 2. 系统提示词 =================
-SYSTEM_PROMPT = """您是一个名为"全栈式教育研究学术助理"的高级AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
+SYSTEM_PROMPT = """您是一个名为"全栈式教育研究学术助理"的高级 AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
 核心能力与任务模块：
-1. 选题与文献发现： 辅助梳理文献脉络，对比不同教育理论（如建构主义与行为主义），精准分析研究空白。
-2. 研究规划与设计： 从教育心理学、课程论等多重视角构建分析框架，对比个案研究、行动研究等方法的适用性。
-3. 实施与数据采集： 协助开发访谈提纲等收集工具，指出并规避表述偏差及伦理风险。
-4. 数据分析与阐释： 提供Python/R等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
-5. 论文撰写与润色： 辅助母语润色，检查专业术语一致性，并模拟"严苛审稿人"视角提出批判性修改意见。
-6. 传播、评估与伦理： 辅助提炼实践建议，主动规避文化/性别等偏见，模拟同行质疑进行答辩演练。
+1. 选题与文献发现：辅助梳理文献脉络，对比不同教育理论（如建构主义与行为主义），精准分析研究空白。
+2. 研究规划与设计：从教育心理学、课程论等多重视角构建分析框架，对比个案研究、行动研究等方法的适用性。
+3. 实施与数据采集：协助开发访谈提纲等收集工具，指出并规避表述偏差及伦理风险。
+4. 数据分析与阐释：提供 Python/R 等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
+5. 论文撰写与润色：辅助母语润色，检查专业术语一致性，并模拟"严苛审稿人"视角提出批判性修改意见。
+6. 传播、评估与伦理：辅助提炼实践建议，主动规避文化/性别等偏见，模拟同行质疑进行答辩演练。
 互动规则：
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# 初始欢迎语
-INITIAL_GREETING = "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
+# 初始欢迎语（提取为常量，供 get_initial_messages 与页面展示复用，避免重复维护）
+INITIAL_GREETING = "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论 Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
@@ -55,9 +54,9 @@ def load_participant_state(pid):
 
         # 统计有效轮数（有效行为 + 非空输入）
         valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-        round_count = sum(1 for log in log_data
-                          if log.get("behavior_button") in valid_behaviors
-                          and log.get("user_prompt")
+        round_count = sum(1 for log in log_data 
+                          if log.get("behavior_button") in valid_behaviors 
+                          and log.get("user_prompt") 
                           and log.get("user_prompt").strip() != "")
 
         # 2. 重建消息列表（系统消息 + 所有有效日志的 user/assistant 对）
@@ -70,7 +69,7 @@ def load_participant_state(pid):
                 if ai_content:
                     rebuilt.append({"role": "assistant", "content": ai_content})
                 else:
-                    rebuilt.append({"role": "assistant", "content": "(AI响应缺失，请检查日志)"})
+                    rebuilt.append({"role": "assistant", "content": "(AI 响应缺失，请检查日志)"})
         if len(rebuilt) == 1:
             messages = get_initial_messages()
         else:
@@ -121,25 +120,26 @@ def get_initial_messages():
         {"role": "assistant", "content": INITIAL_GREETING}
     ]
 
-# ================= 4. 知情同意记录函数（新增） =================
+# ================= 新增：知情同意保存函数 =================
 def save_consent_record(pid):
-    """保存知情同意记录到 consent_records 表"""
+    """
+    将知情同意记录写入 consent_records 表
+    """
+    if not pid or pid.strip() == "":
+        return False
     try:
-        ip_address = st.experimental_get_query_params().get("ip", ["未知"])[0]
-        user_agent = st.experimental_user.hash_agent
-        consent_data = {
-            "participant_id": pid,
-            "ip_address": ip_address,
-            "user_agent": user_agent,
-            "consent_version": "v1.0"
+        data = {
+            "participant_id": pid.strip(),
+            "consent_timestamp": datetime.datetime.now().isoformat(),
+            "consent_version": "v1.0_ICFER_2024"
         }
-        supabase.table("consent_records").insert(consent_data).execute()
+        supabase.table("consent_records").insert(data).execute()
         return True
     except Exception as e:
-        st.error(f"⚠️ 同意记录保存失败：{e}")
+        st.error(f"⚠️ 保存同意记录失败：{e}")
         return False
 
-# ================= 5. 方案数据函数 =================
+# ================= 4. 方案数据函数（6 个子任务） =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
@@ -162,6 +162,9 @@ def save_plan(pid, task1_text, task2_text, task3_text, task4_text, task5_text, t
         "task4_text": task4_text,
         "task5_text": task5_text,
         "task6_text": task6_text,
+        "task1_button": "",
+        "task2_button": "",
+        "task3_button": "",
         "updated_at": datetime.datetime.now().isoformat()
     }
     try:
@@ -171,7 +174,7 @@ def save_plan(pid, task1_text, task2_text, task3_text, task4_text, task5_text, t
         st.error(f"方案保存失败：{e} 请确保数据库表已添加 task4_text, task5_text, task6_text 列。")
         return False
 
-# ================= 6. 页面初始化 =================
+# ================= 5. 页面初始化 =================
 st.set_page_config(page_title="教育实证研究全周期智能协同框架", page_icon="📘", layout="wide")
 
 # 强制初始化所有 session_state 变量
@@ -203,7 +206,7 @@ else:
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
-# ================= 7. CSS =================
+# ================= 6. CSS =================
 st.markdown(
     """
     <style>
@@ -301,7 +304,7 @@ st.markdown(
             margin-top: 4px;
         }
 
-        /* 知情同意书卡片样式 */
+        /* 知情同意书卡片样式 - 纯 HTML 方案 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
             padding: 30px 35px;
@@ -369,36 +372,42 @@ st.markdown(
             margin-top: 4px !important;
             margin-bottom: 4px !important;
         }
-
+        
         /* 减小每个子任务外部容器的下边距 */
         [data-testid="stVerticalBlock"] > .stMarkdown {
             margin-bottom: 2px !important;
         }
-
+        
         /* 减小 text_area 容器的下边距 */
         [data-testid="stTextArea"] {
             margin-bottom: 2px !important;
         }
-
+        
         /* 减小子任务标题的边距 */
         .task-odd, .task-even {
             padding: 8px 16px !important;
             margin-bottom: 4px !important;
         }
-
+        
         /* 确保子任务内的 text_area 也没有额外边距 */
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
 
-        /* 输入框内嵌上传图标 */
+        /* ========== 输入框内嵌上传图标 ========== */
+
+        /* 容器设为相对定位，作为图标的定位基准 */
         .st-key-input_wrapper {
             position: relative;
         }
+
+        /* 给文本域右下角预留空间，避免文字被图标遮挡 */
         .st-key-input_wrapper textarea {
             padding-right: 46px !important;
             padding-bottom: 42px !important;
         }
+
+        /* 文件上传组件整体：绝对定位到文本框右下角，尺寸缩小 */
         .st-key-input_wrapper [data-testid="stFileUploader"] {
             position: absolute;
             right: 10px;
@@ -408,10 +417,14 @@ st.markdown(
             z-index: 30;
             overflow: hidden;
         }
+
+        /* 隐藏 file_uploader 的 label 文字与帮助小图标 */
         .st-key-input_wrapper [data-testid="stFileUploader"] label,
         .st-key-input_wrapper [data-testid="stFileUploader"] [data-testid="stTooltipIcon"] {
             display: none !important;
         }
+
+        /* 拖拽区域整体缩小、去除边框和内边距 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] {
             background: transparent !important;
             border: none !important;
@@ -421,9 +434,13 @@ st.markdown(
             height: 34px !important;
             width: 34px !important;
         }
+
+        /* 隐藏"Drag and drop file here / Limit 200MB..."提示文字及默认图标 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] > div:first-child {
             display: none !important;
         }
+
+        /* 把"Browse files"按钮改造成透明底的回形针图标按钮 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button {
             width: 34px !important;
             height: 34px !important;
@@ -449,13 +466,15 @@ st.markdown(
             left: 50%;
             transform: translate(-50%, -50%);
         }
+
+        /* 隐藏所有输入框右下角的提示 */
         [data-testid="InputInstructions"] {
             visibility: hidden !important;
             color: transparent !important;
             opacity: 0 !important;
         }
 
-        /* 左侧「研究人机交互区」：聊天记录 + 输入区域 合并为一个整体的灰色圆角矩形 */
+        /* ========== 左侧聊天记录 + 输入区域合并 ========== */
         .st-key-unified_chat_box {
             border: 1px solid #e2e5ea;
             border-radius: 14px;
@@ -470,12 +489,10 @@ st.markdown(
             border: none !important;
             padding: 0 !important;
             background: transparent !important;
-        }
-        .st-key-unified_chat_box .stForm {
             margin-top: 10px;
         }
 
-        /* 核心：左右两栏各自按真实内容渲染高度 */
+        /* ========== 左右两栏高度控制 ========== */
         .st-key-main_row [data-testid="stHorizontalBlock"] {
             align-items: flex-start !important;
             height: auto !important;
@@ -514,7 +531,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 8. 固定顶部栏（标题） =================
+# ================= 7. 固定顶部栏（标题） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 st.markdown(
     """
@@ -527,9 +544,9 @@ st.markdown(
 )
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 9. 根据角色显示内容 =================
+# ================= 8. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
-    # ---------- 研究者模式（居中，密码框缩小，验证在下方） ----------
+    # ---------- 研究者模式 ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
     with col_center:
         st.markdown("<h3 style='text-align: center;'>📊 研究者数据导出</h3>", unsafe_allow_html=True)
@@ -570,6 +587,9 @@ if st.session_state.user_role == "研究者":
                         key="dl_logs",
                         use_container_width=True
                     )
+            except Exception as e:
+                st.error(f"读取交互数据失败：{e}")
+            try:
                 response_plan = supabase.table("research_plans").select("*").execute()
                 if response_plan.data:
                     df_plan = pd.DataFrame(response_plan.data)
@@ -582,13 +602,16 @@ if st.session_state.user_role == "研究者":
                         key="dl_plans",
                         use_container_width=True
                     )
-                # 新增：导出同意记录
+            except Exception as e:
+                st.error(f"读取方案数据失败：{e}")
+            # 下载知情同意记录
+            try:
                 response_consent = supabase.table("consent_records").select("*").execute()
                 if response_consent.data:
                     df_consent = pd.DataFrame(response_consent.data)
                     csv_consent = df_consent.to_csv(index=False, encoding='utf-8-sig')
                     st.download_button(
-                        label="📥 下载同意记录",
+                        label="📥 下载知情同意记录",
                         data=csv_consent.encode('utf-8-sig'),
                         file_name="consent_records.csv",
                         mime="text/csv",
@@ -596,7 +619,7 @@ if st.session_state.user_role == "研究者":
                         use_container_width=True
                     )
             except Exception as e:
-                st.error(f"读取数据失败：{e}")
+                st.warning(f"读取同意记录失败：{e}")
             if st.button("退出研究者模式", use_container_width=True):
                 st.session_state.export_authorized = False
                 st.query_params.clear()
@@ -604,6 +627,8 @@ if st.session_state.user_role == "研究者":
 
 else:
     # ---------- 被试模式 ----------
+    
+    # 【1】检查实验是否已完成
     if st.session_state.experiment_completed:
         st.markdown(
             """
@@ -628,70 +653,103 @@ else:
                 st.rerun()
         st.stop()
 
+    # 【2】先检查是否输入了 Participant ID（移到同意书之前！）
+    if not st.session_state.participant_id:
+        st.markdown(
+            """
+            <div style="text-align: center; padding: 50px 20px;">
+                <h2 style="color: #1a3a5a; margin-bottom: 10px;">👤 欢迎参与研究</h2>
+                <p style="font-size: 18px; color: #555; margin-bottom: 30px;">
+                    请输入研究者分配给您的编号以开始实验。<br>
+                    输入编号后，您将阅读并签署知情同意书。
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        col_space1, col_id, col_space2 = st.columns([1, 2, 1])
+        with col_id:
+            pid_input = st.text_input(
+                "研究编号",
+                key="pid_input_start",
+                label_visibility="collapsed",
+                placeholder="例如：P001"
+            )
+            if pid_input and pid_input.strip():
+                st.session_state.participant_id = pid_input.strip()
+                st.rerun()
+        st.stop()
+
+    # 【3】再检查是否已同意（此时 participant_id 一定存在）
     if not st.session_state.consent_given:
-        st.markdown("<p style='text-align: center; font-size: 18px;'>您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。</p>", unsafe_allow_html=True)
+        # 显示当前参与者编号
+        st.markdown(
+            "<p style='text-align: center; font-size: 16px; color: #555;'>"
+            f"当前参与者编号：<strong>{st.session_state.participant_id}</strong>"
+            "</p>",
+            unsafe_allow_html=True
+        )
 
         st.markdown(
             """
             <div class="consent-card">
                 <h2>📋 知情同意书</h2>
                 <p><strong>研究主题：人工智能辅助教育研究的特征与机制研究</strong></p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击“同意”按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
-
-                <p><strong>一、 这项研究是关于什么的？</strong></p>
-                <p>本研究致力于探索教育研究者（如您）在实际科研工作中如何与生成式人工智能（AI）协同工作。我们将通过观察您与AI共同完成一项研究设计任务的过程，来分析您的行为模式、思维过程及主观感受。最终，本研究的成果将有助于制定更负责任、更可解释的AI使用指南，为高校和相关机构的科研培训提供依据。</p>
-
-                <p><strong>本次实验的具体任务</strong>：您将与我们的智能研究助理 <strong>ICFER（教育实证研究全周期智能协同框架，Intelligent Collaborative Framework for Empirical Research in Education）</strong> 进行大约 <strong>100分钟</strong> 的深度对话。</p>
-                <p>在对话中，您将围绕统一主题 <strong>"人工智能时代的教师教育与教师专业发展研究"</strong> ，结合您自身的学科专长（如学科教学、教育技术、教育管理等），从中选定一个具体的研究切入点，并在ICFER的辅助下构思并完成一份完整的实证研究设计方案。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击"同意"按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
+<p><strong></strong><br</p>
+                <p><strong>一、这项研究是关于什么的？</strong></p>
+                <p>本研究致力于探索教育研究者（如您）在实际科研工作中如何与生成式人工智能（AI）协同工作。我们将通过观察您与 AI 共同完成一项研究设计任务的过程，来分析您的行为模式、思维过程及主观感受。最终，本研究的成果将有助于制定更负责任、更可解释的 AI 使用指南，为高校和相关机构的科研培训提供依据。</p>
+                <p><strong>本次实验的具体任务</strong>：您将与我们的智能研究助理 <strong>ICFER（教育实证研究全周期智能协同框架，Intelligent Collaborative Framework for Empirical Research in Education）</strong> 进行大约 <strong>100 分钟</strong> 的深度对话。</p>
+                <p>在对话中，您将围绕统一主题 <strong>"人工智能时代的教师教育与教师专业发展研究"</strong> ，结合您自身的学科专长（如学科教学、教育技术、教育管理等），从中选定一个具体的研究切入点，并在 ICFER 的辅助下构思并完成一份完整的实证研究设计方案。</p>
                 <p><em>特别说明</em>：这项设计任务是实验环节中的一次模拟任务，您所完成的设计方案仅用于本研究分析，不会用于课程评价、科研考核、职称评定或真实学术成果提交。实验中使用的材料均为统一编撰并经过脱敏处理，不要求您提交个人真实论文、未公开数据、评审材料或其他涉及个人、单位及科研保密的信息。</p>
-
-                <p><strong>二、 参与过程会发生什么？</strong></p>
+<p><strong></strong><br</p>
+                <p><strong>二、参与过程会发生什么？</strong></p>
                 <ul>
-                    <li><strong>深度人机对话</strong>：您将与ICFER围绕上述统一主题下您所聚焦的具体研究问题进行自由、深入的探讨。ICFER会尝试辅助您梳理思路、提供建议、完善研究设计。</li>
-                    <li><strong>方案构思与生成</strong>：在ICFER的辅助下，您需要在系统中逐步填写研究设计的关键要素（如研究问题、研究方法、数据收集与分析计划等），最终形成一份属于您自己的研究方案初稿。</li>
-                    <li><strong>数据自动记录</strong>：为了科学研究，您与ICFER的<strong>完整对话日志</strong>，以及您在各阶段填写的研究要点将被系统自动记录，这些信息共同构成您的研究方案记录。</li>
+                    <li><strong>深度人机对话</strong>：您将与 ICFER 围绕上述统一主题下您所聚焦的具体研究问题进行自由、深入的探讨。ICFER 会尝试辅助您梳理思路、提供建议、完善研究设计。</li>
+                    <li><strong>方案构思与生成</strong>：在 ICFER 的辅助下，您需要在系统中逐步填写研究设计的关键要素（如研究问题、研究方法、数据收集与分析计划等），最终形成一份属于您自己的研究方案初稿。</li>
+                    <li><strong>数据自动记录</strong>：为了科学研究，您与 ICFER 的<strong>完整对话日志</strong>，以及您在各阶段填写的研究要点将被系统自动记录，这些信息共同构成您的研究方案记录。</li>
                 </ul>
-
-                <p><strong>三、 我的数据会被怎么处理？安全吗？</strong></p>
+<p><strong></strong><br</p>
+                <p><strong>三、我的数据会被怎么处理？安全吗？</strong></p>
                 <p>我们深知您学术成果与个人隐私的重要性，并承诺采取最高标准的保护措施。所有数据将严格遵循科研伦理规范进行处理：</p>
                 <ul>
-                    <li><strong>用途限定</strong>：所有收集的数据<strong>仅用于本项目的学术分析</strong>，不会用于任何商业目的，也不会被用于训练AI模型。</li>
+                    <li><strong>用途限定</strong>：所有收集的数据<strong>仅用于本项目的学术分析</strong>，不会用于任何商业目的，也不会被用于训练 AI 模型。</li>
                     <li><strong>匿名化处理（去标识化）</strong>：在分析前，所有数据（包括对话日志）都将进行严格的匿名化处理，即删除您的姓名、联系方式、单位等可直接识别您身份的信息。最终公开发表的研究成果中，仅会呈现无法识别个体的引语或任务示例。</li>
                     <li><strong>安全存储</strong>：原始电子数据将加密存储于受权限控制的学校服务器或加密存储设备中。</li>
-                    <li><strong>信息保密与销毁</strong>：我们承诺，未经您的单独同意，绝不会向任何合作单位、AI平台供应商或无关第三方提供可识别您的数据。所有原始数据将在研究完成后（预计<strong>3年内</strong>）进行彻底销毁。</li>
+                    <li><strong>信息保密与销毁</strong>：我们承诺，未经您的单独同意，绝不会向任何合作单位、AI 平台供应商或无关第三方提供可识别您的数据。所有原始数据将在研究完成后（预计<strong>3 年内</strong>）进行彻底销毁。</li>
                     <li><strong>学术诚信保护</strong>：本项目的研究结果<strong>不会</strong>用于任何形式的个人能力排名、心理诊断、学术不端判定、导师评价或职称考核。</li>
                 </ul>
-
-                <p><strong>四、 参与这项研究有什么风险或收益吗？</strong></p>
+<p><strong></strong><br</p>
+                <p><strong>四、参与这项研究有什么风险或收益吗？</strong></p>
                 <ul>
                     <li><strong>风险评估（我们如何保障您的权益）</strong>：
                         <ul>
                             <li>本项目属于最低风险的社会科学研究，不涉及任何药物、侵入性操作或身体伤害。</li>
-                            <li><strong>心理风险</strong>：您可能会在接触AI不完美的回答、或反思自身对AI的依赖时，产生短暂的紧张、挫败或疲劳感。研究团队的任务设计采用中性、非评判性表述，研究人员不会对您的表现做任何负面评价。若您出现明显不适，我们将立即提供休息和解释。</li>
-                            <li><strong>信息安全风险</strong>：为保障您的科研信息安全，请<strong>勿</strong>在研究过程中向AI输入您未发表的论文正文、未公开数据、评审材料或带有单位信息的保密内容。确需使用AI平台时，请避免输入真实姓名、联系方式、未公开研究成果、个人敏感信息、保密数据或具有识别性的他人资料。</li>
+                            <li><strong>心理风险</strong>：您可能会在接触 AI 不完美的回答、或反思自身对 AI 的依赖时，产生短暂的紧张、挫败或疲劳感。研究团队的任务设计采用中性、非评判性表述，研究人员不会对您的表现做任何负面评价。若您出现明显不适，我们将立即提供休息和解释。</li>
+                            <li><strong>信息安全风险</strong>：为保障您的科研信息安全，请<strong>勿</strong>在研究过程中向 AI 输入您未发表的论文正文、未公开数据、评审材料或带有单位信息的保密内容。确需使用 AI 平台时，请避免输入真实姓名、联系方式、未公开研究成果、个人敏感信息、保密数据或具有识别性的他人资料。</li>
                             <li><strong>身体风险</strong>：主要为长时间使用电脑带来的常规用眼疲劳或久坐不适，建议您适时休息。</li>
                         </ul>
                     </li>
                     <li><strong>您的潜在收益</strong>：
                         <ul>
-                            <li>您将获得一次深度的、前沿的AI辅助科研体验。</li>
-                            <li>您将免费获得一份由您与ICFER共同完成的、<strong>为您量身定制的研究设计方案初稿</strong>，这对您未来的研究可能具有参考价值。</li>
+                            <li>您将获得一次深度的、前沿的 AI 辅助科研体验。</li>
+                            <li>您将免费获得一份由您与 ICFER 共同完成的、<strong>为您量身定制的研究设计方案初稿</strong>，这对您未来的研究可能具有参考价值。</li>
                         </ul>
                     </li>
                 </ul>
-
-                <p><strong>五、 我可以随时退出吗？</strong></p>
+<p><strong></strong><br</p>
+                <p><strong>五、我可以随时退出吗？</strong></p>
                 <p><strong>当然可以。</strong> 参与本研究完全基于您的自愿原则。</p>
                 <ul>
                     <li>在实验过程中，如果您感到任何不适或希望终止，可随时点击界面正下方的 <strong>"退出实验"</strong> 按钮。</li>
                     <li>退出后，系统将<strong>立即停止数据记录</strong>，您已产生的对话日志将<strong>不再纳入后续数据分析</strong>，且不会对您产生任何不利影响（如影响您的工作评价、学业指导关系或资源获取）。</li>
                     <li>如果数据已完成匿名化并进入汇总分析，届时删除可能受限，这一点我们会在研究中提前说明。</li>
                 </ul>
-
-                <p><strong>六、 研究成果会分享给我吗？</strong></p>
-                <p><strong>会的。</strong> 研究结束后，我们承诺在不泄露个人隐私的前提下，通过电子邮件等方式向有需要的参与者分享一份总体研究发现摘要，以及负责任使用AI的实践建议。您可以在知情同意时自主选择是否接收研究结果。</p>
-
-                <p><strong>七、 如有疑问可以联系谁？</strong></p>
+<p><strong></strong><br</p>
+                <p><strong>六、研究成果会分享给我吗？</strong></p>
+                <p><strong>会的。</strong> 研究结束后，我们承诺在不泄露个人隐私的前提下，通过电子邮件等方式向有需要的参与者分享一份总体研究发现摘要，以及负责任使用 AI 的实践建议。您可以在知情同意时自主选择是否接收研究结果。</p>
+<p><strong></strong><br</p>
+                <p><strong>七、如有疑问可以联系谁？</strong></p>
                 <div class="contact-box">
                     <p>如果您对本次研究有任何疑问、顾虑，或在参与过程中遇到任何问题，欢迎随时联系我们的研究负责人：</p>
                     <ul>
@@ -700,54 +758,62 @@ else:
                         <li><strong>联系电话</strong>：13309296061</li>
                     </ul>
                 </div>
-
-                <div class="footer-note">点击下方"同意"即表示您已阅读并理解上述内容，自愿参与本研究。</div>
+<p><strong></strong><br</p>
+                <div class="footer-note">点击下方"同意"即表示您已阅读并理解上述内容，自愿参与本研究。<br>系统将在您点击同意后自动记录同意时间戳。</div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-        # 同意/不同意按钮（仅修改同意按钮逻辑）
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
-                # 生成唯一参与者ID（若未生成）
-                if not st.session_state.participant_id:
-                    st.session_state.participant_id = f"P{uuid.uuid4().hex[:8]}"
-
-                # 保存知情同意记录
-                if save_consent_record(st.session_state.participant_id):
-                    st.session_state.consent_given = True
-                    st.rerun()
-                else:
-                    st.error("同意记录保存失败，请重试")
-
-            if st.button("❌ 我不同意", use_container_width=True):
-                st.warning("您已拒绝参与实验。感谢您的关注！")
-                st.stop()
-
-    elif not st.session_state.participant_id:
-        col_space1, col_id, col_space2 = st.columns([1, 2, 1])
-        with col_id:
-            st.markdown("<p style='text-align: center; font-size: 18px; font-weight: bold;'>👤 请输入您的编号</p>", unsafe_allow_html=True)
-            pid_input = st.text_input(
-                "输入编号后按回车确认",
-                value="",
-                key="pid_input_top",
-                label_visibility="collapsed",
-                placeholder="请输入编号，例如 P001"
-            )
-            if pid_input and pid_input.strip():
-                st.session_state.participant_id = pid_input.strip()
-                st.session_state.messages = None
+                st.session_state.consent_given = True
+                save_consent_record(st.session_state.participant_id)  # ✅ 保存同意记录到数据库
+                st.session_state.messages = get_initial_messages()
+                st.session_state.round_count = 0
                 st.rerun()
-    else:
+        st.stop()
+
+    # 【4】退出确认对话框
+    if st.session_state.show_exit_dialog:
+        st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
+        col_confirm1, col_confirm2 = st.columns(2)
+        with col_confirm1:
+            if st.button("确认退出", key="confirm_exit_yes"):
+                exit_log = {
+                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "participant_id": st.session_state.participant_id,
+                    "round": st.session_state.round_count,
+                    "user_prompt": "退出实验",
+                    "behavior_button": "退出实验",
+                    "ai_response": ""
+                }
+                try:
+                    supabase.table("research_logs").insert(exit_log).execute()
+                    st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
+                except Exception as e:
+                    st.error(f"记录退出失败：{e}")
+                st.session_state.consent_given = False
+                st.session_state.participant_id = ""
+                st.session_state.messages = get_initial_messages()
+                st.session_state.round_count = 0
+                st.session_state.show_exit_dialog = False
+                st.session_state.experiment_completed = False
+                st.rerun()
+        with col_confirm2:
+            if st.button("取消", key="confirm_exit_no"):
+                st.session_state.show_exit_dialog = False
+                st.rerun()
+        st.stop()
+
+    # 【5】主实验界面（原有代码完全不变）
+    if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        # ---------- 用带唯一 key 的容器包裹左右两栏 ----------
         with st.container(key="main_row"):
             col_left, col_right = st.columns([55, 45], gap="large")
             with col_left:
@@ -755,7 +821,6 @@ else:
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
 
-                # ---------- 聊天记录 + 输入表单 ----------
                 with st.container(key="unified_chat_box"):
                     has_dialogue = False
                     for msg in st.session_state.messages:
@@ -877,52 +942,52 @@ else:
             with col_right:
                 st.subheader("📝 研究方案填写区")
                 existing_plan = load_plan(st.session_state.participant_id)
-                st.markdown("**AI协同研究方案撰写**")
-                st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
+                st.markdown("**AI 协同研究方案撰写**")
+                st.caption("任务共分为 6 个递进环节，请根据您与 AI 的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
                 with st.form(key="plan_form"):
-                    st.markdown("**子任务1：选题与文献发现**")
+                    st.markdown("**子任务 1：选题与文献发现**")
                     task1_text = st.text_area(
-                        "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
+                        "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议 150 字左右）",
                         value=existing_plan["task1_text"] if existing_plan else "",
                         height=160,
                         key="task1_text"
                     )
                     st.divider()
-                    st.markdown("**子任务2：研究规划与设计**")
+                    st.markdown("**子任务 2：研究规划与设计**")
                     task2_text = st.text_area(
-                        "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
+                        "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议 150 字左右）",
                         value=existing_plan["task2_text"] if existing_plan else "",
                         height=160,
                         key="task2_text"
                     )
                     st.divider()
-                    st.markdown("**子任务3：实施与数据采集**")
+                    st.markdown("**子任务 3：实施与数据采集**")
                     task3_text = st.text_area(
-                        "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
+                        "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议 150 字左右）",
                         value=existing_plan["task3_text"] if existing_plan else "",
                         height=160,
                         key="task3_text"
                     )
                     st.divider()
-                    st.markdown("**子任务4：数据分析与阐释**")
+                    st.markdown("**子任务 4：数据分析与阐释**")
                     task4_text = st.text_area(
-                        "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
+                        "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议 150 字左右）",
                         value=existing_plan["task4_text"] if existing_plan else "",
                         height=160,
                         key="task4_text"
                     )
                     st.divider()
-                    st.markdown("**子任务5：论文撰写与润色**")
+                    st.markdown("**子任务 5：论文撰写与润色**")
                     task5_text = st.text_area(
-                        "1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
+                        "1.研究的创新点（2-3 项）；2.研究存在的不足（2-3 项）。（建议 300-500 字左右）",
                         value=existing_plan["task5_text"] if existing_plan else "",
                         height=300,
                         key="task5_text"
                     )
                     st.divider()
-                    st.markdown("**子任务6：传播、评估与伦理**")
+                    st.markdown("**子任务 6：传播、评估与伦理**")
                     task6_text = st.text_area(
-                        "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
+                        "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI 使用披露等）。（建议 150 字左右）",
                         value=existing_plan["task6_text"] if existing_plan else "",
                         height=160,
                         key="task6_text"
@@ -930,22 +995,22 @@ else:
                     st.markdown(
         """
         <style>
-            textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
+            textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议 150 字左右）"] {
                 background-color: #e6f3ff;
             }
-            textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
+            textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议 150 字左右）"] {
                 background-color: #f5e6ff;
             }
-            textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
+            textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议 150 字左右）"] {
                 background-color: #e6f3ff;
             }
-            textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
+            textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议 150 字左右）"] {
                 background-color: #f5e6ff;
             }
-            textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
+            textarea[aria-label="1.研究的创新点（2-3 项）；2.研究存在的不足（2-3 项）。（建议 300-500 字左右）"] {
                 background-color: #e6f3ff;
             }
-            textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
+            textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI 使用披露等）。（建议 150 字左右）"] {
                 background-color: #f5e6ff;
             }
         </style>
@@ -979,34 +1044,4 @@ else:
         with col_exit_center:
             if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
                 st.session_state.show_exit_dialog = True
-                st.rerun()
-
-    if st.session_state.show_exit_dialog:
-        st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
-        col_confirm1, col_confirm2 = st.columns(2)
-        with col_confirm1:
-            if st.button("确认退出", key="confirm_exit_yes"):
-                exit_log = {
-                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "participant_id": st.session_state.participant_id,
-                    "round": st.session_state.round_count,
-                    "user_prompt": "退出实验",
-                    "behavior_button": "退出实验",
-                    "ai_response": ""
-                }
-                try:
-                    supabase.table("research_logs").insert(exit_log).execute()
-                    st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
-                except Exception as e:
-                    st.error(f"记录退出失败：{e}")
-                st.session_state.consent_given = False
-                st.session_state.participant_id = ""
-                st.session_state.messages = get_initial_messages()
-                st.session_state.round_count = 0
-                st.session_state.show_exit_dialog = False
-                st.session_state.experiment_completed = False
-                st.rerun()
-        with col_confirm2:
-            if st.button("取消", key="confirm_exit_no"):
-                st.session_state.show_exit_dialog = False
                 st.rerun()
