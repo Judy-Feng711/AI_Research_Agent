@@ -216,7 +216,7 @@ st.markdown(
             top: 0;
             background-color: white;
             z-index: 100;
-            padding: 0.5rem 1rem 0.2rem 1rem;
+            padding: 0.2rem 1rem 0.2rem 0.5rem;
             border-bottom: none !important;
             box-shadow: none !important;
         }
