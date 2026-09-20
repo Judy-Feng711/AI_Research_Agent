@@ -638,12 +638,8 @@ else:
     if not st.session_state.participant_id:
         st.markdown(
             """
-            <div style="text-align: center; padding: 50px 20px;">
-                
-                <p style="font-size: 18px; color: #555; margin-bottom: 30px;">
-                    👤 欢迎参与研究请输入研究者分配给您的编号以开始实验。输入编号后，您将阅读并签署知情同意书。
-                    
-                </p>
+            <div style="text-align: center; padding: 50px 20px;">   
+                <p style="font-size: 18px; color: #555; margin-bottom: 30px;">👤 欢迎参与研究请输入研究者分配给您的编号以开始实验。输入编号后，您将阅读并签署知情同意书。</p>
             </div>
             """,
             unsafe_allow_html=True
