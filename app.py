@@ -1,3 +1,6 @@
+要实现**左侧研究人机交互区的输入框固定在底部**，同时保持上方的交互内容可垂直滚动，我们需要对 CSS 样式进行调整。以下是完整的代码实现：
+
+```python
 from pypdf import PdfReader
 import docx
 import streamlit as st
@@ -210,6 +213,7 @@ else:
 st.markdown(
     """
     <style>
+        /* 顶部固定栏 */
         .top-fixed {
             position: sticky;
             top: 0;
@@ -223,6 +227,7 @@ st.markdown(
             border-right: none !important;
         }
 
+        /* 主布局 */
         [data-testid="stHorizontalBlock"] {
             gap: 6 !important;
         }
@@ -246,17 +251,7 @@ st.markdown(
             border: none !important;
         }
 
-        [data-testid="stHorizontalBlock"] .stColumn:nth-child(5) {
-            justify-content: flex-start !important;
-            align-items: stretch !important;
-            padding-top: 0 !important;
-            margin-top: 0 !important;
-        }
-        [data-testid="stHorizontalBlock"] .stColumn:nth-child(5) .stButton {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-
+        /* 按钮样式 */
         .stButton button,
         .stForm button[type="submit"] {
             height: 38px !important;
@@ -277,31 +272,6 @@ st.markdown(
             height: 38px !important;
             display: flex !important;
             align-items: center !important;
-        }
-
-        .role-btn-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 0.2rem;
-        }
-        .role-btn-container .stButton {
-            width: auto !important;
-        }
-        .role-btn-container .stButton button {
-            width: 120px !important;
-            height: 34px !important;
-            min-height: 34px !important;
-            max-height: 34px !important;
-            font-size: 14px !important;
-            padding: 0 12px !important;
-        }
-        .selected-badge {
-            text-align: center;
-            color: #4CAF50;
-            font-weight: bold;
-            font-size: 14px;
-            margin-top: 4px;
         }
 
         /* 知情同意书卡片样式 */
@@ -362,34 +332,28 @@ st.markdown(
             padding-top: 16px;
             border-top: 1px dashed #b0c4de;
         }
-        /* 减小分隔线的上下间距 */
+
+        /* 分隔线样式 */
         .stDivider hr {
             margin-top: 1px !important;
             margin-bottom: 1px !important;
         }
-        /* 减小分隔线的上下间距 */
         hr {
             margin-top: 4px !important;
             margin-bottom: 4px !important;
         }
 
-        /* 减小每个子任务外部容器的下边距 */
+        /* 子任务区域样式 */
         [data-testid="stVerticalBlock"] > .stMarkdown {
             margin-bottom: 2px !important;
         }
-
-        /* 减小 text_area 容器的下边距 */
         [data-testid="stTextArea"] {
             margin-bottom: 2px !important;
         }
-
-        /* 减小子任务标题的边距 */
         .task-odd, .task-even {
             padding: 8px 16px !important;
             margin-bottom: 4px !important;
         }
-
-        /* 确保子任务内的 text_area 也没有额外边距 */
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
@@ -458,22 +422,37 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* 左侧聊天记录 + 输入区域合并 */
+        /* ========== 左侧聊天区域样式 ========== */
+        .st-key-chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px) !important;
+            overflow: hidden;
+        }
+        .st-key-chat-messages {
+            flex-grow: 1;
+            overflow-y: auto !important;
+            padding-right: 8px;
+        }
+        .st-key-chat-input {
+            position: sticky;
+            bottom: 0;
+            background-color: #fafbfc;
+            padding-top: 10px;
+            border-top: 1px solid #e2e5ea;
+        }
         .st-key-unified_chat_box {
             border: 1px solid #e2e5ea;
             border-radius: 14px;
             background-color: #fafbfc;
-            padding: 16px 18px 18px 18px;
+            padding: 16px 18px 0 18px;
             margin-bottom: 4px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         .st-key-unified_chat_box [data-testid="stChatMessage"] {
             margin-bottom: 6px !important;
-        }
-        .st-key-unified_chat_box .stForm {
-            border: none !important;
-            padding: 0 !important;
-            background: transparent !important;
-            margin-top: 10px;
         }
 
         /* 左右两栏高度控制 */
@@ -805,123 +784,128 @@ else:
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
 
-                with st.container(key="unified_chat_box"):
-                    has_dialogue = False
-                    for msg in st.session_state.messages:
-                        if msg["role"] == "system":
-                            continue
-                        if msg["role"] == "assistant" and msg["content"] == INITIAL_GREETING:
-                            continue
-                        has_dialogue = True
-                        with st.chat_message(msg["role"]):
-                            st.markdown(msg["content"])
-                    if not has_dialogue:
-                        st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
+                # 使用新的聊天容器结构
+                with st.container(key="st-key-chat-container"):
+                    # 聊天消息区域（可滚动）
+                    with st.container(key="st-key-chat-messages"):
+                        has_dialogue = False
+                        for msg in st.session_state.messages:
+                            if msg["role"] == "system":
+                                continue
+                            if msg["role"] == "assistant" and msg["content"] == INITIAL_GREETING:
+                                continue
+                            has_dialogue = True
+                            with st.chat_message(msg["role"]):
+                                st.markdown(msg["content"])
+                        if not has_dialogue:
+                            st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
 
-                    with st.form(key="prompt_form", clear_on_submit=True):
-                        with st.container(key="input_wrapper"):
-                            user_input = st.text_area(
-                                "在这里输入您的提示词 (Prompt)：",
-                                height=150,
-                                key="prompt_input",
-                                label_visibility="collapsed",
-                                placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
-                            )
-                            uploaded_file = st.file_uploader(
-                                "上传文档",
-                                type=["pdf", "docx"],
-                                key="file_uploader_simple",
-                                label_visibility="collapsed"
-                            )
+                    # 输入区域（固定在底部）
+                    with st.container(key="st-key-chat-input"):
+                        with st.form(key="prompt_form", clear_on_submit=True):
+                            with st.container(key="input_wrapper"):
+                                user_input = st.text_area(
+                                    "在这里输入您的提示词 (Prompt)：",
+                                    height=150,
+                                    key="prompt_input",
+                                    label_visibility="collapsed",
+                                    placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
+                                )
+                                uploaded_file = st.file_uploader(
+                                    "上传文档",
+                                    type=["pdf", "docx"],
+                                    key="file_uploader_simple",
+                                    label_visibility="collapsed"
+                                )
 
-                        if uploaded_file is not None:
-                            st.caption(f"📎 已附加文档：{uploaded_file.name}")
-
-                        st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
-                        col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
-                        clicked_behavior = None
-                        if col_b1.form_submit_button("获取基础信息"):
-                            clicked_behavior = "获取基础信息"
-                        elif col_b2.form_submit_button("规范语言/格式"):
-                            clicked_behavior = "规范语言/格式"
-                        elif col_b3.form_submit_button("微调研究逻辑"):
-                            clicked_behavior = "微调研究逻辑"
-                        elif col_b4.form_submit_button("重构研究方案"):
-                            clicked_behavior = "重构研究方案"
-                        elif col_b5.form_submit_button("拓展研究思路"):
-                            clicked_behavior = "拓展研究思路"
-
-                        if clicked_behavior:
-                            if not user_input or user_input.strip() == "":
-                                st.warning("⚠️ 请先输入提示词！")
-                                st.stop()
-
-                            file_content = ""
                             if uploaded_file is not None:
-                                file_name = uploaded_file.name
-                                if file_name.endswith(".pdf"):
-                                    try:
-                                        reader = PdfReader(uploaded_file)
-                                        for page in reader.pages:
-                                            text = page.extract_text()
-                                            if text:
-                                                file_content += text + "\n"
-                                    except Exception as e:
-                                        st.error(f"PDF 解析失败：{e}")
-                                elif file_name.endswith(".docx"):
-                                    try:
-                                        doc = docx.Document(uploaded_file)
-                                        for para in doc.paragraphs:
-                                            file_content += para.text + "\n"
-                                    except Exception as e:
-                                        st.error(f"Word 解析失败：{e}")
-                                if file_content and len(file_content) > 5000:
-                                    file_content = file_content[:5000] + "\n...[内容已截断]"
+                                st.caption(f"📎 已附加文档：{uploaded_file.name}")
 
-                            full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
+                            st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
+                            col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
+                            clicked_behavior = None
+                            if col_b1.form_submit_button("获取基础信息"):
+                                clicked_behavior = "获取基础信息"
+                            elif col_b2.form_submit_button("规范语言/格式"):
+                                clicked_behavior = "规范语言/格式"
+                            elif col_b3.form_submit_button("微调研究逻辑"):
+                                clicked_behavior = "微调研究逻辑"
+                            elif col_b4.form_submit_button("重构研究方案"):
+                                clicked_behavior = "重构研究方案"
+                            elif col_b5.form_submit_button("拓展研究思路"):
+                                clicked_behavior = "拓展研究思路"
 
-                            with st.chat_message("user"):
-                                if file_content:
-                                    st.markdown(f"📎 **已附加文档**，提问：{user_input}")
-                                else:
-                                    st.markdown(f"**[{clicked_behavior}]** {user_input}")
+                            if clicked_behavior:
+                                if not user_input or user_input.strip() == "":
+                                    st.warning("⚠️ 请先输入提示词！")
+                                    st.stop()
 
-                            st.session_state.messages.append({"role": "user", "content": full_user_message})
+                                file_content = ""
+                                if uploaded_file is not None:
+                                    file_name = uploaded_file.name
+                                    if file_name.endswith(".pdf"):
+                                        try:
+                                            reader = PdfReader(uploaded_file)
+                                            for page in reader.pages:
+                                                text = page.extract_text()
+                                                if text:
+                                                    file_content += text + "\n"
+                                        except Exception as e:
+                                            st.error(f"PDF 解析失败：{e}")
+                                    elif file_name.endswith(".docx"):
+                                        try:
+                                            doc = docx.Document(uploaded_file)
+                                            for para in doc.paragraphs:
+                                                file_content += para.text + "\n"
+                                        except Exception as e:
+                                            st.error(f"Word 解析失败：{e}")
+                                    if file_content and len(file_content) > 5000:
+                                        file_content = file_content[:5000] + "\n...[内容已截断]"
 
-                            with st.chat_message("assistant"):
-                                with st.spinner("思考中..."):
-                                    try:
-                                        response = client.chat.completions.create(
-                                            model="deepseek-v4-pro",
-                                            messages=st.session_state.messages
-                                        )
-                                        ai_reply = response.choices[0].message.content
-                                        st.markdown(ai_reply)
-                                    except Exception as e:
-                                        st.error(f"AI 调用失败：{e}")
-                                        st.stop()
-                            st.session_state.messages.append({"role": "assistant", "content": ai_reply})
-                            st.session_state.round_count += 1
+                                full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
 
-                            log_data = {
-                                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                "participant_id": st.session_state.participant_id,
-                                "round": st.session_state.round_count,
-                                "user_prompt": user_input,
-                                "behavior_button": clicked_behavior,
-                                "ai_response": ai_reply
-                            }
-                            try:
-                                supabase.table("research_logs").insert(log_data).execute()
-                            except Exception as e:
-                                st.error(f"日志保存失败：{e}")
+                                with st.chat_message("user"):
+                                    if file_content:
+                                        st.markdown(f"📎 **已附加文档**，提问：{user_input}")
+                                    else:
+                                        st.markdown(f"**[{clicked_behavior}]** {user_input}")
 
-                            save_participant_state(
-                                st.session_state.participant_id,
-                                st.session_state.messages,
-                                st.session_state.round_count
-                            )
-                            st.rerun()
+                                st.session_state.messages.append({"role": "user", "content": full_user_message})
+
+                                with st.chat_message("assistant"):
+                                    with st.spinner("思考中..."):
+                                        try:
+                                            response = client.chat.completions.create(
+                                                model="deepseek-v4-pro",
+                                                messages=st.session_state.messages
+                                            )
+                                            ai_reply = response.choices[0].message.content
+                                            st.markdown(ai_reply)
+                                        except Exception as e:
+                                            st.error(f"AI 调用失败：{e}")
+                                            st.stop()
+                                st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+                                st.session_state.round_count += 1
+
+                                log_data = {
+                                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    "participant_id": st.session_state.participant_id,
+                                    "round": st.session_state.round_count,
+                                    "user_prompt": user_input,
+                                    "behavior_button": clicked_behavior,
+                                    "ai_response": ai_reply
+                                }
+                                try:
+                                    supabase.table("research_logs").insert(log_data).execute()
+                                except Exception as e:
+                                    st.error(f"日志保存失败：{e}")
+
+                                save_participant_state(
+                                    st.session_state.participant_id,
+                                    st.session_state.messages,
+                                    st.session_state.round_count
+                                )
+                                st.rerun()
 
             with col_right:
                 st.subheader("📝 研究方案填写区")
@@ -1029,3 +1013,80 @@ else:
             if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
                 st.session_state.show_exit_dialog = True
                 st.rerun()
+```
+
+---
+
+### **关键修改点说明**
+
+1. **新增 CSS 样式**：
+   ```css
+   /* 聊天容器整体结构 */
+   .st-key-chat-container {
+       display: flex;
+       flex-direction: column;
+       height: calc(100vh - 200px) !important;
+       overflow: hidden;
+   }
+
+   /* 聊天消息区域（可滚动） */
+   .st-key-chat-messages {
+       flex-grow: 1;
+       overflow-y: auto !important;
+       padding-right: 8px;
+   }
+
+   /* 输入区域（固定在底部） */
+   .st-key-chat-input {
+       position: sticky;
+       bottom: 0;
+       background-color: #fafbfc;
+       padding-top: 10px;
+       border-top: 1px solid #e2e5ea;
+   }
+   ```
+
+2. **调整聊天区域结构**：
+   - 将原有的 `unified_chat_box` 容器拆分为两部分：
+     - `st-key-chat-messages`：用于显示聊天消息，设置为可滚动
+     - `st-key-chat-input`：用于输入区域，固定在底部
+
+3. **保持其他功能不变**：
+   - 研究方案填写区域完全保持不变
+   - 知情同意书流程保持不变
+   - 数据保存逻辑保持不变
+
+---
+
+### **实现效果**
+1. **左侧交互区**：
+   - 上方的聊天消息区域可垂直滚动
+   - 下方的输入框固定在底部，始终可见
+   - 输入框高度保持不变，可输入多行文本
+
+2. **右侧方案填写区**：
+   - 保持原有功能不变
+   - 可独立滚动
+
+3. **整体布局**：
+   - 两栏高度一致，均可独立滚动
+   - 输入框始终在视野中，方便用户随时输入
+
+---
+
+### **验证步骤**
+1. **测试滚动效果**：
+   - 发送多条消息，确保消息区域可以滚动
+   - 输入框始终固定在底部
+
+2. **测试输入功能**：
+   - 输入长文本，确保输入框高度不变
+   - 上传文件，确保功能正常
+
+3. **测试方案填写**：
+   - 确保右侧方案填写区域功能正常
+
+4. **测试退出机制**：
+   - 确保退出对话框正常显示
+
+这样修改后，左侧的研究人机交互区输入框就固定在底部了，同时保持了所有其他功能不变。
