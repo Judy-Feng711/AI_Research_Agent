@@ -5,8 +5,9 @@ from openai import OpenAI
 import pandas as pd
 import datetime
 import json
-from supabase import create_client, Client
 import time
+import uuid  # 新增：用于生成唯一参与者ID
+from supabase import create_client, Client
 
 # ================= 1. 核心配置区 =================
 DEEPSEEK_API_KEY = st.secrets["DEEPSEEK_API_KEY"]
@@ -29,10 +30,10 @@ SYSTEM_PROMPT = """您是一个名为"全栈式教育研究学术助理"的高�
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# 初始欢迎语（提取为常量，供 get_initial_messages 与页面展示复用，避免重复维护）
+# 初始欢迎语
 INITIAL_GREETING = "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
 
-# ================= 3. 状态持久化函数（修复版：按时间戳重建消息） =================
+# ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
     """
     从数据库加载被试状态：
@@ -54,9 +55,9 @@ def load_participant_state(pid):
 
         # 统计有效轮数（有效行为 + 非空输入）
         valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-        round_count = sum(1 for log in log_data 
-                          if log.get("behavior_button") in valid_behaviors 
-                          and log.get("user_prompt") 
+        round_count = sum(1 for log in log_data
+                          if log.get("behavior_button") in valid_behaviors
+                          and log.get("user_prompt")
                           and log.get("user_prompt").strip() != "")
 
         # 2. 重建消息列表（系统消息 + 所有有效日志的 user/assistant 对）
@@ -120,7 +121,25 @@ def get_initial_messages():
         {"role": "assistant", "content": INITIAL_GREETING}
     ]
 
-# ================= 4. 方案数据函数（6个子任务） =================
+# ================= 4. 知情同意记录函数（新增） =================
+def save_consent_record(pid):
+    """保存知情同意记录到 consent_records 表"""
+    try:
+        ip_address = st.experimental_get_query_params().get("ip", ["未知"])[0]
+        user_agent = st.experimental_user.hash_agent
+        consent_data = {
+            "participant_id": pid,
+            "ip_address": ip_address,
+            "user_agent": user_agent,
+            "consent_version": "v1.0"
+        }
+        supabase.table("consent_records").insert(consent_data).execute()
+        return True
+    except Exception as e:
+        st.error(f"⚠️ 同意记录保存失败：{e}")
+        return False
+
+# ================= 5. 方案数据函数 =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
@@ -143,9 +162,6 @@ def save_plan(pid, task1_text, task2_text, task3_text, task4_text, task5_text, t
         "task4_text": task4_text,
         "task5_text": task5_text,
         "task6_text": task6_text,
-        "task1_button": "",
-        "task2_button": "",
-        "task3_button": "",
         "updated_at": datetime.datetime.now().isoformat()
     }
     try:
@@ -155,7 +171,7 @@ def save_plan(pid, task1_text, task2_text, task3_text, task4_text, task5_text, t
         st.error(f"方案保存失败：{e} 请确保数据库表已添加 task4_text, task5_text, task6_text 列。")
         return False
 
-# ================= 5. 页面初始化 =================
+# ================= 6. 页面初始化 =================
 st.set_page_config(page_title="教育实证研究全周期智能协同框架", page_icon="📘", layout="wide")
 
 # 强制初始化所有 session_state 变量
@@ -187,7 +203,7 @@ else:
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
-# ================= 6. CSS =================
+# ================= 7. CSS =================
 st.markdown(
     """
     <style>
@@ -285,7 +301,7 @@ st.markdown(
             margin-top: 4px;
         }
 
-        /* 知情同意书卡片样式 - 纯HTML方案 */
+        /* 知情同意书卡片样式 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
             padding: 30px 35px;
@@ -353,43 +369,36 @@ st.markdown(
             margin-top: 4px !important;
             margin-bottom: 4px !important;
         }
-        
+
         /* 减小每个子任务外部容器的下边距 */
         [data-testid="stVerticalBlock"] > .stMarkdown {
             margin-bottom: 2px !important;
         }
-        
+
         /* 减小 text_area 容器的下边距 */
         [data-testid="stTextArea"] {
             margin-bottom: 2px !important;
         }
-        
+
         /* 减小子任务标题的边距 */
         .task-odd, .task-even {
-            padding: 8px 16px !important;  /* 原来 12px 减小 */
+            padding: 8px 16px !important;
             margin-bottom: 4px !important;
         }
-        
+
         /* 确保子任务内的 text_area 也没有额外边距 */
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
 
-        /* ========== 输入框内嵌上传图标 ========== */
-
-        /* 容器设为相对定位，作为图标的定位基准 */
+        /* 输入框内嵌上传图标 */
         .st-key-input_wrapper {
             position: relative;
         }
-
-        /* 给文本域右下角预留空间，避免文字被图标遮挡 */
         .st-key-input_wrapper textarea {
             padding-right: 46px !important;
             padding-bottom: 42px !important;
         }
-
-        /* 文件上传组件整体：绝对定位到文本框右下角，尺寸缩小
-           bottom 值调大 => 图标位置相应上移 */
         .st-key-input_wrapper [data-testid="stFileUploader"] {
             position: absolute;
             right: 10px;
@@ -399,14 +408,10 @@ st.markdown(
             z-index: 30;
             overflow: hidden;
         }
-
-        /* 隐藏 file_uploader 的 label 文字与帮助小图标 */
         .st-key-input_wrapper [data-testid="stFileUploader"] label,
         .st-key-input_wrapper [data-testid="stFileUploader"] [data-testid="stTooltipIcon"] {
             display: none !important;
         }
-
-        /* 拖拽区域整体缩小、去除边框和内边距 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] {
             background: transparent !important;
             border: none !important;
@@ -416,13 +421,9 @@ st.markdown(
             height: 34px !important;
             width: 34px !important;
         }
-
-        /* 隐藏"Drag and drop file here / Limit 200MB..."提示文字及默认图标 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] > div:first-child {
             display: none !important;
         }
-
-        /* 把"Browse files"按钮改造成透明底的回形针图标按钮（去除灰色背景与边框） */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button {
             width: 34px !important;
             height: 34px !important;
@@ -448,15 +449,13 @@ st.markdown(
             left: 50%;
             transform: translate(-50%, -50%);
         }
-
-        /* 隐藏所有输入框（text_area/text_input）右下角的 "Press Ctrl+Enter to submit" 提示 */
         [data-testid="InputInstructions"] {
             visibility: hidden !important;
             color: transparent !important;
             opacity: 0 !important;
         }
 
-        /* ========== 左侧「研究人机交互区」：聊天记录 + 输入区域 合并为一个整体的灰色圆角矩形 ========== */
+        /* 左侧「研究人机交互区」：聊天记录 + 输入区域 合并为一个整体的灰色圆角矩形 */
         .st-key-unified_chat_box {
             border: 1px solid #e2e5ea;
             border-radius: 14px;
@@ -467,26 +466,16 @@ st.markdown(
         .st-key-unified_chat_box [data-testid="stChatMessage"] {
             margin-bottom: 6px !important;
         }
-        /* 表单在整体框内时，去掉表单自身可能带来的多余外边距 */
         .st-key-unified_chat_box .stForm {
             border: none !important;
             padding: 0 !important;
             background: transparent !important;
         }
-        /* 聊天记录与下方输入框之间留一点视觉间隔 */
         .st-key-unified_chat_box .stForm {
             margin-top: 10px;
         }
 
-        /* ========== 核心：左右两栏各自按真实内容渲染高度，避免"虚假空白+需要滚动"的问题 ==========
-           说明：此前这里设置了 align-items: stretch，会导致 Flex 容器把两栏
-           强制拉伸成"和内容较高的那一栏一样高"（按未裁剪前的自然高度计算），
-           而这个被拉伸出来的高度往往超过 max-height 的可视区域，
-           于是浏览器把"多出来的、根本不存在真实内容的空白"当成了可滚动的溢出内容，
-           造成"点击按钮后下面一大片空白，需要拖滚动条才能碰到圆角框底边"的现象。
-           改为 align-items: flex-start 后，两栏不再被强制拉伸对齐，
-           各自按真实内容的高度渲染；只有当内容本身确实超过 max-height 时，
-           才会触发该栏自己真实有效的滚动条。 */
+        /* 核心：左右两栏各自按真实内容渲染高度 */
         .st-key-main_row [data-testid="stHorizontalBlock"] {
             align-items: flex-start !important;
             height: auto !important;
@@ -525,7 +514,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 7. 固定顶部栏（标题） =================
+# ================= 8. 固定顶部栏（标题） =================
 st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 st.markdown(
     """
@@ -538,7 +527,7 @@ st.markdown(
 )
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= 8. 根据角色显示内容 =================
+# ================= 9. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
     # ---------- 研究者模式（居中，密码框缩小，验证在下方） ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
@@ -581,9 +570,6 @@ if st.session_state.user_role == "研究者":
                         key="dl_logs",
                         use_container_width=True
                     )
-            except Exception as e:
-                st.error(f"读取交互数据失败：{e}")
-            try:
                 response_plan = supabase.table("research_plans").select("*").execute()
                 if response_plan.data:
                     df_plan = pd.DataFrame(response_plan.data)
@@ -596,8 +582,21 @@ if st.session_state.user_role == "研究者":
                         key="dl_plans",
                         use_container_width=True
                     )
+                # 新增：导出同意记录
+                response_consent = supabase.table("consent_records").select("*").execute()
+                if response_consent.data:
+                    df_consent = pd.DataFrame(response_consent.data)
+                    csv_consent = df_consent.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        label="📥 下载同意记录",
+                        data=csv_consent.encode('utf-8-sig'),
+                        file_name="consent_records.csv",
+                        mime="text/csv",
+                        key="dl_consent",
+                        use_container_width=True
+                    )
             except Exception as e:
-                st.error(f"读取方案数据失败：{e}")
+                st.error(f"读取数据失败：{e}")
             if st.button("退出研究者模式", use_container_width=True):
                 st.session_state.export_authorized = False
                 st.query_params.clear()
@@ -630,13 +629,7 @@ else:
         st.stop()
 
     if not st.session_state.consent_given:
-        st.markdown(
-            "<p style='text-align: center; font-size: 18px;'>"
-            "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，"
-            "还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。"
-            "</p>",
-            unsafe_allow_html=True
-        )
+        st.markdown("<p style='text-align: center; font-size: 18px;'>您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。</p>", unsafe_allow_html=True)
 
         st.markdown(
             """
@@ -644,20 +637,21 @@ else:
                 <h2>📋 知情同意书</h2>
                 <p><strong>研究主题：人工智能辅助教育研究的特征与机制研究</strong></p>
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击“同意”按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
-<p><strong></strong><br</p>
+
                 <p><strong>一、 这项研究是关于什么的？</strong></p>
                 <p>本研究致力于探索教育研究者（如您）在实际科研工作中如何与生成式人工智能（AI）协同工作。我们将通过观察您与AI共同完成一项研究设计任务的过程，来分析您的行为模式、思维过程及主观感受。最终，本研究的成果将有助于制定更负责任、更可解释的AI使用指南，为高校和相关机构的科研培训提供依据。</p>
+
                 <p><strong>本次实验的具体任务</strong>：您将与我们的智能研究助理 <strong>ICFER（教育实证研究全周期智能协同框架，Intelligent Collaborative Framework for Empirical Research in Education）</strong> 进行大约 <strong>100分钟</strong> 的深度对话。</p>
                 <p>在对话中，您将围绕统一主题 <strong>"人工智能时代的教师教育与教师专业发展研究"</strong> ，结合您自身的学科专长（如学科教学、教育技术、教育管理等），从中选定一个具体的研究切入点，并在ICFER的辅助下构思并完成一份完整的实证研究设计方案。</p>
                 <p><em>特别说明</em>：这项设计任务是实验环节中的一次模拟任务，您所完成的设计方案仅用于本研究分析，不会用于课程评价、科研考核、职称评定或真实学术成果提交。实验中使用的材料均为统一编撰并经过脱敏处理，不要求您提交个人真实论文、未公开数据、评审材料或其他涉及个人、单位及科研保密的信息。</p>
-<p><strong></strong><br</p>
+
                 <p><strong>二、 参与过程会发生什么？</strong></p>
                 <ul>
                     <li><strong>深度人机对话</strong>：您将与ICFER围绕上述统一主题下您所聚焦的具体研究问题进行自由、深入的探讨。ICFER会尝试辅助您梳理思路、提供建议、完善研究设计。</li>
                     <li><strong>方案构思与生成</strong>：在ICFER的辅助下，您需要在系统中逐步填写研究设计的关键要素（如研究问题、研究方法、数据收集与分析计划等），最终形成一份属于您自己的研究方案初稿。</li>
                     <li><strong>数据自动记录</strong>：为了科学研究，您与ICFER的<strong>完整对话日志</strong>，以及您在各阶段填写的研究要点将被系统自动记录，这些信息共同构成您的研究方案记录。</li>
                 </ul>
-<p><strong></strong><br</p>
+
                 <p><strong>三、 我的数据会被怎么处理？安全吗？</strong></p>
                 <p>我们深知您学术成果与个人隐私的重要性，并承诺采取最高标准的保护措施。所有数据将严格遵循科研伦理规范进行处理：</p>
                 <ul>
@@ -667,7 +661,7 @@ else:
                     <li><strong>信息保密与销毁</strong>：我们承诺，未经您的单独同意，绝不会向任何合作单位、AI平台供应商或无关第三方提供可识别您的数据。所有原始数据将在研究完成后（预计<strong>3年内</strong>）进行彻底销毁。</li>
                     <li><strong>学术诚信保护</strong>：本项目的研究结果<strong>不会</strong>用于任何形式的个人能力排名、心理诊断、学术不端判定、导师评价或职称考核。</li>
                 </ul>
-<p><strong></strong><br</p>
+
                 <p><strong>四、 参与这项研究有什么风险或收益吗？</strong></p>
                 <ul>
                     <li><strong>风险评估（我们如何保障您的权益）</strong>：
@@ -685,7 +679,7 @@ else:
                         </ul>
                     </li>
                 </ul>
-<p><strong></strong><br</p>
+
                 <p><strong>五、 我可以随时退出吗？</strong></p>
                 <p><strong>当然可以。</strong> 参与本研究完全基于您的自愿原则。</p>
                 <ul>
@@ -693,10 +687,10 @@ else:
                     <li>退出后，系统将<strong>立即停止数据记录</strong>，您已产生的对话日志将<strong>不再纳入后续数据分析</strong>，且不会对您产生任何不利影响（如影响您的工作评价、学业指导关系或资源获取）。</li>
                     <li>如果数据已完成匿名化并进入汇总分析，届时删除可能受限，这一点我们会在研究中提前说明。</li>
                 </ul>
-<p><strong></strong><br</p>
+
                 <p><strong>六、 研究成果会分享给我吗？</strong></p>
                 <p><strong>会的。</strong> 研究结束后，我们承诺在不泄露个人隐私的前提下，通过电子邮件等方式向有需要的参与者分享一份总体研究发现摘要，以及负责任使用AI的实践建议。您可以在知情同意时自主选择是否接收研究结果。</p>
-<p><strong></strong><br</p>
+
                 <p><strong>七、 如有疑问可以联系谁？</strong></p>
                 <div class="contact-box">
                     <p>如果您对本次研究有任何疑问、顾虑，或在参与过程中遇到任何问题，欢迎随时联系我们的研究负责人：</p>
@@ -706,58 +700,36 @@ else:
                         <li><strong>联系电话</strong>：13309296061</li>
                     </ul>
                 </div>
-<p><strong></strong><br</p>
+
                 <div class="footer-note">点击下方"同意"即表示您已阅读并理解上述内容，自愿参与本研究。</div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
+        # 同意/不同意按钮（仅修改同意按钮逻辑）
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
-                st.session_state.consent_given = True
-                st.rerun()
-        st.stop()
+                # 生成唯一参与者ID（若未生成）
+                if not st.session_state.participant_id:
+                    st.session_state.participant_id = f"P{uuid.uuid4().hex[:8]}"
 
-    if st.session_state.show_exit_dialog:
-        st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
-        col_confirm1, col_confirm2 = st.columns(2)
-        with col_confirm1:
-            if st.button("确认退出", key="confirm_exit_yes"):
-                exit_log = {
-                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "participant_id": st.session_state.participant_id,
-                    "round": st.session_state.round_count,
-                    "user_prompt": "退出实验",
-                    "behavior_button": "退出实验",
-                    "ai_response": ""
-                }
-                try:
-                    supabase.table("research_logs").insert(exit_log).execute()
-                    st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
-                except Exception as e:
-                    st.error(f"记录退出失败：{e}")
-                st.session_state.consent_given = False
-                st.session_state.participant_id = ""
-                st.session_state.messages = get_initial_messages()
-                st.session_state.round_count = 0
-                st.session_state.show_exit_dialog = False
-                st.session_state.experiment_completed = False
-                st.rerun()
-        with col_confirm2:
-            if st.button("取消", key="confirm_exit_no"):
-                st.session_state.show_exit_dialog = False
-                st.rerun()
-        st.stop()
+                # 保存知情同意记录
+                if save_consent_record(st.session_state.participant_id):
+                    st.session_state.consent_given = True
+                    st.rerun()
+                else:
+                    st.error("同意记录保存失败，请重试")
 
-    if not st.session_state.participant_id:
+            if st.button("❌ 我不同意", use_container_width=True):
+                st.warning("您已拒绝参与实验。感谢您的关注！")
+                st.stop()
+
+    elif not st.session_state.participant_id:
         col_space1, col_id, col_space2 = st.columns([1, 2, 1])
         with col_id:
-            st.markdown(
-                "<p style='text-align: center; font-size: 18px; font-weight: bold;'>👤 请输入您的编号</p>",
-                unsafe_allow_html=True
-            )
+            st.markdown("<p style='text-align: center; font-size: 18px; font-weight: bold;'>👤 请输入您的编号</p>", unsafe_allow_html=True)
             pid_input = st.text_input(
                 "输入编号后按回车确认",
                 value="",
@@ -770,30 +742,25 @@ else:
                 st.session_state.messages = None
                 st.rerun()
     else:
-        pass  # 顶部不再显示编号
-
-    if st.session_state.participant_id:
         if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        # ---------- 用带唯一 key 的容器包裹左右两栏，方便 CSS 精准定位 ----------
+        # ---------- 用带唯一 key 的容器包裹左右两栏 ----------
         with st.container(key="main_row"):
             col_left, col_right = st.columns([55, 45], gap="large")
             with col_left:
-                # ---------- 与右侧「研究方案填写区」保持格式对称 ----------
                 st.subheader("💬 研究人机交互区")
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
 
-                # ---------- 聊天记录 + 输入表单：合并为一个统一的灰色圆角矩形整体 ----------
+                # ---------- 聊天记录 + 输入表单 ----------
                 with st.container(key="unified_chat_box"):
                     has_dialogue = False
                     for msg in st.session_state.messages:
                         if msg["role"] == "system":
                             continue
-                        # 跳过初始欢迎语（已作为上方 caption 展示，避免重复）
                         if msg["role"] == "assistant" and msg["content"] == INITIAL_GREETING:
                             continue
                         has_dialogue = True
@@ -803,7 +770,6 @@ else:
                         st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
 
                     with st.form(key="prompt_form", clear_on_submit=True):
-                        # 1&2. 输入框 + 右下角小图标上传文档（放在同一个容器内实现叠放效果）
                         with st.container(key="input_wrapper"):
                             user_input = st.text_area(
                                 "在这里输入您的提示词 (Prompt)：",
@@ -822,7 +788,6 @@ else:
                         if uploaded_file is not None:
                             st.caption(f"📎 已附加文档：{uploaded_file.name}")
 
-                        # 3. 五个行为按钮（紧贴输入框下方，同样在整体灰色框内）
                         st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
                         col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                         clicked_behavior = None
@@ -987,7 +952,6 @@ else:
         """,
         unsafe_allow_html=True
     )
-                    # 提交按钮右对齐
                     col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
                     with col_submit_btn_right:
                         submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
@@ -1010,10 +974,39 @@ else:
                         else:
                             st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
 
-        # ---------- 退出实验按钮（放在整个页面的最底部，居中） ----------
         st.divider()
         col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
         with col_exit_center:
             if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
                 st.session_state.show_exit_dialog = True
+                st.rerun()
+
+    if st.session_state.show_exit_dialog:
+        st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
+        col_confirm1, col_confirm2 = st.columns(2)
+        with col_confirm1:
+            if st.button("确认退出", key="confirm_exit_yes"):
+                exit_log = {
+                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "participant_id": st.session_state.participant_id,
+                    "round": st.session_state.round_count,
+                    "user_prompt": "退出实验",
+                    "behavior_button": "退出实验",
+                    "ai_response": ""
+                }
+                try:
+                    supabase.table("research_logs").insert(exit_log).execute()
+                    st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
+                except Exception as e:
+                    st.error(f"记录退出失败：{e}")
+                st.session_state.consent_given = False
+                st.session_state.participant_id = ""
+                st.session_state.messages = get_initial_messages()
+                st.session_state.round_count = 0
+                st.session_state.show_exit_dialog = False
+                st.session_state.experiment_completed = False
+                st.rerun()
+        with col_confirm2:
+            if st.button("取消", key="confirm_exit_no"):
+                st.session_state.show_exit_dialog = False
                 st.rerun()
