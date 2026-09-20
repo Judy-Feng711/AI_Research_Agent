@@ -639,10 +639,10 @@ else:
         st.markdown(
             """
             <div style="text-align: center; padding: 50px 20px;">
-                <h2 style="color: #1a3a5a; margin-bottom: 10px;">👤 欢迎参与研究</h2>
+                
                 <p style="font-size: 18px; color: #555; margin-bottom: 30px;">
-                    请输入研究者分配给您的编号以开始实验。<br>
-                    输入编号后，您将阅读并签署知情同意书。
+                    👤 欢迎参与研究请输入研究者分配给您的编号以开始实验。输入编号后，您将阅读并签署知情同意书。
+                    
                 </p>
             </div>
             """,
