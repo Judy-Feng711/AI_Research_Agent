@@ -17,20 +17,20 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= 2. 系统提示词 =================
-SYSTEM_PROMPT = """您是一个名为"全栈式教育研究学术助理"的高级AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
+SYSTEM_PROMPT = """您是一个名为"全栈式教育研究学术助理"的高级 AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
 核心能力与任务模块：
 1. 选题与文献发现：辅助梳理文献脉络，对比不同教育理论（如建构主义与行为主义），精准分析研究空白。
 2. 研究规划与设计：从教育心理学、课程论等多重视角构建分析框架，对比个案研究、行动研究等方法的适用性。
 3. 实施与数据采集：协助开发访谈提纲等收集工具，指出并规避表述偏差及伦理风险。
-4. 数据分析与阐释：提供Python/R等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
+4. 数据分析与阐释：提供 Python/R 等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
 5. 论文撰写与润色：辅助母语润色，检查专业术语一致性，并模拟"严苛审稿人"视角提出批判性修改意见。
 6. 传播、评估与伦理：辅助提炼实践建议，主动规避文化/性别等偏见，模拟同行质疑进行答辩演练。
 互动规则：
 - 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
 - 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
 
-# 初始欢迎语
-INITIAL_GREETING = "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
+# 初始欢迎语（提取为常量，供 get_initial_messages 与页面展示复用，避免重复维护）
+INITIAL_GREETING = "您好！我是您的教育研究全栈助理。无论您目前正卡在寻找文献的理论 Gap，还是纠结数据分析的逻辑推演，亦或是需要模拟审稿人为您挑刺，我都在这里。请详细告诉我您的要求。"
 
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
@@ -54,9 +54,9 @@ def load_participant_state(pid):
 
         # 统计有效轮数（有效行为 + 非空输入）
         valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
-        round_count = sum(1 for log in log_data
-                          if log.get("behavior_button") in valid_behaviors
-                          and log.get("user_prompt")
+        round_count = sum(1 for log in log_data 
+                          if log.get("behavior_button") in valid_behaviors 
+                          and log.get("user_prompt") 
                           and log.get("user_prompt").strip() != "")
 
         # 2. 重建消息列表（系统消息 + 所有有效日志的 user/assistant 对）
@@ -69,7 +69,7 @@ def load_participant_state(pid):
                 if ai_content:
                     rebuilt.append({"role": "assistant", "content": ai_content})
                 else:
-                    rebuilt.append({"role": "assistant", "content": "(AI响应缺失，请检查日志)"})
+                    rebuilt.append({"role": "assistant", "content": "(AI 响应缺失，请检查日志)"})
         if len(rebuilt) == 1:
             messages = get_initial_messages()
         else:
@@ -139,7 +139,7 @@ def save_consent_record(pid):
         st.error(f"⚠️ 保存同意记录失败：{e}")
         return False
 
-# ================= 4. 方案数据函数（6个子任务） =================
+# ================= 4. 方案数据函数（6 个子任务） =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
@@ -181,7 +181,7 @@ st.set_page_config(page_title="教育实证研究全周期智能协同框架", p
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
 if "messages" not in st.session_state:
-    st.session_state.messages = None  # 修改为 None，确保第一次加载
+    st.session_state.messages = get_initial_messages()
 if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
@@ -210,7 +210,6 @@ else:
 st.markdown(
     """
     <style>
-        /* 顶部固定栏 */
         .top-fixed {
             position: sticky;
             top: 0;
@@ -224,7 +223,6 @@ st.markdown(
             border-right: none !important;
         }
 
-        /* 主布局 */
         [data-testid="stHorizontalBlock"] {
             gap: 6 !important;
         }
@@ -248,7 +246,17 @@ st.markdown(
             border: none !important;
         }
 
-        /* 按钮样式 */
+        [data-testid="stHorizontalBlock"] .stColumn:nth-child(5) {
+            justify-content: flex-start !important;
+            align-items: stretch !important;
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+        [data-testid="stHorizontalBlock"] .stColumn:nth-child(5) .stButton {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
         .stButton button,
         .stForm button[type="submit"] {
             height: 38px !important;
@@ -271,7 +279,32 @@ st.markdown(
             align-items: center !important;
         }
 
-        /* 知情同意书卡片样式 */
+        .role-btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 0.2rem;
+        }
+        .role-btn-container .stButton {
+            width: auto !important;
+        }
+        .role-btn-container .stButton button {
+            width: 120px !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            max-height: 34px !important;
+            font-size: 14px !important;
+            padding: 0 12px !important;
+        }
+        .selected-badge {
+            text-align: center;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* 知情同意书卡片样式 - 纯 HTML 方案 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
             padding: 30px 35px;
@@ -329,40 +362,52 @@ st.markdown(
             padding-top: 16px;
             border-top: 1px dashed #b0c4de;
         }
-
-        /* 分隔线样式 */
+        /* 减小分隔线的上下间距 */
         .stDivider hr {
             margin-top: 1px !important;
             margin-bottom: 1px !important;
         }
+        /* 减小分隔线的上下间距 */
         hr {
             margin-top: 4px !important;
             margin-bottom: 4px !important;
         }
-
-        /* 子任务区域样式 */
+        
+        /* 减小每个子任务外部容器的下边距 */
         [data-testid="stVerticalBlock"] > .stMarkdown {
             margin-bottom: 2px !important;
         }
+        
+        /* 减小 text_area 容器的下边距 */
         [data-testid="stTextArea"] {
             margin-bottom: 2px !important;
         }
+        
+        /* 减小子任务标题的边距 */
         .task-odd, .task-even {
             padding: 8px 16px !important;
             margin-bottom: 4px !important;
         }
+        
+        /* 确保子任务内的 text_area 也没有额外边距 */
         .task-odd .stTextArea, .task-even .stTextArea {
             margin-bottom: 0 !important;
         }
 
-        /* 输入框内嵌上传图标 */
+        /* ========== 输入框内嵌上传图标 ========== */
+
+        /* 容器设为相对定位，作为图标的定位基准 */
         .st-key-input_wrapper {
             position: relative;
         }
+
+        /* 给文本域右下角预留空间，避免文字被图标遮挡 */
         .st-key-input_wrapper textarea {
             padding-right: 46px !important;
             padding-bottom: 42px !important;
         }
+
+        /* 文件上传组件整体：绝对定位到文本框右下角，尺寸缩小 */
         .st-key-input_wrapper [data-testid="stFileUploader"] {
             position: absolute;
             right: 10px;
@@ -372,10 +417,14 @@ st.markdown(
             z-index: 30;
             overflow: hidden;
         }
+
+        /* 隐藏 file_uploader 的 label 文字与帮助小图标 */
         .st-key-input_wrapper [data-testid="stFileUploader"] label,
         .st-key-input_wrapper [data-testid="stFileUploader"] [data-testid="stTooltipIcon"] {
             display: none !important;
         }
+
+        /* 拖拽区域整体缩小、去除边框和内边距 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] {
             background: transparent !important;
             border: none !important;
@@ -385,9 +434,13 @@ st.markdown(
             height: 34px !important;
             width: 34px !important;
         }
+
+        /* 隐藏"Drag and drop file here / Limit 200MB..."提示文字及默认图标 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] > div:first-child {
             display: none !important;
         }
+
+        /* 把"Browse files"按钮改造成透明底的回形针图标按钮 */
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button {
             width: 34px !important;
             height: 34px !important;
@@ -413,46 +466,52 @@ st.markdown(
             left: 50%;
             transform: translate(-50%, -50%);
         }
+
+        /* 隐藏所有输入框右下角的提示 */
         [data-testid="InputInstructions"] {
             visibility: hidden !important;
             color: transparent !important;
             opacity: 0 !important;
         }
 
-        /* ========== 左侧聊天区域样式 ========== */
-        .st-key-chat-container {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 200px) !important;
-            overflow: hidden;
-        }
-        .st-key-chat-messages {
-            flex-grow: 1;
-            overflow-y: auto !important;
-            padding-right: 8px;
-        }
-        .st-key-chat-input {
-            position: sticky;
-            bottom: 0;
-            background-color: #fafbfc;
-            padding-top: 10px;
-            border-top: 1px solid #e2e5ea;
-        }
+        /* ========== 左侧「研究人机交互区」：聊天记录 + 输入区域 合并为一个整体的灰色圆角矩形 ========== */
+        /* ✅ 修改：使用 flex 布局，输入框固定在底部 */
         .st-key-unified_chat_box {
             border: 1px solid #e2e5ea;
             border-radius: 14px;
             background-color: #fafbfc;
-            padding: 16px 18px 0 18px;
+            padding: 16px 18px 18px 18px;
             margin-bottom: 4px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+            display: flex !important;
+            flex-direction: column !important;
+            height: calc(100vh - 220px) !important;
+            max-height: calc(100vh - 220px) !important;
+            overflow: hidden !important;
         }
+        
+        /* 聊天记录区域：可滚动 */
+        .st-key-unified_chat_box > [data-testid="stVerticalBlock"] {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            margin-bottom: 12px !important;
+            min-height: 0 !important;
+        }
+        
+        /* 输入表单：固定在底部，不收缩 */
+        .st-key-unified_chat_box .stForm {
+            border: none !important;
+            padding: 0 !important;
+            background: transparent !important;
+            margin-top: 0 !important;
+            flex-shrink: 0 !important;
+        }
+        
+        /* 聊天消息样式调整 */
         .st-key-unified_chat_box [data-testid="stChatMessage"] {
             margin-bottom: 6px !important;
         }
 
-        /* 左右两栏高度控制 */
+        /* ========== 左右两栏高度控制 ========== */
         .st-key-main_row [data-testid="stHorizontalBlock"] {
             align-items: flex-start !important;
             height: auto !important;
@@ -485,6 +544,7 @@ st.markdown(
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -586,7 +646,7 @@ if st.session_state.user_role == "研究者":
 
 else:
     # ---------- 被试模式 ----------
-
+    
     # 【1】检查实验是否已完成
     if st.session_state.experiment_completed:
         st.markdown(
@@ -605,14 +665,14 @@ else:
             if st.button("🏠 返回首页", use_container_width=True):
                 st.session_state.consent_given = False
                 st.session_state.participant_id = ""
-                st.session_state.messages = None
+                st.session_state.messages = None  # ✅ 修复：设为 None，触发重新加载
                 st.session_state.round_count = 0
                 st.session_state.show_exit_dialog = False
                 st.session_state.experiment_completed = False
                 st.rerun()
         st.stop()
 
-    # 【2】先检查是否输入了 Participant ID
+    # 【2】先检查是否输入了 Participant ID（移到同意书之前！）
     if not st.session_state.participant_id:
         st.markdown(
             """
@@ -636,12 +696,12 @@ else:
             )
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
-                # 立即加载历史数据
-                st.session_state.messages, st.session_state.round_count = load_participant_state(st.session_state.participant_id)
+                st.session_state.messages = None  # ✅ 修复：设为 None，触发重新加载
+                st.session_state.round_count = 0
                 st.rerun()
         st.stop()
 
-    # 【3】再检查是否已同意
+    # 【3】再检查是否已同意（此时 participant_id 一定存在）
     if not st.session_state.consent_given:
         # 显示当前参与者编号
         st.markdown(
@@ -655,7 +715,7 @@ else:
             """
             <div class="consent-card">
                 <h2>📋 知情同意书</h2>
-                <p style="text-align:center; color:#888; font-size:13px; margin-top:-10px;">版本号：v1.0_ICFER_2026　|　生效日期：2026-09-20</p>
+                <p style="text-align:center; color:#888; font-size:13px; margin-top:-10px;">版本号：v1.0_ICFER_2026 | 生效日期：2026-09-20</p>
                 <p><strong>研究主题：人工智能辅助教育研究的特征与机制研究</strong></p>
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击"同意"按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
 <p><strong></strong><br</p>
@@ -731,7 +791,9 @@ else:
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
                 st.session_state.consent_given = True
-                save_consent_record(st.session_state.participant_id)  # 保存同意记录
+                save_consent_record(st.session_state.participant_id)  # ✅ 保存同意记录到数据库
+                st.session_state.messages = get_initial_messages()
+                st.session_state.round_count = 0
                 st.rerun()
         st.stop()
 
@@ -756,7 +818,7 @@ else:
                     st.error(f"记录退出失败：{e}")
                 st.session_state.consent_given = False
                 st.session_state.participant_id = ""
-                st.session_state.messages = None
+                st.session_state.messages = None  # ✅ 修复：设为 None，触发重新加载
                 st.session_state.round_count = 0
                 st.session_state.show_exit_dialog = False
                 st.session_state.experiment_completed = False
@@ -767,9 +829,9 @@ else:
                 st.rerun()
         st.stop()
 
-    # 【5】主实验界面
+    # 【5】主实验界面（原有代码完全不变）
     if st.session_state.participant_id:
-        if st.session_state.messages is None:
+        if st.session_state.messages is None or not st.session_state.messages:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
@@ -781,178 +843,173 @@ else:
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
 
-                # 使用新的聊天容器结构
-                with st.container(key="st-key-chat-container"):
-                    # 聊天消息区域（可滚动）
-                    with st.container(key="st-key-chat-messages"):
-                        has_dialogue = False
-                        for msg in st.session_state.messages:
-                            if msg["role"] == "system":
-                                continue
-                            if msg["role"] == "assistant" and msg["content"] == INITIAL_GREETING:
-                                continue
-                            has_dialogue = True
-                            with st.chat_message(msg["role"]):
-                                st.markdown(msg["content"])
-                        if not has_dialogue:
-                            st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
+                with st.container(key="unified_chat_box"):
+                    has_dialogue = False
+                    for msg in st.session_state.messages:
+                        if msg["role"] == "system":
+                            continue
+                        if msg["role"] == "assistant" and msg["content"] == INITIAL_GREETING:
+                            continue
+                        has_dialogue = True
+                        with st.chat_message(msg["role"]):
+                            st.markdown(msg["content"])
+                    if not has_dialogue:
+                        st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
 
-                    # 输入区域（固定在底部）
-                    with st.container(key="st-key-chat-input"):
-                        with st.form(key="prompt_form", clear_on_submit=True):
-                            with st.container(key="input_wrapper"):
-                                user_input = st.text_area(
-                                    "在这里输入您的提示词 (Prompt)：",
-                                    height=150,
-                                    key="prompt_input",
-                                    label_visibility="collapsed",
-                                    placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
-                                )
-                                uploaded_file = st.file_uploader(
-                                    "上传文档",
-                                    type=["pdf", "docx"],
-                                    key="file_uploader_simple",
-                                    label_visibility="collapsed"
-                                )
+                    with st.form(key="prompt_form", clear_on_submit=True):
+                        with st.container(key="input_wrapper"):
+                            user_input = st.text_area(
+                                "在这里输入您的提示词 (Prompt)：",
+                                height=150,
+                                key="prompt_input",
+                                label_visibility="collapsed",
+                                placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
+                            )
+                            uploaded_file = st.file_uploader(
+                                "上传文档",
+                                type=["pdf", "docx"],
+                                key="file_uploader_simple",
+                                label_visibility="collapsed"
+                            )
 
+                        if uploaded_file is not None:
+                            st.caption(f"📎 已附加文档：{uploaded_file.name}")
+
+                        st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
+                        col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
+                        clicked_behavior = None
+                        if col_b1.form_submit_button("获取基础信息"):
+                            clicked_behavior = "获取基础信息"
+                        elif col_b2.form_submit_button("规范语言/格式"):
+                            clicked_behavior = "规范语言/格式"
+                        elif col_b3.form_submit_button("微调研究逻辑"):
+                            clicked_behavior = "微调研究逻辑"
+                        elif col_b4.form_submit_button("重构研究方案"):
+                            clicked_behavior = "重构研究方案"
+                        elif col_b5.form_submit_button("拓展研究思路"):
+                            clicked_behavior = "拓展研究思路"
+
+                        if clicked_behavior:
+                            if not user_input or user_input.strip() == "":
+                                st.warning("⚠️ 请先输入提示词！")
+                                st.stop()
+
+                            file_content = ""
                             if uploaded_file is not None:
-                                st.caption(f"📎 已附加文档：{uploaded_file.name}")
+                                file_name = uploaded_file.name
+                                if file_name.endswith(".pdf"):
+                                    try:
+                                        reader = PdfReader(uploaded_file)
+                                        for page in reader.pages:
+                                            text = page.extract_text()
+                                            if text:
+                                                file_content += text + "\n"
+                                    except Exception as e:
+                                        st.error(f"PDF 解析失败：{e}")
+                                elif file_name.endswith(".docx"):
+                                    try:
+                                        doc = docx.Document(uploaded_file)
+                                        for para in doc.paragraphs:
+                                            file_content += para.text + "\n"
+                                    except Exception as e:
+                                        st.error(f"Word 解析失败：{e}")
+                                if file_content and len(file_content) > 5000:
+                                    file_content = file_content[:5000] + "\n...[内容已截断]"
 
-                            st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
-                            col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
-                            clicked_behavior = None
-                            if col_b1.form_submit_button("获取基础信息"):
-                                clicked_behavior = "获取基础信息"
-                            elif col_b2.form_submit_button("规范语言/格式"):
-                                clicked_behavior = "规范语言/格式"
-                            elif col_b3.form_submit_button("微调研究逻辑"):
-                                clicked_behavior = "微调研究逻辑"
-                            elif col_b4.form_submit_button("重构研究方案"):
-                                clicked_behavior = "重构研究方案"
-                            elif col_b5.form_submit_button("拓展研究思路"):
-                                clicked_behavior = "拓展研究思路"
+                            full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
 
-                            if clicked_behavior:
-                                if not user_input or user_input.strip() == "":
-                                    st.warning("⚠️ 请先输入提示词！")
-                                    st.stop()
+                            with st.chat_message("user"):
+                                if file_content:
+                                    st.markdown(f"📎 **已附加文档**，提问：{user_input}")
+                                else:
+                                    st.markdown(f"**[{clicked_behavior}]** {user_input}")
 
-                                file_content = ""
-                                if uploaded_file is not None:
-                                    file_name = uploaded_file.name
-                                    if file_name.endswith(".pdf"):
-                                        try:
-                                            reader = PdfReader(uploaded_file)
-                                            for page in reader.pages:
-                                                text = page.extract_text()
-                                                if text:
-                                                    file_content += text + "\n"
-                                        except Exception as e:
-                                            st.error(f"PDF 解析失败：{e}")
-                                    elif file_name.endswith(".docx"):
-                                        try:
-                                            doc = docx.Document(uploaded_file)
-                                            for para in doc.paragraphs:
-                                                file_content += para.text + "\n"
-                                        except Exception as e:
-                                            st.error(f"Word 解析失败：{e}")
-                                    if file_content and len(file_content) > 5000:
-                                        file_content = file_content[:5000] + "\n...[内容已截断]"
+                            st.session_state.messages.append({"role": "user", "content": full_user_message})
 
-                                full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
+                            with st.chat_message("assistant"):
+                                with st.spinner("思考中..."):
+                                    try:
+                                        response = client.chat.completions.create(
+                                            model="deepseek-v4-pro",
+                                            messages=st.session_state.messages
+                                        )
+                                        ai_reply = response.choices[0].message.content
+                                        st.markdown(ai_reply)
+                                    except Exception as e:
+                                        st.error(f"AI 调用失败：{e}")
+                                        st.stop()
+                            st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+                            st.session_state.round_count += 1
 
-                                with st.chat_message("user"):
-                                    if file_content:
-                                        st.markdown(f"📎 **已附加文档**，提问：{user_input}")
-                                    else:
-                                        st.markdown(f"**[{clicked_behavior}]** {user_input}")
+                            log_data = {
+                                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                "participant_id": st.session_state.participant_id,
+                                "round": st.session_state.round_count,
+                                "user_prompt": user_input,
+                                "behavior_button": clicked_behavior,
+                                "ai_response": ai_reply
+                            }
+                            try:
+                                supabase.table("research_logs").insert(log_data).execute()
+                            except Exception as e:
+                                st.error(f"日志保存失败：{e}")
 
-                                st.session_state.messages.append({"role": "user", "content": full_user_message})
-
-                                with st.chat_message("assistant"):
-                                    with st.spinner("思考中..."):
-                                        try:
-                                            response = client.chat.completions.create(
-                                                model="deepseek-v4-pro",
-                                                messages=st.session_state.messages
-                                            )
-                                            ai_reply = response.choices[0].message.content
-                                            st.markdown(ai_reply)
-                                        except Exception as e:
-                                            st.error(f"AI 调用失败：{e}")
-                                            st.stop()
-                                st.session_state.messages.append({"role": "assistant", "content": ai_reply})
-                                st.session_state.round_count += 1
-
-                                log_data = {
-                                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                    "participant_id": st.session_state.participant_id,
-                                    "round": st.session_state.round_count,
-                                    "user_prompt": user_input,
-                                    "behavior_button": clicked_behavior,
-                                    "ai_response": ai_reply
-                                }
-                                try:
-                                    supabase.table("research_logs").insert(log_data).execute()
-                                except Exception as e:
-                                    st.error(f"日志保存失败：{e}")
-
-                                save_participant_state(
-                                    st.session_state.participant_id,
-                                    st.session_state.messages,
-                                    st.session_state.round_count
-                                )
-                                st.rerun()
+                            save_participant_state(
+                                st.session_state.participant_id,
+                                st.session_state.messages,
+                                st.session_state.round_count
+                            )
+                            st.rerun()
 
             with col_right:
                 st.subheader("📝 研究方案填写区")
                 existing_plan = load_plan(st.session_state.participant_id)
-                st.markdown("**AI协同研究方案撰写**")
-                st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
+                st.markdown("**AI 协同研究方案撰写**")
+                st.caption("任务共分为 6 个递进环节，请根据您与 AI 的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
                 with st.form(key="plan_form"):
-                    st.markdown("**子任务1：选题与文献发现**")
+                    st.markdown("**子任务 1：选题与文献发现**")
                     task1_text = st.text_area(
-                        "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
+                        "1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议 150 字左右）",
                         value=existing_plan["task1_text"] if existing_plan else "",
                         height=160,
                         key="task1_text"
                     )
                     st.divider()
-                    st.markdown("**子任务2：研究规划与设计**")
+                    st.markdown("**子任务 2：研究规划与设计**")
                     task2_text = st.text_area(
-                        "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
+                        "1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议 150 字左右）",
                         value=existing_plan["task2_text"] if existing_plan else "",
                         height=160,
                         key="task2_text"
                     )
                     st.divider()
-                    st.markdown("**子任务3：实施与数据采集**")
+                    st.markdown("**子任务 3：实施与数据采集**")
                     task3_text = st.text_area(
-                        "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
+                        "1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议 150 字左右）",
                         value=existing_plan["task3_text"] if existing_plan else "",
                         height=160,
                         key="task3_text"
                     )
                     st.divider()
-                    st.markdown("**子任务4：数据分析与阐释**")
+                    st.markdown("**子任务 4：数据分析与阐释**")
                     task4_text = st.text_area(
-                        "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
+                        "1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议 150 字左右）",
                         value=existing_plan["task4_text"] if existing_plan else "",
                         height=160,
                         key="task4_text"
                     )
                     st.divider()
-                    st.markdown("**子任务5：论文撰写与润色**")
+                    st.markdown("**子任务 5：论文撰写与润色**")
                     task5_text = st.text_area(
-                        "1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
+                        "1.研究的创新点（2-3 项）；2.研究存在的不足（2-3 项）。（建议 300-500 字左右）",
                         value=existing_plan["task5_text"] if existing_plan else "",
                         height=300,
                         key="task5_text"
                     )
                     st.divider()
-                    st.markdown("**子任务6：传播、评估与伦理**")
+                    st.markdown("**子任务 6：传播、评估与伦理**")
                     task6_text = st.text_area(
-                        "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
+                        "1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI 使用披露等）。（建议 150 字左右）",
                         value=existing_plan["task6_text"] if existing_plan else "",
                         height=160,
                         key="task6_text"
@@ -960,22 +1017,22 @@ else:
                     st.markdown(
         """
         <style>
-            textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
+            textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议 150 字左右）"] {
                 background-color: #e6f3ff;
             }
-            textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
+            textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议 150 字左右）"] {
                 background-color: #f5e6ff;
             }
-            textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
+            textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议 150 字左右）"] {
                 background-color: #e6f3ff;
             }
-            textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
+            textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议 150 字左右）"] {
                 background-color: #f5e6ff;
             }
-            textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
+            textarea[aria-label="1.研究的创新点（2-3 项）；2.研究存在的不足（2-3 项）。（建议 300-500 字左右）"] {
                 background-color: #e6f3ff;
             }
-            textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
+            textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI 使用披露等）。（建议 150 字左右）"] {
                 background-color: #f5e6ff;
             }
         </style>
