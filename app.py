@@ -511,7 +511,7 @@ st.markdown(
         /* 右侧方案区：输入框 label 与输入内容字号 */
         [data-testid="stTextArea"] label p {
             font-size: 16px !important;
-            font-weight: 600 !important;
+            font-weight: 400 !important;
         }
         [data-testid="stTextArea"] textarea {
             font-size: 16px !important;
