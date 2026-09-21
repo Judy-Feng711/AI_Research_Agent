@@ -519,15 +519,35 @@ st.markdown(
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
 
-        /* ========== 左右两栏中线（最终版） ========== */
+        /* ========== 左右两栏卡片式区分（最终版） ========== */
+        /* 左栏：淡蓝卡片 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
-            padding-right: 20px !important;
-            border-right: 2px solid #b8c4d0 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #d8e0ea !important;
+            border-radius: 14px !important;
+            padding: 18px !important;
+            margin-right: 12px !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
         }
+        /* 右栏：淡黄卡片 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
-            padding-left: 20px !important;
+            background-color: #ffffff !important;
+            border: 1px solid #eadfc8 !important;
+            border-radius: 14px !important;
+            padding: 18px !important;
+            margin-left: 12px !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+        }
+        /* 兜底：确保左右栏内的按钮不被卡片边框"串到" */
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stButton,
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stButton button,
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stForm button,
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stDownloadButton button {
+            border: none !important;
+            border-right: none !important;
             border-left: none !important;
-            background-color: transparent !important;
+            border-top: none !important;
+            border-bottom: none !important;
         }
     </style>
     """,
