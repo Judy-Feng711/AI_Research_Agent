@@ -468,14 +468,6 @@ st.markdown(
             overflow-y: auto !important;
             padding: 10px !important;
         }
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
-            padding-right: 14px !important;
-        }
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
-            border-left: 1px solid #ddd;
-            padding-left: 14px !important;
-            background-color: transparent !important;
-        }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar {
             width: 6px;
         }
@@ -526,30 +518,15 @@ st.markdown(
         .st-key-task4_text textarea { background-color: #f5e6ff; }
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
-                /* ========== 左右两栏中线（加粗、渐变、更醒目） ========== */
-        .st-key-main_row [data-testid="stHorizontalBlock"] {
-            position: relative;
-        }
+
+        /* ========== 左右两栏中线（最终版） ========== */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
-            border-right: none !important;
             padding-right: 20px !important;
-            position: relative;
-        }
-        /* 用伪元素画一条渐变中线，垂直居中，两侧留白 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child::after {
-            content: "";
-            position: absolute;
-            top: 10px;
-            bottom: 10px;
-            right: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, transparent, #b8c4d0 15%, #b8c4d0 85%, transparent);
-            border-radius: 2px;
-            pointer-events: none;
+            border-right: 2px solid #b8c4d0 !important;
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
-            border-left: none !important;
             padding-left: 20px !important;
+            border-left: none !important;
             background-color: transparent !important;
         }
     </style>
