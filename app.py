@@ -323,15 +323,10 @@ st.markdown(
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child h3 {
             color: #2e7d32 !important;
         }
-        /* ========== 左右两栏分隔竖线（两根线） ========== */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
-            padding-right: 14px !important;
-            border-right: 2px solid #cccccc !important;  /* 左列右侧竖线 */
-        }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
-            border-left: 2px solid #cccccc !important;   /* 右列左侧竖线 */
+            border-left: 2px solid #b6c2cf !important;
             padding-left: 14px !important;
-            background-color: transparent !important;
+            background-color: #fcfdfe !important;
         }
         /* 知情同意书卡片样式 */
         .consent-card {
