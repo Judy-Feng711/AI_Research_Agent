@@ -122,7 +122,6 @@ def get_initial_messages():
     ]
 
 # ================= 新增：知情同意保存函数（含哈希） =================
-# 同意书正文（用于生成 SHA-256 哈希）
 CONSENT_TEXT = """研究主题：人工智能辅助教育研究的特征与机制研究
 
 您已完成本研究的问卷阶段。本页为研究第二阶段的补充知情说明，请您阅读后决定是否继续参与人机交互任务。
@@ -156,15 +155,10 @@ CONSENT_TEXT = """研究主题：人工智能辅助教育研究的特征与机�
 联系电话：13309296061"""
 
 def save_consent_record(pid):
-    """
-    将知情同意记录写入 consent_records 表（含同意书正文哈希）
-    """
     if not pid or pid.strip() == "":
         return False
     try:
-        # 生成同意书正文的 SHA-256 哈希
         consent_hash = hashlib.sha256(CONSENT_TEXT.encode("utf-8")).hexdigest()
-
         data = {
             "participant_id": pid.strip(),
             "consent_timestamp": datetime.datetime.now().isoformat(),
@@ -215,7 +209,6 @@ def save_plan(pid, task1_text, task2_text, task3_text, task4_text, task5_text, t
 # ================= 5. 页面初始化 =================
 st.set_page_config(page_title="教育实证研究全周期智能协同框架", page_icon="📘", layout="wide")
 
-# 强制初始化所有 session_state 变量
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
 if "messages" not in st.session_state:
@@ -511,7 +504,7 @@ st.markdown(
             margin-bottom: 6px !important;
         }
 
-        /* 左右两栏高度控制 */
+        /* 左右两栏：淡色卡片 + 中间留白自然分隔（无竖线） */
         .st-key-main_row [data-testid="stHorizontalBlock"] {
             align-items: flex-start !important;
             height: auto !important;
@@ -520,15 +513,19 @@ st.markdown(
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn {
             max-height: calc(100vh - 180px) !important;
             overflow-y: auto !important;
-            padding: 10px !important;
+            padding: 16px 18px !important;
+            border-radius: 14px !important;
+            border: 1px solid transparent !important;
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
-            padding-right: 14px !important;
+            background-color: #f8fbff !important;
+            border-color: #dbe7f3 !important;
+            box-shadow: 0 1px 2px rgba(21,101,192,0.04) !important;
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
-            border-left: 1px solid #ddd;
-            padding-left: 14px !important;
-            background-color: transparent !important;
+            background-color: #f9fdf9 !important;
+            border-color: #d9e9dc !important;
+            box-shadow: 0 1px 2px rgba(46,125,50,0.04) !important;
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar {
             width: 6px;
@@ -580,20 +577,6 @@ st.markdown(
         .st-key-task4_text textarea { background-color: #f5e6ff; }
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
-
-        /* ========== 左右两栏卡片背景色（新增） ========== */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
-            background-color: #f8fbff !important;  /* 左淡蓝 */
-            border-radius: 12px !important;
-            padding: 16px !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
-        }
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
-            background-color: #f9fdf9 !important;  /* 右淡绿 */
-            border-radius: 12px !important;
-            padding: 16px !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
-        }
     </style>
     """,
     unsafe_allow_html=True
@@ -614,24 +597,14 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
-    # ---------- 研究者模式 ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
     with col_center:
         st.markdown("<h3 style='text-align: center;'>📊 研究者数据导出</h3>", unsafe_allow_html=True)
-        st.markdown(
-            "<p style='text-align: center;'>请输入研究者密码以查看并下载数据</p>",
-            unsafe_allow_html=True
-        )
+        st.markdown("<p style='text-align: center;'>请输入研究者密码以查看并下载数据</p>", unsafe_allow_html=True)
         if not st.session_state.export_authorized:
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                export_pass = st.text_input(
-                    "密码",
-                    type="password",
-                    key="export_pass",
-                    label_visibility="collapsed",
-                    placeholder="请输入密码"
-                )
+                export_pass = st.text_input("密码", type="password", key="export_pass", label_visibility="collapsed", placeholder="请输入密码")
             col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 2])
             with col_btn2:
                 if st.button("验证", key="verify_export", use_container_width=True):
@@ -647,14 +620,7 @@ if st.session_state.user_role == "研究者":
                 if response.data:
                     df = pd.DataFrame(response.data)
                     csv_data = df.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(
-                        label="📥 下载交互日志",
-                        data=csv_data.encode('utf-8-sig'),
-                        file_name="research_logs.csv",
-                        mime="text/csv",
-                        key="dl_logs",
-                        use_container_width=True
-                    )
+                    st.download_button(label="📥 下载交互日志", data=csv_data.encode('utf-8-sig'), file_name="research_logs.csv", mime="text/csv", key="dl_logs", use_container_width=True)
             except Exception as e:
                 st.error(f"读取交互数据失败：{e}")
             try:
@@ -662,30 +628,15 @@ if st.session_state.user_role == "研究者":
                 if response_plan.data:
                     df_plan = pd.DataFrame(response_plan.data)
                     csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(
-                        label="📥 下载方案数据",
-                        data=csv_plan.encode('utf-8-sig'),
-                        file_name="research_plans.csv",
-                        mime="text/csv",
-                        key="dl_plans",
-                        use_container_width=True
-                    )
+                    st.download_button(label="📥 下载方案数据", data=csv_plan.encode('utf-8-sig'), file_name="research_plans.csv", mime="text/csv", key="dl_plans", use_container_width=True)
             except Exception as e:
                 st.error(f"读取方案数据失败：{e}")
-            # 下载知情同意记录
             try:
                 response_consent = supabase.table("consent_records").select("*").execute()
                 if response_consent.data:
                     df_consent = pd.DataFrame(response_consent.data)
                     csv_consent = df_consent.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(
-                        label="📥 下载知情同意记录",
-                        data=csv_consent.encode('utf-8-sig'),
-                        file_name="consent_records.csv",
-                        mime="text/csv",
-                        key="dl_consent",
-                        use_container_width=True
-                    )
+                    st.download_button(label="📥 下载知情同意记录", data=csv_consent.encode('utf-8-sig'), file_name="consent_records.csv", mime="text/csv", key="dl_consent", use_container_width=True)
             except Exception as e:
                 st.warning(f"读取同意记录失败：{e}")
             if st.button("退出研究者模式", use_container_width=True):
@@ -694,9 +645,6 @@ if st.session_state.user_role == "研究者":
                 st.rerun()
 
 else:
-    # ---------- 被试模式 ----------
-
-    # 【1】检查实验是否已完成
     if st.session_state.experiment_completed:
         st.markdown(
             """
@@ -721,7 +669,6 @@ else:
                 st.rerun()
         st.stop()
 
-    # 【2】先检查是否输入了 Participant ID
     if not st.session_state.participant_id:
         st.markdown(
             """
@@ -733,28 +680,15 @@ else:
         )
         col_space1, col_id, col_space2 = st.columns([3, 1, 3])
         with col_id:
-            pid_input = st.text_input(
-                "研究编号",
-                key="pid_input_start",
-                label_visibility="collapsed",
-                placeholder="例如：P001"
-            )
+            pid_input = st.text_input("研究编号", key="pid_input_start", label_visibility="collapsed", placeholder="例如：P001")
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
                 st.session_state.messages, st.session_state.round_count = load_participant_state(st.session_state.participant_id)
                 st.rerun()
         st.stop()
 
-    # 【3】再检查是否已同意
     if not st.session_state.consent_given:
-        # 显示当前参与者编号
-        st.markdown(
-            "<p style='text-align: center; font-size: 16px; color: #555;'>"
-            f"当前参与者编号：<strong>{st.session_state.participant_id}</strong>"
-            "</p>",
-            unsafe_allow_html=True
-        )
-
+        st.markdown("<p style='text-align: center; font-size: 16px; color: #555;'>当前参与者编号：<strong>" + st.session_state.participant_id + "</strong></p>", unsafe_allow_html=True)
         st.markdown(
             """
             <div class="consent-card">
@@ -834,7 +768,6 @@ else:
             """,
             unsafe_allow_html=True
         )
-
         col_center_btn = st.columns([3, 1, 3])[1]
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
@@ -843,7 +776,6 @@ else:
                 st.rerun()
         st.stop()
 
-    # 【4】退出确认对话框
     if st.session_state.show_exit_dialog:
         st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
         col_confirm1, col_confirm2 = st.columns(2)
@@ -875,7 +807,6 @@ else:
                 st.rerun()
         st.stop()
 
-    # 【5】主实验界面
     if st.session_state.participant_id:
         if st.session_state.messages is None:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
@@ -888,7 +819,6 @@ else:
                 st.subheader("💬 研究人机交互区")
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
-
                 with st.container():
                     with st.container(height=500, border=False):
                         has_dialogue = False
@@ -902,27 +832,13 @@ else:
                                 st.markdown(msg["content"])
                         if not has_dialogue:
                             st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
-
                     with st.container():
                         with st.form(key="prompt_form", clear_on_submit=True):
                             with st.container(key="input_wrapper"):
-                                user_input = st.text_area(
-                                    "在这里输入您的提示词 (Prompt)：",
-                                    height=150,
-                                    key="prompt_input",
-                                    label_visibility="collapsed",
-                                    placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
-                                )
-                                uploaded_file = st.file_uploader(
-                                    "上传文档",
-                                    type=["pdf", "docx"],
-                                    key="file_uploader_simple",
-                                    label_visibility="collapsed"
-                                )
-
+                                user_input = st.text_area("在这里输入您的提示词 (Prompt)：", height=150, key="prompt_input", label_visibility="collapsed", placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档")
+                                uploaded_file = st.file_uploader("上传文档", type=["pdf", "docx"], key="file_uploader_simple", label_visibility="collapsed")
                             if uploaded_file is not None:
                                 st.caption(f"📎 已附加文档：{uploaded_file.name}")
-
                             st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
                             col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                             clicked_behavior = None
@@ -936,12 +852,10 @@ else:
                                 clicked_behavior = "重构研究方案"
                             elif col_b5.form_submit_button("拓展研究思路"):
                                 clicked_behavior = "拓展研究思路"
-
                             if clicked_behavior:
                                 if not user_input or user_input.strip() == "":
                                     st.warning("⚠️ 请先输入提示词！")
                                     st.stop()
-
                                 file_content = ""
                                 if uploaded_file is not None:
                                     file_name = uploaded_file.name
@@ -963,24 +877,17 @@ else:
                                             st.error(f"Word 解析失败：{e}")
                                     if file_content and len(file_content) > 5000:
                                         file_content = file_content[:5000] + "\n...[内容已截断]"
-
                                 full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
-
                                 with st.chat_message("user"):
                                     if file_content:
                                         st.markdown(f"📎 **已附加文档**，提问：{user_input}")
                                     else:
                                         st.markdown(f"**[{clicked_behavior}]** {user_input}")
-
                                 st.session_state.messages.append({"role": "user", "content": full_user_message})
-
                                 with st.chat_message("assistant"):
                                     with st.spinner("思考中..."):
                                         try:
-                                            response = client.chat.completions.create(
-                                                model="deepseek-v4-pro",
-                                                messages=st.session_state.messages
-                                            )
+                                            response = client.chat.completions.create(model="deepseek-v4-pro", messages=st.session_state.messages)
                                             ai_reply = response.choices[0].message.content
                                             st.markdown(ai_reply)
                                         except Exception as e:
@@ -988,7 +895,6 @@ else:
                                             st.stop()
                                 st.session_state.messages.append({"role": "assistant", "content": ai_reply})
                                 st.session_state.round_count += 1
-
                                 log_data = {
                                     "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                     "participant_id": st.session_state.participant_id,
@@ -1001,12 +907,7 @@ else:
                                     supabase.table("research_logs").insert(log_data).execute()
                                 except Exception as e:
                                     st.error(f"日志保存失败：{e}")
-
-                                save_participant_state(
-                                    st.session_state.participant_id,
-                                    st.session_state.messages,
-                                    st.session_state.round_count
-                                )
+                                save_participant_state(st.session_state.participant_id, st.session_state.messages, st.session_state.round_count)
                                 st.rerun()
 
             with col_right:
@@ -1017,79 +918,34 @@ else:
                 with st.form(key="plan_form"):
                     st.markdown("**子任务1：选题与文献发现**")
                     st.markdown("可围绕后面内容进行填写：1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）")
-                    task1_text = st.text_area(
-                        "填写区",
-                        value=existing_plan["task1_text"] if existing_plan else "",
-                        height=160,
-                        key="task1_text",
-                        label_visibility="collapsed"
-                    )
+                    task1_text = st.text_area("填写区", value=existing_plan["task1_text"] if existing_plan else "", height=160, key="task1_text", label_visibility="collapsed")
                     st.divider()
                     st.markdown("**子任务2：研究规划与设计**")
                     st.markdown("可围绕后面内容进行填写：1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）")
-                    task2_text = st.text_area(
-                        "填写区",
-                        value=existing_plan["task2_text"] if existing_plan else "",
-                        height=160,
-                        key="task2_text",
-                        label_visibility="collapsed"
-                    )
+                    task2_text = st.text_area("填写区", value=existing_plan["task2_text"] if existing_plan else "", height=160, key="task2_text", label_visibility="collapsed")
                     st.divider()
                     st.markdown("**子任务3：实施与数据采集**")
                     st.markdown("可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）")
-                    task3_text = st.text_area(
-                        "填写区",
-                        value=existing_plan["task3_text"] if existing_plan else "",
-                        height=160,
-                        key="task3_text",
-                        label_visibility="collapsed"
-                    )
+                    task3_text = st.text_area("填写区", value=existing_plan["task3_text"] if existing_plan else "", height=160, key="task3_text", label_visibility="collapsed")
                     st.divider()
                     st.markdown("**子任务4：数据分析与阐释**")
                     st.markdown("可围绕后面内容进行填写：1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）")
-                    task4_text = st.text_area(
-                        "填写区",
-                        value=existing_plan["task4_text"] if existing_plan else "",
-                        height=160,
-                        key="task4_text",
-                        label_visibility="collapsed"
-                    )
+                    task4_text = st.text_area("填写区", value=existing_plan["task4_text"] if existing_plan else "", height=160, key="task4_text", label_visibility="collapsed")
                     st.divider()
                     st.markdown("**子任务5：论文撰写与润色**")
                     st.markdown("可围绕后面内容进行填写：1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）")
-                    task5_text = st.text_area(
-                        "填写区",
-                        value=existing_plan["task5_text"] if existing_plan else "",
-                        height=300,
-                        key="task5_text",
-                        label_visibility="collapsed"
-                    )
+                    task5_text = st.text_area("填写区", value=existing_plan["task5_text"] if existing_plan else "", height=300, key="task5_text", label_visibility="collapsed")
                     st.divider()
                     st.markdown("**子任务6：传播、评估与伦理**")
                     st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
-                    task6_text = st.text_area(
-                        "填写区",
-                        value=existing_plan["task6_text"] if existing_plan else "",
-                        height=160,
-                        key="task6_text",
-                        label_visibility="collapsed"
-                    )
+                    task6_text = st.text_area("填写区", value=existing_plan["task6_text"] if existing_plan else "", height=160, key="task6_text", label_visibility="collapsed")
                     col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
                     with col_submit_btn_right:
                         submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
                     if submitted:
-                        if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
-                                    task4_text.strip(), task5_text.strip(), task6_text.strip()]):
+                        if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(), task4_text.strip(), task5_text.strip(), task6_text.strip()]):
                             st.warning("建议填写所有子任务，以完善研究方案。")
-                        success = save_plan(
-                            st.session_state.participant_id,
-                            task1_text.strip(),
-                            task2_text.strip(),
-                            task3_text.strip(),
-                            task4_text.strip(),
-                            task5_text.strip(),
-                            task6_text.strip()
-                        )
+                        success = save_plan(st.session_state.participant_id, task1_text.strip(), task2_text.strip(), task3_text.strip(), task4_text.strip(), task5_text.strip(), task6_text.strip())
                         if success:
                             st.session_state.experiment_completed = True
                             st.rerun()
