@@ -209,6 +209,15 @@ else:
 st.markdown(
     """
     <style>
+        /* 全局：减少默认留白 */
+        .block-container {
+            padding-top: 0rem !important;
+            padding-bottom: 0.5rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            max-width: 100% !important;
+        }
+
         /* 顶部固定栏 */
         .top-fixed {
             position: sticky;
@@ -216,8 +225,8 @@ st.markdown(
             background-color: white;
             z-index: 100;
             padding: 0.2rem 1rem 0.2rem 0.5rem;
-            border-bottom: none !important;
-            box-shadow: none !important;
+            border-bottom: 1px solid #e0e0e0 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         }
         .top-fixed .stColumn {
             border-right: none !important;
@@ -250,9 +259,9 @@ st.markdown(
         /* 按钮样式 */
         .stButton button,
         .stForm button[type="submit"] {
-            height: 38px !important;
-            min-height: 38px !important;
-            max-height: 38px !important;
+            height: 36px !important;
+            min-height: 36px !important;
+            max-height: 36px !important;
             width: 100% !important;
             white-space: nowrap !important;
             display: flex !important;
@@ -261,23 +270,24 @@ st.markdown(
             padding-top: 0 !important;
             padding-bottom: 0 !important;
             line-height: 1.2 !important;
-            font-size: 14px !important;
+            font-size: 13px !important;
             text-align: center !important;
         }
         .stButton {
-            height: 38px !important;
+            height: 36px !important;
             display: flex !important;
             align-items: center !important;
+            margin: 0 !important;
         }
 
         /* 知情同意书卡片样式 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
-            padding: 30px 35px;
-            border-radius: 16px;
+            padding: 25px 30px;
+            border-radius: 14px;
             border: 1px solid #e0e5ec;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin: 10px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            margin: 8px 0;
             max-width: 1000px;
             margin-left: auto;
             margin-right: auto;
@@ -286,24 +296,25 @@ st.markdown(
         .consent-card h2 {
             text-align: center;
             color: #1a2a3a;
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 600;
             margin-top: 0;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #4CAF50;
-            padding-bottom: 12px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
         }
         .consent-card p {
-            font-size: 15.5px;
-            line-height: 1.7;
+            font-size: 14.5px;
+            line-height: 1.65;
             color: #2d3748;
-            margin: 8px 0;
+            margin: 6px 0;
         }
         .consent-card ul {
-            padding-left: 22px;
-            font-size: 15.5px;
-            line-height: 1.7;
+            padding-left: 20px;
+            font-size: 14.5px;
+            line-height: 1.65;
             color: #2d3748;
+            margin: 6px 0;
         }
         .consent-card .highlight {
             background-color: #f0f8ff;
@@ -314,18 +325,18 @@ st.markdown(
         }
         .consent-card .contact-box {
             background-color: #eaf4eb;
-            padding: 10px 16px;
+            padding: 8px 14px;
             border-radius: 8px;
-            border-left: 4px solid #4CAF50;
-            margin: 12px 0 8px 0;
+            border-left: 3px solid #4CAF50;
+            margin: 10px 0 6px 0;
         }
         .consent-card .footer-note {
             text-align: center;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 500;
             color: #1a3a5a;
-            margin-top: 20px;
-            padding-top: 16px;
+            margin-top: 16px;
+            padding-top: 12px;
             border-top: 1px dashed #b0c4de;
         }
 
@@ -335,23 +346,16 @@ st.markdown(
             margin-bottom: 1px !important;
         }
         hr {
-            margin-top: 4px !important;
-            margin-bottom: 4px !important;
+            margin-top: 3px !important;
+            margin-bottom: 3px !important;
         }
 
         /* 子任务区域样式 */
         [data-testid="stVerticalBlock"] > .stMarkdown {
-            margin-bottom: 2px !important;
+            margin-bottom: 1px !important;
         }
         [data-testid="stTextArea"] {
-            margin-bottom: 2px !important;
-        }
-        .task-odd, .task-even {
-            padding: 8px 16px !important;
-            margin-bottom: 4px !important;
-        }
-        .task-odd .stTextArea, .task-even .stTextArea {
-            margin-bottom: 0 !important;
+            margin-bottom: 1px !important;
         }
 
         /* 输入框内嵌上传图标 */
@@ -359,15 +363,16 @@ st.markdown(
             position: relative;
         }
         .st-key-input_wrapper textarea {
-            padding-right: 46px !important;
-            padding-bottom: 42px !important;
+            padding-right: 42px !important;
+            padding-bottom: 38px !important;
+            font-size: 13px !important;
         }
         .st-key-input_wrapper [data-testid="stFileUploader"] {
             position: absolute;
-            right: 10px;
-            bottom: 18px;
-            width: 34px;
-            height: 34px;
+            right: 8px;
+            bottom: 14px;
+            width: 32px;
+            height: 32px;
             z-index: 30;
             overflow: hidden;
         }
@@ -380,21 +385,20 @@ st.markdown(
             border: none !important;
             padding: 0 !important;
             margin: 0 !important;
-            min-height: 34px !important;
-            height: 34px !important;
-            width: 34px !important;
+            min-height: 32px !important;
+            height: 32px !important;
+            width: 32px !important;
         }
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] > div:first-child {
             display: none !important;
         }
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button {
-            width: 34px !important;
-            height: 34px !important;
-            min-height: 34px !important;
+            width: 32px !important;
+            height: 32px !important;
+            min-height: 32px !important;
             padding: 0 !important;
             border-radius: 50% !important;
             background-color: transparent !important;
-            background: transparent !important;
             border: none !important;
             box-shadow: none !important;
             color: transparent !important;
@@ -405,7 +409,7 @@ st.markdown(
         }
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button::after {
             content: "📎";
-            font-size: 15px;
+            font-size: 14px;
             color: #333;
             position: absolute;
             top: 50%;
@@ -457,75 +461,111 @@ st.markdown(
             margin-bottom: 6px !important;
         }
 
-        /* 左右两栏高度控制 */
+        /* ========== 左右两栏视觉区分（方案 A） ========== */
+        
+        /* 主容器间距加大 */
         .st-key-main_row [data-testid="stHorizontalBlock"] {
-            align-items: flex-start !important;
+            align-items: stretch !important;
             height: auto !important;
             overflow: visible !important;
+            gap: 12px !important;  /* 加大间距 */
         }
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn {
-            max-height: calc(100vh - 180px) !important;
-            overflow-y: auto !important;
-            padding: 10px !important;
-        }
+        
+        /* 左侧聊天区：浅蓝色背景 + 边框 + 圆角 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
-            padding-right: 14px !important;
+            background: linear-gradient(145deg, #f8fafc, #f0f4f8) !important;
+            border: 1px solid #c5d5e4 !important;
+            border-radius: 12px !important;
+            padding: 12px !important;
+            box-shadow: 0 2px 8px rgba(100, 130, 160, 0.08) !important;
+            max-height: calc(100vh - 115px) !important;
+            overflow-y: auto !important;
         }
+        
+        /* 右侧方案区：浅米色背景 + 边框 + 圆角 + 绿色强调线 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
-            border-left: 1px solid #ddd;
-            padding-left: 14px !important;
-            background-color: transparent !important;
+            background: linear-gradient(145deg, #fefcf8, #faf8f0) !important;
+            border: 1px solid #e4d5c5 !important;
+            border-radius: 12px !important;
+            padding: 12px !important;
+            box-shadow: 0 2px 8px rgba(160, 130, 100, 0.08) !important;
+            border-left: 3px solid #4CAF50 !important;  /* 左侧绿色强调线 */
+            max-height: calc(100vh - 115px) !important;
+            overflow-y: auto !important;
         }
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar {
-            width: 6px;
+        
+        /* 左侧标题栏样式 */
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child [data-testid="stSubheader"] {
+            color: #1a5276 !important;
+            border-bottom: 2px solid #4a90d9 !important;
+            padding-bottom: 6px !important;
+            margin-bottom: 8px !important;
+            font-size: 16px !important;
         }
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 5px;
-        }
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 5px;
-        }
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-thumb:hover {
-            background: #555;
+        
+        /* 右侧标题栏样式 */
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child [data-testid="stSubheader"] {
+            color: #5a4a1a !important;
+            border-bottom: 2px solid #d9a04a !important;
+            padding-bottom: 6px !important;
+            margin-bottom: 8px !important;
+            font-size: 16px !important;
         }
 
         /* 滚动条样式 */
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar {
+            width: 5px;
+        }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-thumb {
+            background: #aaa;
+            border-radius: 3px;
+        }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-thumb:hover {
+            background: #888;
+        }
+
+        /* 全局滚动条样式 */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
-            border-radius: 4px;
+            border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
+            background: #aaa;
+            border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: #888;
         }
+
         /* 右侧方案区：输入框 label 与输入内容字号 */
         [data-testid="stTextArea"] label p {
-            font-size: 16px !important;
+            font-size: 14px !important;
             font-weight: 600 !important;
         }
         [data-testid="stTextArea"] textarea {
-            font-size: 16px !important;
-        }
-        /* 右侧方案区：markdown 小标题字号 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child [data-testid="stMarkdownContainer"] p {
-            font-size: 16px !important;
+            font-size: 14px !important;
         }
 
         /* ========== 子任务输入框背景色（按 key 定位） ========== */
-        .st-key-task1_text textarea { background-color: #e6f3ff; }
-        .st-key-task2_text textarea { background-color: #f5e6ff; }
-        .st-key-task3_text textarea { background-color: #e6f3ff; }
-        .st-key-task4_text textarea { background-color: #f5e6ff; }
-        .st-key-task5_text textarea { background-color: #e6f3ff; }
-        .st-key-task6_text textarea { background-color: #f5e6ff; }
+        .st-key-task1_text textarea { background-color: #e6f3ff !important; }
+        .st-key-task2_text textarea { background-color: #f5e6ff !important; }
+        .st-key-task3_text textarea { background-color: #e6f3ff !important; }
+        .st-key-task4_text textarea { background-color: #f5e6ff !important; }
+        .st-key-task5_text textarea { background-color: #e6f3ff !important; }
+        .st-key-task6_text textarea { background-color: #f5e6ff !important; }
+        
+        /* 底部退出按钮区域 */
+        .exit-section {
+            margin: 3px 0 0 0 !important;
+            padding: 0 !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
