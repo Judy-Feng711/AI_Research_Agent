@@ -17,17 +17,19 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= 2. 系统提示词 =================
-SYSTEM_PROMPT =""" 您是一个名为"全栈式教育研究学术助理"的高级AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
+SYSTEM_PROMPT = """您是一个名为"ICFER（教育实证研究全周期智能协同框架）"的教育研究设计助理。您的目标是协助教育学领域的研究生完成一项教育研究设计方案，围绕统一主题提供专业、具体的支持。
+
 核心能力与任务模块：
-1. 选题与文献发现：辅助梳理文献脉络，对比不同教育理论（如建构主义与行为主义），精准分析研究空白。
-2. 研究规划与设计：从教育心理学、课程论等多重视角构建分析框架，对比个案研究、行动研究等方法的适用性。
+1. 选题与文献发现：辅助梳理文献脉络，分析研究空白。
+2. 研究规划与设计：构建分析框架，对比不同研究方法的适用性。
 3. 实施与数据采集：协助开发访谈提纲等收集工具，指出并规避表述偏差及伦理风险。
-4. 数据分析与阐释：提供Python/R等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
-5. 论文撰写与润色：辅助母语润色，检查专业术语一致性，并模拟"严苛审稿人"视角提出批判性修改意见。
-6. 传播、评估与伦理：辅助提炼实践建议，主动规避文化/性别等偏见，模拟同行质疑进行答辩演练。
+4. 数据分析与阐释：提供 Python/R 等统计脚本编写指引，解读统计结果与理论模型的深层逻辑。
+5. 论文撰写与润色：辅助梳理写作思路，检查专业术语一致性，提出修改建议。
+6. 传播、评估与伦理：辅助提炼实践建议，提示伦理考量与传播路径。
+
 互动规则：
-- 拒绝单次终结：面对用户的宽泛问题，不要一次性给出全套方案，通过反问或追问引导用户思考。
-- 启发大于代劳：当用户索要直接答案时，先给出框架和思路，鼓励用户多轮探讨。"""
+- 直接回应用户的请求，提供所需信息或建议。
+- 不要主动改变话题，不要反复追问。"""
 
 # 初始欢迎语
 INITIAL_GREETING = "您好！我是您的教育研究全栈助理 ICFER。我们将围绕 \"人工智能时代的教师教育与教师专业发展研究\" 这一主题，结合您的学科专长，一起完成一份实证研究设计方案。请告诉我，您想从哪个具体的研究切入点开始？"
@@ -243,11 +245,13 @@ st.markdown(
             content: none !important;
             display: none !important;
         }
+        [data-testid="stHorizontalBlock"] .stColumn .stButton {
+            border: none !important;
+        }
 
-        /* ========== 按钮统一风格 ========== */
-        .stButton > button,
-        .stForm button[type="submit"],
-        .stDownloadButton > button {
+        /* 按钮样式 */
+        .stButton button,
+        .stForm button[type="submit"] {
             height: 38px !important;
             min-height: 38px !important;
             max-height: 38px !important;
@@ -256,21 +260,11 @@ st.markdown(
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            padding: 0 12px !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
             line-height: 1.2 !important;
             font-size: 14px !important;
             text-align: center !important;
-            border: 1px solid #d0d7de !important;
-            border-radius: 8px !important;
-            background-color: #f6f8fa !important;
-            color: #24292f !important;
-            box-shadow: none !important;
-        }
-        .stButton > button:hover,
-        .stForm button[type="submit"]:hover,
-        .stDownloadButton > button:hover {
-            background-color: #eef1f4 !important;
-            border-color: #b8c0c8 !important;
         }
         .stButton {
             height: 38px !important;
@@ -476,6 +470,14 @@ st.markdown(
             overflow-y: auto !important;
             padding: 10px !important;
         }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
+            padding-right: 14px !important;
+        }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
+            border-left: 1px solid #ddd;
+            padding-left: 14px !important;
+            background-color: transparent !important;
+        }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar {
             width: 6px;
         }
@@ -509,7 +511,7 @@ st.markdown(
         /* 右侧方案区：输入框 label 与输入内容字号 */
         [data-testid="stTextArea"] label p {
             font-size: 16px !important;
-            font-weight: 600 !important;
+            font-weight: 400 !important;
         }
         [data-testid="stTextArea"] textarea {
             font-size: 16px !important;
@@ -517,34 +519,6 @@ st.markdown(
         /* 右侧方案区：markdown 小标题字号 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child [data-testid="stMarkdownContainer"] p {
             font-size: 16px !important;
-        }
-
-        /* ========== 子任务输入框背景色（按 key 定位） ========== */
-        .st-key-task1_text textarea { background-color: #e6f3ff; }
-        .st-key-task2_text textarea { background-color: #f5e6ff; }
-        .st-key-task3_text textarea { background-color: #e6f3ff; }
-        .st-key-task4_text textarea { background-color: #f5e6ff; }
-        .st-key-task5_text textarea { background-color: #e6f3ff; }
-        .st-key-task6_text textarea { background-color: #f5e6ff; }
-
-        /* ========== 左右两栏卡片式区分（最终版） ========== */
-        /* 左栏：淡蓝卡片 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
-            background-color: #ffffff !important;
-            border: 1px solid #d8e0ea !important;
-            border-radius: 14px !important;
-            padding: 18px !important;
-            margin-right: 12px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-        }
-        /* 右栏：淡黄卡片 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
-            background-color: #ffffff !important;
-            border: 1px solid #eadfc8 !important;
-            border-radius: 14px !important;
-            padding: 18px !important;
-            margin-left: 12px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
         }
     </style>
     """,
@@ -972,64 +946,77 @@ else:
                 st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
                 with st.form(key="plan_form"):
                     st.markdown("**子任务1：选题与文献发现**")
-                    st.markdown("可围绕后面内容进行填写：1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）")
                     task1_text = st.text_area(
-                        "填写区",
+                        "可围绕后面内容进行填写：1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）",
                         value=existing_plan["task1_text"] if existing_plan else "",
                         height=160,
-                        key="task1_text",
-                        label_visibility="collapsed"
+                        key="task1_text"
                     )
                     st.divider()
                     st.markdown("**子任务2：研究规划与设计**")
-                    st.markdown("可围绕后面内容进行填写：1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）")
                     task2_text = st.text_area(
-                        "填写区",
+                        "可围绕后面内容进行填写：1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）",
                         value=existing_plan["task2_text"] if existing_plan else "",
                         height=160,
-                        key="task2_text",
-                        label_visibility="collapsed"
+                        key="task2_text"
                     )
                     st.divider()
                     st.markdown("**子任务3：实施与数据采集**")
-                    st.markdown("可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）")
                     task3_text = st.text_area(
-                        "填写区",
+                        "可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）",
                         value=existing_plan["task3_text"] if existing_plan else "",
                         height=160,
-                        key="task3_text",
-                        label_visibility="collapsed"
+                        key="task3_text"
                     )
                     st.divider()
                     st.markdown("**子任务4：数据分析与阐释**")
-                    st.markdown("可围绕后面内容进行填写：1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）")
                     task4_text = st.text_area(
-                        "填写区",
+                        "可围绕后面内容进行填写：1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）",
                         value=existing_plan["task4_text"] if existing_plan else "",
                         height=160,
-                        key="task4_text",
-                        label_visibility="collapsed"
+                        key="task4_text"
                     )
                     st.divider()
                     st.markdown("**子任务5：论文撰写与润色**")
-                    st.markdown("可围绕后面内容进行填写：1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）")
                     task5_text = st.text_area(
-                        "填写区",
+                        "可围绕后面内容进行填写：1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）",
                         value=existing_plan["task5_text"] if existing_plan else "",
                         height=300,
-                        key="task5_text",
-                        label_visibility="collapsed"
+                        key="task5_text"
                     )
                     st.divider()
                     st.markdown("**子任务6：传播、评估与伦理**")
-                    st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
                     task6_text = st.text_area(
-                        "填写区",
+                        "可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）",
                         value=existing_plan["task6_text"] if existing_plan else "",
                         height=160,
-                        key="task6_text",
-                        label_visibility="collapsed"
+                        key="task6_text"
                     )
+                    st.markdown(
+        """
+        <style>
+            textarea[aria-label="1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）"] {
+                background-color: #e6f3ff;
+            }
+            textarea[aria-label="1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）"] {
+                background-color: #f5e6ff;
+            }
+            textarea[aria-label="1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）"] {
+                background-color: #e6f3ff;
+            }
+            textarea[aria-label="1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）"] {
+                background-color: #f5e6ff;
+            }
+            textarea[aria-label="1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）"] {
+                background-color: #e6f3ff;
+            }
+            textarea[aria-label="1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）"] {
+                background-color: #f5e6ff;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
                     col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
                     with col_submit_btn_right:
                         submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
