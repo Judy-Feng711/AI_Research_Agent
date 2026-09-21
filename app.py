@@ -526,6 +526,11 @@ st.markdown(
         .st-key-task4_text textarea { background-color: #f5e6ff; }
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
+            border-left: 1px solid #ddd;
+            padding-left: 14px !important;
+            background-color: transparent !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
