@@ -328,6 +328,16 @@ st.markdown(
             padding-left: 14px !important;
             background-color: #fcfdfe !important;
         }
+        /* 用内阴影模拟分隔线，几乎看不见 */
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
+            padding-right: 14px !important;
+            box-shadow: inset -1px 0 0 0 #e0e0e0 !important;  /* 左列右侧内阴影 */
+        }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
+            padding-left: 14px !important;
+            box-shadow: inset 1px 0 0 0 #e0e0e0 !important;   /* 右列左侧内阴影 */
+            background-color: transparent !important;
+        }
         /* 知情同意书卡片样式 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
