@@ -7,6 +7,7 @@ import datetime
 import json
 from supabase import create_client, Client
 import time
+import hashlib
 
 # ================= 1. 核心配置区 =================
 DEEPSEEK_API_KEY = st.secrets["DEEPSEEK_API_KEY"]
@@ -31,6 +32,7 @@ SYSTEM_PROMPT =""" 您是一个名为"全栈式教育研究学术助理"的高�
 
 # 初始欢迎语
 INITIAL_GREETING = "您好！我是您的教育研究全栈助理 ICFER。我们将围绕 \"人工智能时代的教师教育与教师专业发展研究\" 这一主题，结合您的学科专长，一起完成一份实证研究设计方案。请告诉我，您想从哪个具体的研究切入点开始？"
+
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
     """
@@ -119,18 +121,55 @@ def get_initial_messages():
         {"role": "assistant", "content": INITIAL_GREETING}
     ]
 
-# ================= 新增：知情同意保存函数 =================
+# ================= 新增：知情同意保存函数（含哈希） =================
+# 同意书正文（用于生成 SHA-256 哈希）
+CONSENT_TEXT = """研究主题：人工智能辅助教育研究的特征与机制研究
+
+您已完成本研究的问卷阶段。本页为研究第二阶段的补充知情说明，请您阅读后决定是否继续参与人机交互任务。
+
+尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击"同意"按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。
+
+一、这项研究是关于什么的？
+本研究致力于探索教育学及相关专业的硕士、博士研究生在实际科研工作中如何与生成式人工智能（AI）协同工作。我们将通过观察您与 AI 共同完成一项研究设计任务的过程，来分析您的行为模式、思维过程及主观感受。最终，本研究的成果将有助于制定更负责任、更可解释的 AI 使用指南，为高校和相关机构的科研培训提供依据。
+本次实验的具体任务：您将与我们的智能研究助理 ICFER 进行大约 100 分钟 的深度对话。
+在对话中，您将围绕统一主题 "人工智能时代的教师教育与教师专业发展研究" ，结合您自身的学科专长（如学科教学、教育技术、教育管理等），从中选定一个具体的研究切入点，并在 ICFER 的辅助下构思并完成一份完整的实证研究设计方案。
+特别说明：这项设计任务是实验环节中的一次模拟任务，您所完成的设计方案仅用于本研究分析，不会用于课程评价、科研考核、职称评定或真实学术成果提交。
+
+二、参与过程会发生什么？
+深度人机对话、方案构思与生成、数据自动记录。
+
+三、我的数据会被怎么处理？
+用途限定、匿名化处理（去标识化）、安全存储、信息保密与销毁、学术诚信保护、对话内容的编码分析、与前期数据的关联。
+
+四、参与这项研究有什么风险或收益吗？
+最低风险的社会科学研究；心理风险、信息安全风险、身体风险；潜在收益。
+
+五、我可以随时退出吗？
+当然可以。参与本研究完全基于您的自愿原则。
+
+六、研究成果会分享给我吗？
+会的。研究结束后，我们承诺在不泄露个人隐私的前提下，向有需要的参与者分享总体研究发现摘要。
+
+七、如有疑问可以联系谁？
+研究负责人：周榕 副教授（陕西师范大学教育学部）
+联系邮箱：rzhou@snnu.edu.cn
+联系电话：13309296061"""
+
 def save_consent_record(pid):
     """
-    将知情同意记录写入 consent_records 表
+    将知情同意记录写入 consent_records 表（含同意书正文哈希）
     """
     if not pid or pid.strip() == "":
         return False
     try:
+        # 生成同意书正文的 SHA-256 哈希
+        consent_hash = hashlib.sha256(CONSENT_TEXT.encode("utf-8")).hexdigest()
+
         data = {
             "participant_id": pid.strip(),
             "consent_timestamp": datetime.datetime.now().isoformat(),
-            "consent_version": "v1.0_ICFER_2026"
+            "consent_version": "v1.0_ICFER_2026",
+            "consent_hash": consent_hash
         }
         supabase.table("consent_records").insert(data).execute()
         return True
@@ -180,7 +219,7 @@ st.set_page_config(page_title="教育实证研究全周期智能协同框架", p
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
 if "messages" not in st.session_state:
-    st.session_state.messages = None  # 修改为 None，确保第一次加载
+    st.session_state.messages = None
 if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
@@ -201,7 +240,6 @@ query_params = st.query_params
 if "mode" in query_params and query_params["mode"] == "admin":
     st.session_state.user_role = "研究者"
 else:
-    # 如果已经选择过角色，则保留，否则默认被试
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
@@ -248,7 +286,6 @@ st.markdown(
         }
 
         /* 按钮样式 */
-         /* ========== 五个行为按钮 + 提交方案：统一字号 ========== */
         .stButton button,
         .stButton button p,
         .stButton button div,
@@ -278,18 +315,11 @@ st.markdown(
             display: flex !important;
             align-items: center !important;
         }
-        .stButton {
-            height: 38px !important;
-            display: flex !important;
-            align-items: center !important;
-        }
 
         /* ========== 左右两栏标题颜色 ========== */
-        /* 左栏标题：研究人机交互区 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child h3 {
             color: #1565c0 !important;
         }
-        /* 右栏标题：研究方案填写区 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child h3 {
             color: #2e7d32 !important;
         }
@@ -550,6 +580,20 @@ st.markdown(
         .st-key-task4_text textarea { background-color: #f5e6ff; }
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
+
+        /* ========== 左右两栏卡片背景色（新增） ========== */
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
+            background-color: #f8fbff !important;  /* 左淡蓝 */
+            border-radius: 12px !important;
+            padding: 16px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+        }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
+            background-color: #f9fdf9 !important;  /* 右淡绿 */
+            border-radius: 12px !important;
+            padding: 16px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -697,7 +741,6 @@ else:
             )
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
-                # 立即加载历史数据
                 st.session_state.messages, st.session_state.round_count = load_participant_state(st.session_state.participant_id)
                 st.rerun()
         st.stop()
@@ -796,7 +839,7 @@ else:
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
                 st.session_state.consent_given = True
-                save_consent_record(st.session_state.participant_id)  # 保存同意记录
+                save_consent_record(st.session_state.participant_id)
                 st.rerun()
         st.stop()
 
@@ -846,9 +889,7 @@ else:
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
 
-                # 使用新的聊天容器结构
                 with st.container():
-                    # 聊天消息区域（可滚动）
                     with st.container(height=500, border=False):
                         has_dialogue = False
                         for msg in st.session_state.messages:
@@ -862,7 +903,6 @@ else:
                         if not has_dialogue:
                             st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
 
-                    # 输入区域（固定在底部）
                     with st.container():
                         with st.form(key="prompt_form", clear_on_submit=True):
                             with st.container(key="input_wrapper"):
