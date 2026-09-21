@@ -507,6 +507,17 @@ st.markdown(
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+        /* 右侧方案填写区：标题与输入框 label 字体统一放大 */
+        .st-key-plan_form [data-testid="stMarkdownContainer"] p {
+            font-size: 16px !important;
+        }
+        .st-key-plan_form [data-testid="stTextArea"] label p {
+            font-size: 16px !important;
+            font-weight: 600 !important;
+        }
+        .st-key-plan_form textarea {
+            font-size: 16px !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
