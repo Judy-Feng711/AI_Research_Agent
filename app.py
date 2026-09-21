@@ -17,12 +17,12 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= 2. 系统提示词 =================
-SYSTEM_PROMPT =""" 您是一个名为"全栈式教育研究学术助理"的高级AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
+SYSTEM_PROMPT =""" 您是一个名为"全栈式教育研究学术助理"的高级 AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
 核心能力与任务模块：
 1. 选题与文献发现：辅助梳理文献脉络，对比不同教育理论（如建构主义与行为主义），精准分析研究空白。
 2. 研究规划与设计：从教育心理学、课程论等多重视角构建分析框架，对比个案研究、行动研究等方法的适用性。
 3. 实施与数据采集：协助开发访谈提纲等收集工具，指出并规避表述偏差及伦理风险。
-4. 数据分析与阐释：提供Python/R等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
+4. 数据分析与阐释：提供 Python/R 等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
 5. 论文撰写与润色：辅助母语润色，检查专业术语一致性，并模拟"严苛审稿人"视角提出批判性修改意见。
 6. 传播、评估与伦理：辅助提炼实践建议，主动规避文化/性别等偏见，模拟同行质疑进行答辩演练。
 互动规则：
@@ -31,6 +31,7 @@ SYSTEM_PROMPT =""" 您是一个名为"全栈式教育研究学术助理"的高�
 
 # 初始欢迎语
 INITIAL_GREETING = "您好！我是您的教育研究全栈助理 ICFER。我们将围绕 \"人工智能时代的教师教育与教师专业发展研究\" 这一主题，结合您的学科专长，一起完成一份实证研究设计方案。请告诉我，您想从哪个具体的研究切入点开始？"
+
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
     """
@@ -68,7 +69,7 @@ def load_participant_state(pid):
                 if ai_content:
                     rebuilt.append({"role": "assistant", "content": ai_content})
                 else:
-                    rebuilt.append({"role": "assistant", "content": "(AI响应缺失，请检查日志)"})
+                    rebuilt.append({"role": "assistant", "content": "(AI 响应缺失，请检查日志)"})
         if len(rebuilt) == 1:
             messages = get_initial_messages()
         else:
@@ -138,7 +139,7 @@ def save_consent_record(pid):
         st.error(f"⚠️ 保存同意记录失败：{e}")
         return False
 
-# ================= 4. 方案数据函数（6个子任务） =================
+# ================= 4. 方案数据函数（6 个子任务） =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
@@ -180,7 +181,7 @@ st.set_page_config(page_title="教育实证研究全周期智能协同框架", p
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
 if "messages" not in st.session_state:
-    st.session_state.messages = None  # 修改为 None，确保第一次加载
+    st.session_state.messages = None
 if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
@@ -201,7 +202,6 @@ query_params = st.query_params
 if "mode" in query_params and query_params["mode"] == "admin":
     st.session_state.user_role = "研究者"
 else:
-    # 如果已经选择过角色，则保留，否则默认被试
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
@@ -468,7 +468,7 @@ st.markdown(
             align-items: stretch !important;
             height: auto !important;
             overflow: visible !important;
-            gap: 12px !important;  /* 加大间距 */
+            gap: 12px !important;
         }
         
         /* 左侧聊天区：浅蓝色背景 + 边框 + 圆角 */
@@ -489,7 +489,7 @@ st.markdown(
             border-radius: 12px !important;
             padding: 12px !important;
             box-shadow: 0 2px 8px rgba(160, 130, 100, 0.08) !important;
-            border-left: 3px solid #4CAF50 !important;  /* 左侧绿色强调线 */
+            border-left: 3px solid #4CAF50 !important;
             max-height: calc(100vh - 115px) !important;
             overflow-y: auto !important;
         }
@@ -576,8 +576,8 @@ st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 st.markdown(
     """
     <div style="text-align: center;">
-        <h1 style="font-size: 36px; margin-bottom: 0;">🎓 教育实证研究全周期智能协同框架</h1>
-        <p style="font-size: 20px; color: #555; margin-top: 4px;">Intelligent Collaborative Framework for Empirical Research in Education (ICFER)</p>
+        <h1 style="font-size: 28px; margin-bottom: 0;">🎓 教育实证研究全周期智能协同框架</h1>
+        <p style="font-size: 14px; color: #555; margin-top: 2px;">ICFER - Intelligent Collaborative Framework for Empirical Research in Education</p>
     </div>
     """,
     unsafe_allow_html=True
@@ -586,12 +586,11 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
-    # ---------- 研究者模式 ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
     with col_center:
-        st.markdown("<h3 style='text-align: center;'>📊 研究者数据导出</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; margin: 6px 0; font-size: 16px;'>📊 研究者数据导出</h3>", unsafe_allow_html=True)
         st.markdown(
-            "<p style='text-align: center;'>请输入研究者密码以查看并下载数据</p>",
+            "<p style='text-align: center; margin: 0 0 6px 0; font-size: 12px;'>请输入研究者密码以查看并下载数据</p>",
             unsafe_allow_html=True
         )
         if not st.session_state.export_authorized:
@@ -644,7 +643,6 @@ if st.session_state.user_role == "研究者":
                     )
             except Exception as e:
                 st.error(f"读取方案数据失败：{e}")
-            # 下载知情同意记录
             try:
                 response_consent = supabase.table("consent_records").select("*").execute()
                 if response_consent.data:
@@ -666,17 +664,14 @@ if st.session_state.user_role == "研究者":
                 st.rerun()
 
 else:
-    # ---------- 被试模式 ----------
-
     # 【1】检查实验是否已完成
     if st.session_state.experiment_completed:
         st.markdown(
             """
-            <div style="text-align: center; padding: 40px 20px;">
-                <h2 style="color: #4CAF50;">✅ 方案已提交成功！实验已完成！</h2>
-                <p style="font-size: 18px;">感谢您参与本次研究！您的数据已成功保存。</p>
-                <p style="font-size: 16px; color: #666;">您现在可以关闭此页面，或点击下方按钮返回首页。</p>
-                <br>
+            <div style="text-align: center; padding: 30px 20px;">
+                <h2 style="color: #4CAF50; margin: 0 0 8px 0; font-size: 20px;">✅ 方案已提交成功！实验已完成！</h2>
+                <p style="font-size: 15px; margin: 4px 0;">感谢您参与本次研究！您的数据已成功保存。</p>
+                <p style="font-size: 13px; color: #666; margin: 4px 0;">您现在可以关闭此页面，或点击下方按钮返回首页。</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -697,8 +692,8 @@ else:
     if not st.session_state.participant_id:
         st.markdown(
             """
-            <div style="text-align: center; padding: 20px 20px;">   
-                <p style="font-size: 18px; color: #555; margin-bottom: 30px;">👤 欢迎参与研究！请输入研究者分配给您的编号以开始实验。输入编号后，您将阅读并签署知情同意书。</p>
+            <div style="text-align: center; padding: 40px 20px;">   
+                <p style="font-size: 16px; color: #555; margin-bottom: 20px;">👤 欢迎参与研究！请输入研究者分配给您的编号以开始实验。输入编号后，您将阅读并签署知情同意书。</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -713,16 +708,14 @@ else:
             )
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
-                # 立即加载历史数据
                 st.session_state.messages, st.session_state.round_count = load_participant_state(st.session_state.participant_id)
                 st.rerun()
         st.stop()
 
     # 【3】再检查是否已同意
     if not st.session_state.consent_given:
-        # 显示当前参与者编号
         st.markdown(
-            "<p style='text-align: center; font-size: 16px; color: #555;'>"
+            "<p style='text-align: center; font-size: 14px; color: #555; margin: 3px 0 6px 0;'>"
             f"当前参与者编号：<strong>{st.session_state.participant_id}</strong>"
             "</p>",
             unsafe_allow_html=True
@@ -732,7 +725,7 @@ else:
             """
             <div class="consent-card">
                 <h2>📋 知情同意书</h2>
-                <p style="text-align:center; color:#888; font-size:13px; margin-top:-10px;">版本号：v1.0_ICFER_2026　|　生效日期：2026-09-20</p>
+                <p style="text-align:center; color:#888; font-size:12px; margin:0 0 8px 0;">版本号：v1.0_ICFER_2026 | 生效日期：2026-09-20</p>
                 <p><strong>研究主题：人工智能辅助教育研究的特征与机制研究</strong></p>
                  <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您已完成本研究的问卷阶段。本页为研究第二阶段的补充知情说明，请您阅读后决定是否继续参与人机交互任务。</p>
 <p><strong></strong><br</p>
@@ -794,8 +787,8 @@ else:
 <p><strong></strong><br</p>
                 <p><strong>七、如有疑问可以联系谁？</strong></p>
                 <div class="contact-box">
-                    <p>如果您对本次研究有任何疑问、顾虑，或在参与过程中遇到任何问题，欢迎随时联系我们的研究负责人：</p>
-                    <ul>
+                    <p style="margin:0 0 5px 0;">如果您对本次研究有任何疑问、顾虑，或在参与过程中遇到任何问题，欢迎随时联系我们的研究负责人：</p>
+                    <ul style="margin:0; padding-left:18px;">
                         <li><strong>研究负责人</strong>：周榕 副教授（陕西师范大学教育学部）</li>
                         <li><strong>联系邮箱</strong>：rzhou@snnu.edu.cn</li>
                         <li><strong>联系电话</strong>：13309296061</li>
@@ -812,7 +805,7 @@ else:
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
                 st.session_state.consent_given = True
-                save_consent_record(st.session_state.participant_id)  # 保存同意记录
+                save_consent_record(st.session_state.participant_id)
                 st.rerun()
         st.stop()
 
@@ -856,15 +849,13 @@ else:
             st.session_state.round_count = loaded_round
 
         with st.container(key="main_row"):
-            col_left, col_right = st.columns([50, 50], gap="large")
+            col_left, col_right = st.columns([50, 50], gap="small")
             with col_left:
                 st.subheader("💬 研究人机交互区")
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
 
-                # 使用新的聊天容器结构
                 with st.container():
-                    # 聊天消息区域（可滚动）
                     with st.container(height=500, border=False):
                         has_dialogue = False
                         for msg in st.session_state.messages:
@@ -878,13 +869,12 @@ else:
                         if not has_dialogue:
                             st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
 
-                    # 输入区域（固定在底部）
                     with st.container():
                         with st.form(key="prompt_form", clear_on_submit=True):
                             with st.container(key="input_wrapper"):
                                 user_input = st.text_area(
                                     "在这里输入您的提示词 (Prompt)：",
-                                    height=150,
+                                    height=100,
                                     key="prompt_input",
                                     label_visibility="collapsed",
                                     placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
@@ -899,7 +889,7 @@ else:
                             if uploaded_file is not None:
                                 st.caption(f"📎 已附加文档：{uploaded_file.name}")
 
-                            st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
+                            st.markdown("👇 **请选择提交行为：**")
                             col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                             clicked_behavior = None
                             if col_b1.form_submit_button("获取基础信息"):
@@ -988,65 +978,65 @@ else:
             with col_right:
                 st.subheader("📝 研究方案填写区")
                 existing_plan = load_plan(st.session_state.participant_id)
-                st.markdown("**AI协同研究方案撰写**")
-                st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
+                st.markdown("**AI 协同研究方案撰写**")
+                st.caption("任务共分为 6 个递进环节，请根据您与 AI 的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
                 with st.form(key="plan_form"):
-                    st.markdown("**子任务1：选题与文献发现**")
-                    st.markdown("可围绕后面内容进行填写：1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）")
+                    st.markdown("**子任务 1：选题与文献发现**")
+                    st.markdown("可围绕后面内容进行填写：1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议 150 字左右）")
                     task1_text = st.text_area(
                         "填写区",
                         value=existing_plan["task1_text"] if existing_plan else "",
-                        height=160,
+                        height=140,
                         key="task1_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务2：研究规划与设计**")
-                    st.markdown("可围绕后面内容进行填写：1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）")
+                    st.markdown("**子任务 2：研究规划与设计**")
+                    st.markdown("可围绕后面内容进行填写：1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议 150 字左右）")
                     task2_text = st.text_area(
                         "填写区",
                         value=existing_plan["task2_text"] if existing_plan else "",
-                        height=160,
+                        height=140,
                         key="task2_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务3：实施与数据采集**")
-                    st.markdown("可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）")
+                    st.markdown("**子任务 3：实施与数据采集**")
+                    st.markdown("可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议 150 字左右）")
                     task3_text = st.text_area(
                         "填写区",
                         value=existing_plan["task3_text"] if existing_plan else "",
-                        height=160,
+                        height=140,
                         key="task3_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务4：数据分析与阐释**")
-                    st.markdown("可围绕后面内容进行填写：1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）")
+                    st.markdown("**子任务 4：数据分析与阐释**")
+                    st.markdown("可围绕后面内容进行填写：1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议 150 字左右）")
                     task4_text = st.text_area(
                         "填写区",
                         value=existing_plan["task4_text"] if existing_plan else "",
-                        height=160,
+                        height=140,
                         key="task4_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务5：论文撰写与润色**")
-                    st.markdown("可围绕后面内容进行填写：1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）")
+                    st.markdown("**子任务 5：论文撰写与润色**")
+                    st.markdown("可围绕后面内容进行填写：1.研究的创新点（2-3 项）；2.研究存在的不足（2-3 项）。（建议 300-500 字左右）")
                     task5_text = st.text_area(
                         "填写区",
                         value=existing_plan["task5_text"] if existing_plan else "",
-                        height=300,
+                        height=240,
                         key="task5_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务6：传播、评估与伦理**")
-                    st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
+                    st.markdown("**子任务 6：传播、评估与伦理**")
+                    st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI 使用披露等）。（建议 150 字左右）")
                     task6_text = st.text_area(
                         "填写区",
                         value=existing_plan["task6_text"] if existing_plan else "",
-                        height=160,
+                        height=140,
                         key="task6_text",
                         label_visibility="collapsed"
                     )
@@ -1072,9 +1062,11 @@ else:
                         else:
                             st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
 
+        st.markdown('<div class="exit-section">', unsafe_allow_html=True)
         st.divider()
         col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
         with col_exit_center:
             if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
                 st.session_state.show_exit_dialog = True
                 st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
