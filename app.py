@@ -17,12 +17,12 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= 2. 系统提示词 =================
-SYSTEM_PROMPT =""" 您是一个名为"全栈式教育研究学术助理"的高级 AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
+SYSTEM_PROMPT =""" 您是一个名为"全栈式教育研究学术助理"的高级AI。您的目标是深度辅助教育学领域的研究生完成真实、复杂的学术研究任务，而非简单地给出敷衍的现成答案。您需要展现出教育研究的专业性、批判性和逻辑性。
 核心能力与任务模块：
 1. 选题与文献发现：辅助梳理文献脉络，对比不同教育理论（如建构主义与行为主义），精准分析研究空白。
 2. 研究规划与设计：从教育心理学、课程论等多重视角构建分析框架，对比个案研究、行动研究等方法的适用性。
 3. 实施与数据采集：协助开发访谈提纲等收集工具，指出并规避表述偏差及伦理风险。
-4. 数据分析与阐释：提供 Python/R 等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
+4. 数据分析与阐释：提供Python/R等统计脚本编写指引，深度解读统计结果与理论模型的深层逻辑，接受用户的逻辑纠错。
 5. 论文撰写与润色：辅助母语润色，检查专业术语一致性，并模拟"严苛审稿人"视角提出批判性修改意见。
 6. 传播、评估与伦理：辅助提炼实践建议，主动规避文化/性别等偏见，模拟同行质疑进行答辩演练。
 互动规则：
@@ -31,13 +31,19 @@ SYSTEM_PROMPT =""" 您是一个名为"全栈式教育研究学术助理"的高�
 
 # 初始欢迎语
 INITIAL_GREETING = "您好！我是您的教育研究全栈助理 ICFER。我们将围绕 \"人工智能时代的教师教育与教师专业发展研究\" 这一主题，结合您的学科专长，一起完成一份实证研究设计方案。请告诉我，您想从哪个具体的研究切入点开始？"
-
 # ================= 3. 状态持久化函数 =================
 def load_participant_state(pid):
+    """
+    从数据库加载被试状态：
+    - 从 research_logs 按时间戳顺序重建完整消息列表
+    - 与 participant_state 存储的消息对比，若一致则直接使用，否则重建并更新
+    - 始终返回 (messages, round_count)
+    """
     messages = get_initial_messages()
     round_count = 0
 
     try:
+        # 1. 从 research_logs 获取所有有效日志（按时间戳升序）
         log_resp = supabase.table("research_logs")\
             .select("*")\
             .eq("participant_id", pid)\
@@ -45,12 +51,14 @@ def load_participant_state(pid):
             .execute()
         log_data = log_resp.data if log_resp.data else []
 
+        # 统计有效轮数（有效行为 + 非空输入）
         valid_behaviors = ["获取基础信息", "规范语言/格式", "微调研究逻辑", "重构研究方案", "拓展研究思路"]
         round_count = sum(1 for log in log_data
                           if log.get("behavior_button") in valid_behaviors
                           and log.get("user_prompt")
                           and log.get("user_prompt").strip() != "")
 
+        # 2. 重建消息列表（系统消息 + 所有有效日志的 user/assistant 对）
         rebuilt = [{"role": "system", "content": SYSTEM_PROMPT}]
         for log in log_data:
             if log.get("behavior_button") in valid_behaviors and log.get("user_prompt") and log.get("user_prompt").strip() != "":
@@ -60,12 +68,13 @@ def load_participant_state(pid):
                 if ai_content:
                     rebuilt.append({"role": "assistant", "content": ai_content})
                 else:
-                    rebuilt.append({"role": "assistant", "content": "(AI 响应缺失，请检查日志)"})
+                    rebuilt.append({"role": "assistant", "content": "(AI响应缺失，请检查日志)"})
         if len(rebuilt) == 1:
             messages = get_initial_messages()
         else:
             messages = rebuilt
 
+        # 3. 尝试从 participant_state 加载存储的消息，并比较是否一致
         state_resp = supabase.table("participant_state").select("*").eq("participant_id", pid).execute()
         if state_resp.data:
             raw = json.loads(state_resp.data[0]["messages"]) if state_resp.data[0]["messages"] else []
@@ -112,6 +121,9 @@ def get_initial_messages():
 
 # ================= 新增：知情同意保存函数 =================
 def save_consent_record(pid):
+    """
+    将知情同意记录写入 consent_records 表
+    """
     if not pid or pid.strip() == "":
         return False
     try:
@@ -126,7 +138,7 @@ def save_consent_record(pid):
         st.error(f"⚠️ 保存同意记录失败：{e}")
         return False
 
-# ================= 4. 方案数据函数（6 个子任务） =================
+# ================= 4. 方案数据函数（6个子任务） =================
 def load_plan(pid):
     try:
         response = supabase.table("research_plans").select("*").eq("participant_id", pid).execute()
@@ -168,7 +180,7 @@ st.set_page_config(page_title="教育实证研究全周期智能协同框架", p
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = ""
 if "messages" not in st.session_state:
-    st.session_state.messages = None
+    st.session_state.messages = None  # 修改为 None，确保第一次加载
 if "round_count" not in st.session_state:
     st.session_state.round_count = 0
 if "prompt_input" not in st.session_state:
@@ -189,6 +201,7 @@ query_params = st.query_params
 if "mode" in query_params and query_params["mode"] == "admin":
     st.session_state.user_role = "研究者"
 else:
+    # 如果已经选择过角色，则保留，否则默认被试
     if st.session_state.user_role is None:
         st.session_state.user_role = "被试"
 
@@ -196,30 +209,18 @@ else:
 st.markdown(
     """
     <style>
-        /* 全局：减少默认留白 */
-        .block-container {
-            padding-top: 0rem !important;
-            padding-bottom: 0.5rem !important;
-            padding-left: 0.8rem !important;
-            padding-right: 0.8rem !important;
-            max-width: 100% !important;
-        }
-
         /* 顶部固定栏 */
         .top-fixed {
             position: sticky;
             top: 0;
             background-color: white;
             z-index: 100;
-            padding: 0.3rem 0.5rem 0.2rem 0.5rem !important;
-            border-bottom: 1px solid #e0e0e0 !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-            margin: 0 !important;
+            padding: 0.2rem 1rem 0.2rem 0.5rem;
+            border-bottom: none !important;
+            box-shadow: none !important;
         }
         .top-fixed .stColumn {
             border-right: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
         }
 
         /* 主布局 */
@@ -246,44 +247,37 @@ st.markdown(
             border: none !important;
         }
 
-        /* 按钮样式 - 移除额外边框 */
+        /* 按钮样式 */
         .stButton button,
         .stForm button[type="submit"] {
-            height: 34px !important;
-            min-height: 34px !important;
-            max-height: 34px !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
             width: 100% !important;
             white-space: nowrap !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            padding: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
             line-height: 1.2 !important;
-            font-size: 13px !important;
+            font-size: 14px !important;
             text-align: center !important;
-            border: none !important;
-            box-shadow: none !important;
-            background: linear-gradient(to bottom, #f8f9fa, #e9ecef) !important;
-        }
-        .stButton button:hover {
-            background: linear-gradient(to bottom, #e9ecef, #dee2e6) !important;
         }
         .stButton {
-            height: 34px !important;
+            height: 38px !important;
             display: flex !important;
             align-items: center !important;
-            margin: 0 !important;
-            padding: 0 !important;
         }
 
         /* 知情同意书卡片样式 */
         .consent-card {
             background: linear-gradient(145deg, #ffffff, #f5f7fa);
-            padding: 20px 25px;
-            border-radius: 12px;
+            padding: 30px 35px;
+            border-radius: 16px;
             border: 1px solid #e0e5ec;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-            margin: 8px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin: 10px 0;
             max-width: 1000px;
             margin-left: auto;
             margin-right: auto;
@@ -292,25 +286,24 @@ st.markdown(
         .consent-card h2 {
             text-align: center;
             color: #1a2a3a;
-            font-size: 22px;
+            font-size: 26px;
             font-weight: 600;
             margin-top: 0;
-            margin-bottom: 14px;
-            border-bottom: 2px solid #4CAF50;
-            padding-bottom: 8px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 12px;
         }
         .consent-card p {
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 15.5px;
+            line-height: 1.7;
             color: #2d3748;
-            margin: 5px 0;
+            margin: 8px 0;
         }
         .consent-card ul {
-            padding-left: 18px;
-            font-size: 14px;
-            line-height: 1.6;
+            padding-left: 22px;
+            font-size: 15.5px;
+            line-height: 1.7;
             color: #2d3748;
-            margin: 5px 0;
         }
         .consent-card .highlight {
             background-color: #f0f8ff;
@@ -321,18 +314,18 @@ st.markdown(
         }
         .consent-card .contact-box {
             background-color: #eaf4eb;
-            padding: 8px 12px;
-            border-radius: 6px;
-            border-left: 3px solid #4CAF50;
-            margin: 8px 0 6px 0;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            margin: 12px 0 8px 0;
         }
         .consent-card .footer-note {
             text-align: center;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 500;
             color: #1a3a5a;
-            margin-top: 14px;
-            padding-top: 10px;
+            margin-top: 20px;
+            padding-top: 16px;
             border-top: 1px dashed #b0c4de;
         }
 
@@ -342,16 +335,23 @@ st.markdown(
             margin-bottom: 1px !important;
         }
         hr {
-            margin-top: 2px !important;
-            margin-bottom: 2px !important;
+            margin-top: 4px !important;
+            margin-bottom: 4px !important;
         }
 
         /* 子任务区域样式 */
         [data-testid="stVerticalBlock"] > .stMarkdown {
-            margin-bottom: 1px !important;
+            margin-bottom: 2px !important;
         }
         [data-testid="stTextArea"] {
-            margin-bottom: 1px !important;
+            margin-bottom: 2px !important;
+        }
+        .task-odd, .task-even {
+            padding: 8px 16px !important;
+            margin-bottom: 4px !important;
+        }
+        .task-odd .stTextArea, .task-even .stTextArea {
+            margin-bottom: 0 !important;
         }
 
         /* 输入框内嵌上传图标 */
@@ -359,16 +359,15 @@ st.markdown(
             position: relative;
         }
         .st-key-input_wrapper textarea {
-            padding-right: 40px !important;
-            padding-bottom: 36px !important;
-            font-size: 13px !important;
+            padding-right: 46px !important;
+            padding-bottom: 42px !important;
         }
         .st-key-input_wrapper [data-testid="stFileUploader"] {
             position: absolute;
-            right: 6px;
-            bottom: 12px;
-            width: 30px;
-            height: 30px;
+            right: 10px;
+            bottom: 18px;
+            width: 34px;
+            height: 34px;
             z-index: 30;
             overflow: hidden;
         }
@@ -381,20 +380,21 @@ st.markdown(
             border: none !important;
             padding: 0 !important;
             margin: 0 !important;
-            min-height: 30px !important;
-            height: 30px !important;
-            width: 30px !important;
+            min-height: 34px !important;
+            height: 34px !important;
+            width: 34px !important;
         }
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] > div:first-child {
             display: none !important;
         }
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button {
-            width: 30px !important;
-            height: 30px !important;
-            min-height: 30px !important;
+            width: 34px !important;
+            height: 34px !important;
+            min-height: 34px !important;
             padding: 0 !important;
             border-radius: 50% !important;
             background-color: transparent !important;
+            background: transparent !important;
             border: none !important;
             box-shadow: none !important;
             color: transparent !important;
@@ -405,7 +405,7 @@ st.markdown(
         }
         .st-key-input_wrapper [data-testid="stFileUploaderDropzone"] button::after {
             content: "📎";
-            font-size: 14px;
+            font-size: 15px;
             color: #333;
             position: absolute;
             top: 50%;
@@ -418,126 +418,114 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ========== 左右两栏视觉区分 ========== */
-        
-        /* 主容器间距 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] {
-            align-items: stretch !important;
-            height: auto !important;
-            overflow: visible !important;
-            gap: 10px !important;
-        }
-        
-        /* 左侧聊天区：浅蓝色背景 + 边框 + 圆角 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
-            background: linear-gradient(145deg, #f8fafc, #f0f4f8) !important;
-            border: 1px solid #c5d5e4 !important;
-            border-radius: 10px !important;
-            padding: 10px !important;
-            box-shadow: 0 2px 6px rgba(100, 130, 160, 0.06) !important;
-            max-height: calc(100vh - 110px) !important;
-            overflow-y: auto !important;
-        }
-        
-        /* 右侧方案区：浅米色背景 + 边框 + 圆角 + 绿色强调线 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
-            background: linear-gradient(145deg, #fefcf8, #faf8f0) !important;
-            border: 1px solid #e4d5c5 !important;
-            border-radius: 10px !important;
-            padding: 10px !important;
-            box-shadow: 0 2px 6px rgba(160, 130, 100, 0.06) !important;
-            border-left: 3px solid #4CAF50 !important;
-            max-height: calc(100vh - 110px) !important;
-            overflow-y: auto !important;
-        }
-        
-        /* 左侧标题栏样式 - 蓝色 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child [data-testid="stSubheader"] {
-            color: #1a5276 !important;
-            border-bottom: 2px solid #4a90d9 !important;
-            padding-bottom: 5px !important;
-            margin-bottom: 6px !important;
-            font-size: 15px !important;
-            font-weight: 600 !important;
-        }
-        
-        /* 右侧标题栏样式 - 棕色/金色 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child [data-testid="stSubheader"] {
-            color: #5a4a1a !important;
-            border-bottom: 2px solid #d9a04a !important;
-            padding-bottom: 5px !important;
-            margin-bottom: 6px !important;
-            font-size: 15px !important;
-            font-weight: 600 !important;
+        /* ========== 左侧聊天区域样式 ========== */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px);
+            position: relative;
         }
 
-        /* 滚动条样式 */
+        .messages-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+            margin-bottom: 10px;
+        }
+
+        .input-container {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding-top: 10px;
+            border-top: 1px solid #e2e5ea;
+            z-index: 10;
+        }
+
+        .st-key-unified_chat_box {
+            border: 1px solid #e2e5ea;
+            border-radius: 14px;
+            background-color: #fafbfc;
+            padding: 16px 18px;
+            margin-bottom: 4px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .st-key-unified_chat_box [data-testid="stChatMessage"] {
+            margin-bottom: 6px !important;
+        }
+
+        /* 左右两栏高度控制 */
+        .st-key-main_row [data-testid="stHorizontalBlock"] {
+            align-items: flex-start !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn {
+            max-height: calc(100vh - 180px) !important;
+            overflow-y: auto !important;
+            padding: 10px !important;
+        }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:first-child {
+            padding-right: 14px !important;
+        }
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child {
+            border-left: 1px solid #ddd;
+            padding-left: 14px !important;
+            background-color: transparent !important;
+        }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar {
-            width: 5px;
+            width: 6px;
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-track {
             background: #f1f1f1;
-            border-radius: 3px;
+            border-radius: 5px;
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-thumb {
-            background: #aaa;
-            border-radius: 3px;
+            background: #888;
+            border-radius: 5px;
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn::-webkit-scrollbar-thumb:hover {
-            background: #888;
+            background: #555;
         }
 
-        /* 全局滚动条样式 */
+        /* 滚动条样式 */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
-            border-radius: 3px;
+            border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #aaa;
-            border-radius: 3px;
+            background: #888;
+            border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #888;
+            background: #555;
         }
-
         /* 右侧方案区：输入框 label 与输入内容字号 */
         [data-testid="stTextArea"] label p {
-            font-size: 13px !important;
+            font-size: 16px !important;
             font-weight: 600 !important;
-            margin-bottom: 2px !important;
         }
         [data-testid="stTextArea"] textarea {
-            font-size: 13px !important;
+            font-size: 16px !important;
+        }
+        /* 右侧方案区：markdown 小标题字号 */
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child [data-testid="stMarkdownContainer"] p {
+            font-size: 16px !important;
         }
 
         /* ========== 子任务输入框背景色（按 key 定位） ========== */
-        .st-key-task1_text textarea { background-color: #e6f3ff !important; }
-        .st-key-task2_text textarea { background-color: #f5e6ff !important; }
-        .st-key-task3_text textarea { background-color: #e6f3ff !important; }
-        .st-key-task4_text textarea { background-color: #f5e6ff !important; }
-        .st-key-task5_text textarea { background-color: #e6f3ff !important; }
-        .st-key-task6_text textarea { background-color: #f5e6ff !important; }
-        
-        /* 底部退出按钮区域 */
-        .exit-section {
-            margin: 2px 0 0 0 !important;
-            padding: 0 !important;
-        }
-        
-        /* 修复提交按钮区域的空列 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child [data-testid="stHorizontalBlock"] {
-            gap: 4px !important;
-        }
-        
-        /* 确保提交按钮区域没有多余边框 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child [data-testid="stHorizontalBlock"] > div.stColumn {
-            border: none !important;
-            box-shadow: none !important;
-            background: transparent !important;
-        }
+        .st-key-task1_text textarea { background-color: #e6f3ff; }
+        .st-key-task2_text textarea { background-color: #f5e6ff; }
+        .st-key-task3_text textarea { background-color: #e6f3ff; }
+        .st-key-task4_text textarea { background-color: #f5e6ff; }
+        .st-key-task5_text textarea { background-color: #e6f3ff; }
+        .st-key-task6_text textarea { background-color: #f5e6ff; }
     </style>
     """,
     unsafe_allow_html=True
@@ -548,8 +536,8 @@ st.markdown('<div class="top-fixed">', unsafe_allow_html=True)
 st.markdown(
     """
     <div style="text-align: center;">
-        <h1 style="font-size: 20px; margin: 0; padding: 0; line-height: 1.3;">🎓 教育实证研究全周期智能协同框架</h1>
-        <p style="font-size: 11px; color: #555; margin: 2px 0 0 0; padding: 0;">ICFER - Intelligent Collaborative Framework for Empirical Research in Education</p>
+        <h1 style="font-size: 36px; margin-bottom: 0;">🎓 教育实证研究全周期智能协同框架</h1>
+        <p style="font-size: 20px; color: #555; margin-top: 4px;">Intelligent Collaborative Framework for Empirical Research in Education (ICFER)</p>
     </div>
     """,
     unsafe_allow_html=True
@@ -558,11 +546,12 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= 8. 根据角色显示内容 =================
 if st.session_state.user_role == "研究者":
+    # ---------- 研究者模式 ----------
     col_space1, col_center, col_space2 = st.columns([1, 2, 1])
     with col_center:
-        st.markdown("<h3 style='text-align: center; margin: 5px 0; font-size: 15px;'>📊 研究者数据导出</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center;'>📊 研究者数据导出</h3>", unsafe_allow_html=True)
         st.markdown(
-            "<p style='text-align: center; margin: 0 0 5px 0; font-size: 12px;'>请输入研究者密码以查看并下载数据</p>",
+            "<p style='text-align: center;'>请输入研究者密码以查看并下载数据</p>",
             unsafe_allow_html=True
         )
         if not st.session_state.export_authorized:
@@ -615,6 +604,7 @@ if st.session_state.user_role == "研究者":
                     )
             except Exception as e:
                 st.error(f"读取方案数据失败：{e}")
+            # 下载知情同意记录
             try:
                 response_consent = supabase.table("consent_records").select("*").execute()
                 if response_consent.data:
@@ -636,14 +626,17 @@ if st.session_state.user_role == "研究者":
                 st.rerun()
 
 else:
+    # ---------- 被试模式 ----------
+
     # 【1】检查实验是否已完成
     if st.session_state.experiment_completed:
         st.markdown(
             """
-            <div style="text-align: center; padding: 25px 20px;">
-                <h2 style="color: #4CAF50; margin: 0 0 6px 0; font-size: 18px;">✅ 方案已提交成功！实验已完成！</h2>
-                <p style="font-size: 14px; margin: 3px 0;">感谢您参与本次研究！您的数据已成功保存。</p>
-                <p style="font-size: 12px; color: #666; margin: 3px 0;">您现在可以关闭此页面，或点击下方按钮返回首页。</p>
+            <div style="text-align: center; padding: 40px 20px;">
+                <h2 style="color: #4CAF50;">✅ 方案已提交成功！实验已完成！</h2>
+                <p style="font-size: 18px;">感谢您参与本次研究！您的数据已成功保存。</p>
+                <p style="font-size: 16px; color: #666;">您现在可以关闭此页面，或点击下方按钮返回首页。</p>
+                <br>
             </div>
             """,
             unsafe_allow_html=True
@@ -664,8 +657,8 @@ else:
     if not st.session_state.participant_id:
         st.markdown(
             """
-            <div style="text-align: center; padding: 35px 20px;">   
-                <p style="font-size: 15px; color: #555; margin-bottom: 15px;">👤 欢迎参与研究！请输入研究者分配给您的编号以开始实验。输入编号后，您将阅读并签署知情同意书。</p>
+            <div style="text-align: center; padding: 20px 20px;">   
+                <p style="font-size: 18px; color: #555; margin-bottom: 30px;">👤 欢迎参与研究！请输入研究者分配给您的编号以开始实验。输入编号后，您将阅读并签署知情同意书。</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -680,14 +673,16 @@ else:
             )
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
+                # 立即加载历史数据
                 st.session_state.messages, st.session_state.round_count = load_participant_state(st.session_state.participant_id)
                 st.rerun()
         st.stop()
 
     # 【3】再检查是否已同意
     if not st.session_state.consent_given:
+        # 显示当前参与者编号
         st.markdown(
-            "<p style='text-align: center; font-size: 13px; color: #555; margin: 2px 0 5px 0;'>"
+            "<p style='text-align: center; font-size: 16px; color: #555;'>"
             f"当前参与者编号：<strong>{st.session_state.participant_id}</strong>"
             "</p>",
             unsafe_allow_html=True
@@ -697,17 +692,17 @@ else:
             """
             <div class="consent-card">
                 <h2>📋 知情同意书</h2>
-                <p style="text-align:center; color:#888; font-size:11px; margin:0 0 6px 0;">版本号：v1.0_ICFER_2026 | 生效日期：2026-09-20</p>
+                <p style="text-align:center; color:#888; font-size:13px; margin-top:-10px;">版本号：v1.0_ICFER_2026　|　生效日期：2026-09-20</p>
                 <p><strong>研究主题：人工智能辅助教育研究的特征与机制研究</strong></p>
-                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您已完成本研究的问卷阶段。本页为研究第二阶段的补充知情说明，请您阅读后决定是否继续参与人机交互任务。</p>
+                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您已完成本研究的问卷阶段。本页为研究第二阶段的补充知情说明，请您阅读后决定是否继续参与人机交互任务。</p>
 <p><strong></strong><br</p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击"同意"按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尊敬的参与者，您好！我们是陕西师范大学教育学部的科研团队，诚挚地邀请您参与我们的研究项目。在您点击"同意"按钮之前，请务必仔细阅读以下内容，以确保您充分了解本研究的目的、流程、潜在风险与收益，以及您的各项权利。如有任何疑问，欢迎随时与我们联系。</p>
 <p><strong></strong><br</p>
                 <p><strong>一、这项研究是关于什么的？</strong></p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本研究致力于探索教育学及相关专业的硕士、博士研究生在实际科研工作中如何与生成式人工智能（AI）协同工作。我们将通过观察您与 AI 共同完成一项研究设计任务的过程，来分析您的行为模式、思维过程及主观感受。最终，本研究的成果将有助于制定更负责任、更可解释的 AI 使用指南，为高校和相关机构的科研培训提供依据。</p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>本次实验的具体任务</strong>：您将与我们的智能研究助理 <strong>ICFER（教育实证研究全周期智能协同框架，Intelligent Collaborative Framework for Empirical Research in Education）</strong> 进行大约 <strong>100 分钟</strong> 的深度对话。</p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在对话中，您将围绕统一主题 <strong>"人工智能时代的教师教育与教师专业发展研究"</strong>，结合您自身的学科专长（如学科教学、教育技术、教育管理等），从中选定一个具体的研究切入点，并在 ICFER 的辅助下构思并完成一份完整的实证研究设计方案。</p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>特别说明</em>：这项设计任务是实验环节中的一次模拟任务，您所完成的设计方案仅用于本研究分析，不会用于课程评价、科研考核、职称评定或真实学术成果提交。实验中使用的材料均为统一编撰并经过脱敏处理，不要求您提交个人真实论文、未公开数据、评审材料或其他涉及个人、单位及科研保密的信息。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本研究致力于探索教育学及相关专业的硕士、博士研究生在实际科研工作中如何与生成式人工智能（AI）协同工作。我们将通过观察您与 AI 共同完成一项研究设计任务的过程，来分析您的行为模式、思维过程及主观感受。最终，本研究的成果将有助于制定更负责任、更可解释的 AI 使用指南，为高校和相关机构的科研培训提供依据。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>本次实验的具体任务</strong>：您将与我们的智能研究助理 <strong>ICFER（教育实证研究全周期智能协同框架，Intelligent Collaborative Framework for Empirical Research in Education）</strong> 进行大约 <strong>100 分钟</strong> 的深度对话。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在对话中，您将围绕统一主题 <strong>"人工智能时代的教师教育与教师专业发展研究"</strong> ，结合您自身的学科专长（如学科教学、教育技术、教育管理等），从中选定一个具体的研究切入点，并在 ICFER 的辅助下构思并完成一份完整的实证研究设计方案。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>特别说明</em>：这项设计任务是实验环节中的一次模拟任务，您所完成的设计方案仅用于本研究分析，不会用于课程评价、科研考核、职称评定或真实学术成果提交。实验中使用的材料均为统一编撰并经过脱敏处理，不要求您提交个人真实论文、未公开数据、评审材料或其他涉及个人、单位及科研保密的信息。</p>
 <p><strong></strong><br</p>
                 <p><strong>二、参与过程会发生什么？</strong></p>
                 <ul>
@@ -717,7 +712,7 @@ else:
                 </ul>
 <p><strong></strong><br</p>
                 <p><strong>三、我的数据会被怎么处理？安全吗？</strong></p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们深知您学术成果与个人隐私的重要性，并承诺采取最高标准的保护措施。所有数据将严格遵循科研伦理规范进行处理：</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们深知您学术成果与个人隐私的重要性，并承诺采取最高标准的保护措施。所有数据将严格遵循科研伦理规范进行处理：</p>
                 <ul>
                     <li><strong>用途限定</strong>：所有收集的数据<strong>仅用于本项目的学术分析</strong>，不会用于任何商业目的，也不会被用于训练 AI 模型。</li>
                     <li><strong>匿名化处理（去标识化）</strong>：在分析前，所有数据（包括对话日志）都将进行严格的匿名化处理，即删除您的姓名、联系方式、单位等可直接识别您身份的信息。最终公开发表的研究成果中，仅会呈现无法识别个体的引语或任务示例。</li>
@@ -747,7 +742,7 @@ else:
                 </ul>
 <p><strong></strong><br</p>
                 <p><strong>五、我可以随时退出吗？</strong></p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>当然可以。</strong> 参与本研究完全基于您的自愿原则。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>当然可以。</strong> 参与本研究完全基于您的自愿原则。</p>
                 <ul>
                     <li>在实验过程中，如果您感到任何不适或希望终止，可随时点击界面正下方的 <strong>"退出实验"</strong> 按钮。</li>
                     <li>退出后，系统将立即停止数据记录。您已产生的对话日志将不再纳入后续数据分析。若您希望删除已记录的数据，可通过研究负责人邮箱提出，我们将在数据匿名化前为您删除。退出不会对您产生任何不利影响。</li>
@@ -755,12 +750,12 @@ else:
                 </ul>
 <p><strong></strong><br</p>
                 <p><strong>六、研究成果会分享给我吗？</strong></p>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>会的。</strong> 研究结束后，我们承诺在不泄露个人隐私的前提下，通过电子邮件等方式向有需要的参与者分享一份总体研究发现摘要，以及负责任使用 AI 的实践建议。如您希望接收，可通过研究负责人邮箱与我们联系。</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>会的。</strong> 研究结束后，我们承诺在不泄露个人隐私的前提下，通过电子邮件等方式向有需要的参与者分享一份总体研究发现摘要，以及负责任使用 AI 的实践建议。如您希望接收，可通过研究负责人邮箱与我们联系。</p>
 <p><strong></strong><br</p>
                 <p><strong>七、如有疑问可以联系谁？</strong></p>
                 <div class="contact-box">
-                    <p style="margin:0 0 4px 0;">如果您对本次研究有任何疑问、顾虑，或在参与过程中遇到任何问题，欢迎随时联系我们的研究负责人：</p>
-                    <ul style="margin:0; padding-left:16px;">
+                    <p>如果您对本次研究有任何疑问、顾虑，或在参与过程中遇到任何问题，欢迎随时联系我们的研究负责人：</p>
+                    <ul>
                         <li><strong>研究负责人</strong>：周榕 副教授（陕西师范大学教育学部）</li>
                         <li><strong>联系邮箱</strong>：rzhou@snnu.edu.cn</li>
                         <li><strong>联系电话</strong>：13309296061</li>
@@ -777,7 +772,7 @@ else:
         with col_center_btn:
             if st.button("✅ 我同意并参与实验", use_container_width=True):
                 st.session_state.consent_given = True
-                save_consent_record(st.session_state.participant_id)
+                save_consent_record(st.session_state.participant_id)  # 保存同意记录
                 st.rerun()
         st.stop()
 
@@ -821,14 +816,16 @@ else:
             st.session_state.round_count = loaded_round
 
         with st.container(key="main_row"):
-            col_left, col_right = st.columns([50, 50], gap="small")
+            col_left, col_right = st.columns([50, 50], gap="large")
             with col_left:
                 st.subheader("💬 研究人机交互区")
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
 
+                # 使用新的聊天容器结构
                 with st.container():
-                    with st.container(height=480, border=False):
+                    # 聊天消息区域（可滚动）
+                    with st.container(height=500, border=False):
                         has_dialogue = False
                         for msg in st.session_state.messages:
                             if msg["role"] == "system":
@@ -841,12 +838,13 @@ else:
                         if not has_dialogue:
                             st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
 
+                    # 输入区域（固定在底部）
                     with st.container():
                         with st.form(key="prompt_form", clear_on_submit=True):
                             with st.container(key="input_wrapper"):
                                 user_input = st.text_area(
                                     "在这里输入您的提示词 (Prompt)：",
-                                    height=90,
+                                    height=150,
                                     key="prompt_input",
                                     label_visibility="collapsed",
                                     placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
@@ -861,7 +859,7 @@ else:
                             if uploaded_file is not None:
                                 st.caption(f"📎 已附加文档：{uploaded_file.name}")
 
-                            st.markdown("👇 **请选择提交行为：**")
+                            st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
                             col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                             clicked_behavior = None
                             if col_b1.form_submit_button("获取基础信息"):
@@ -950,73 +948,71 @@ else:
             with col_right:
                 st.subheader("📝 研究方案填写区")
                 existing_plan = load_plan(st.session_state.participant_id)
-                st.markdown("**AI 协同研究方案撰写**")
-                st.caption("任务共分为 6 个递进环节，请根据您与 AI 的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
+                st.markdown("**AI协同研究方案撰写**")
+                st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
                 with st.form(key="plan_form"):
-                    st.markdown("**子任务 1：选题与文献发现**")
-                    st.markdown("可围绕后面内容进行填写：1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议 150 字左右）")
+                    st.markdown("**子任务1：选题与文献发现**")
+                    st.markdown("可围绕后面内容进行填写：1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）")
                     task1_text = st.text_area(
                         "填写区",
                         value=existing_plan["task1_text"] if existing_plan else "",
-                        height=120,
+                        height=160,
                         key="task1_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务 2：研究规划与设计**")
-                    st.markdown("可围绕后面内容进行填写：1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议 150 字左右）")
+                    st.markdown("**子任务2：研究规划与设计**")
+                    st.markdown("可围绕后面内容进行填写：1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）")
                     task2_text = st.text_area(
                         "填写区",
                         value=existing_plan["task2_text"] if existing_plan else "",
-                        height=120,
+                        height=160,
                         key="task2_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务 3：实施与数据采集**")
-                    st.markdown("可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议 150 字左右）")
+                    st.markdown("**子任务3：实施与数据采集**")
+                    st.markdown("可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）")
                     task3_text = st.text_area(
                         "填写区",
                         value=existing_plan["task3_text"] if existing_plan else "",
-                        height=120,
+                        height=160,
                         key="task3_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务 4：数据分析与阐释**")
-                    st.markdown("可围绕后面内容进行填写：1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议 150 字左右）")
+                    st.markdown("**子任务4：数据分析与阐释**")
+                    st.markdown("可围绕后面内容进行填写：1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）")
                     task4_text = st.text_area(
                         "填写区",
                         value=existing_plan["task4_text"] if existing_plan else "",
-                        height=120,
+                        height=160,
                         key="task4_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务 5：论文撰写与润色**")
-                    st.markdown("可围绕后面内容进行填写：1.研究的创新点（2-3 项）；2.研究存在的不足（2-3 项）。（建议 300-500 字左右）")
+                    st.markdown("**子任务5：论文撰写与润色**")
+                    st.markdown("可围绕后面内容进行填写：1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）")
                     task5_text = st.text_area(
                         "填写区",
                         value=existing_plan["task5_text"] if existing_plan else "",
-                        height=200,
+                        height=300,
                         key="task5_text",
                         label_visibility="collapsed"
                     )
                     st.divider()
-                    st.markdown("**子任务 6：传播、评估与伦理**")
-                    st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI 使用披露等）。（建议 150 字左右）")
+                    st.markdown("**子任务6：传播、评估与伦理**")
+                    st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
                     task6_text = st.text_area(
                         "填写区",
                         value=existing_plan["task6_text"] if existing_plan else "",
-                        height=120,
+                        height=160,
                         key="task6_text",
                         label_visibility="collapsed"
                     )
-                    # 修复：移除空列，直接显示提交按钮
-                    st.markdown("<div style='text-align: right; margin-top: 8px;'>", unsafe_allow_html=True)
-                    submitted = st.form_submit_button("📤 提交方案", use_container_width=False)
-                    st.markdown("</div>", unsafe_allow_html=True)
-                    
+                    col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
+                    with col_submit_btn_right:
+                        submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
                     if submitted:
                         if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
                                     task4_text.strip(), task5_text.strip(), task6_text.strip()]):
@@ -1036,11 +1032,9 @@ else:
                         else:
                             st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
 
-        st.markdown('<div class="exit-section">', unsafe_allow_html=True)
         st.divider()
         col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
         with col_exit_center:
             if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
                 st.session_state.show_exit_dialog = True
                 st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
