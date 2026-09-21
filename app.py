@@ -428,10 +428,6 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ==================================================
-           主实验左右双栏
-           只选择同时包含左右两个 h3 标题的最外层横向布局
-           ================================================== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3) {
             align-items: flex-start !important;
@@ -486,7 +482,6 @@ st.markdown(
             background: #7b8794;
         }
 
-        /* 内部嵌套列保护 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]
         [data-testid="stHorizontalBlock"]
@@ -587,7 +582,9 @@ if st.session_state.user_role == "研究者":
                 if response.data:
                     df = pd.DataFrame(response.data)
                     csv_data = df.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(label="📥 下载交互日志", data=csv_data.encode('utf-8-sig'), file_name="research_logs.csv", mime="text/csv", key="dl_logs", use_container_width=True)
+                    c1, c2, c3 = st.columns([4, 1, 4])
+                    with c2:
+                        st.download_button(label="📥 下载交互日志", data=csv_data.encode('utf-8-sig'), file_name="research_logs.csv", mime="text/csv", key="dl_logs", use_container_width=True)
             except Exception as e:
                 st.error(f"读取交互数据失败：{e}")
             try:
@@ -595,7 +592,9 @@ if st.session_state.user_role == "研究者":
                 if response_plan.data:
                     df_plan = pd.DataFrame(response_plan.data)
                     csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(label="📥 下载方案数据", data=csv_plan.encode('utf-8-sig'), file_name="research_plans.csv", mime="text/csv", key="dl_plans", use_container_width=True)
+                    c1, c2, c3 = st.columns([4, 1, 4])
+                    with c2:
+                        st.download_button(label="📥 下载方案数据", data=csv_plan.encode('utf-8-sig'), file_name="research_plans.csv", mime="text/csv", key="dl_plans", use_container_width=True)
             except Exception as e:
                 st.error(f"读取方案数据失败：{e}")
             try:
@@ -603,13 +602,17 @@ if st.session_state.user_role == "研究者":
                 if response_consent.data:
                     df_consent = pd.DataFrame(response_consent.data)
                     csv_consent = df_consent.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(label="📥 下载知情同意记录", data=csv_consent.encode('utf-8-sig'), file_name="consent_records.csv", mime="text/csv", key="dl_consent", use_container_width=True)
+                    c1, c2, c3 = st.columns([4, 1, 4])
+                    with c2:
+                        st.download_button(label="📥 下载知情同意记录", data=csv_consent.encode('utf-8-sig'), file_name="consent_records.csv", mime="text/csv", key="dl_consent", use_container_width=True)
             except Exception as e:
                 st.warning(f"读取同意记录失败：{e}")
-            if st.button("退出研究者模式", use_container_width=True):
-                st.session_state.export_authorized = False
-                st.query_params.clear()
-                st.rerun()
+            c1, c2, c3 = st.columns([4, 1, 4])
+            with c2:
+                if st.button("退出研究者模式", use_container_width=True):
+                    st.session_state.export_authorized = False
+                    st.query_params.clear()
+                    st.rerun()
 else:
     if st.session_state.experiment_completed:
         st.markdown(
@@ -749,9 +752,9 @@ else:
 
     if st.session_state.show_exit_dialog:
         st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
-        col_confirm1, col_confirm2 = st.columns(2)
-        with col_confirm1:
-            if st.button("确认退出", key="confirm_exit_yes"):
+        col_l, col_yes, col_no, col_r = st.columns([4, 1, 1, 4])
+        with col_yes:
+            if st.button("确认退出", key="confirm_exit_yes", use_container_width=True):
                 exit_log = {
                     "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "participant_id": st.session_state.participant_id,
@@ -772,8 +775,8 @@ else:
                 st.session_state.show_exit_dialog = False
                 st.session_state.experiment_completed = False
                 st.rerun()
-        with col_confirm2:
-            if st.button("取消", key="confirm_exit_no"):
+        with col_no:
+            if st.button("取消", key="confirm_exit_no", use_container_width=True):
                 st.session_state.show_exit_dialog = False
                 st.rerun()
         st.stop()
