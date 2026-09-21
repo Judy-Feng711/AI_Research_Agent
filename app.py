@@ -507,15 +507,16 @@ st.markdown(
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        /* 右侧方案填写区：标题与输入框 label 字体统一放大 */
-        .st-key-plan_form [data-testid="stMarkdownContainer"] p {
-            font-size: 16px !important;
-        }
-        .st-key-plan_form [data-testid="stTextArea"] label p {
+        /* 右侧方案区：输入框 label 与输入内容字号 */
+        [data-testid="stTextArea"] label p {
             font-size: 16px !important;
             font-weight: 600 !important;
         }
-        .st-key-plan_form textarea {
+        [data-testid="stTextArea"] textarea {
+            font-size: 16px !important;
+        }
+        /* 右侧方案区：markdown 小标题字号 */
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child [data-testid="stMarkdownContainer"] p {
             font-size: 16px !important;
         }
     </style>
