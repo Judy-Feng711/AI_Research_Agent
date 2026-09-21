@@ -797,7 +797,7 @@ else:
             st.session_state.round_count = loaded_round
 
         with st.container(key="main_row"):
-            col_left, col_right = st.columns([55, 45], gap="large")
+            col_left, col_right = st.columns([50, 50], gap="large")
             with col_left:
                 st.subheader("💬 研究人机交互区")
                 st.markdown("**AI 学术助手对话**")
