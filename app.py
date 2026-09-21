@@ -248,21 +248,35 @@ st.markdown(
         }
 
         /* 按钮样式 */
+         /* ========== 五个行为按钮 + 提交方案：统一字号 ========== */
+        .stButton button,
+        .stButton button p,
+        .stButton button div,
+        .stButton button span,
+        .stForm button[type="submit"],
+        .stForm button[type="submit"] p,
+        .stForm button[type="submit"] div,
+        .stForm button[type="submit"] span {
+            font-size: 14px !important;
+            line-height: 1.2 !important;
+            white-space: nowrap !important;
+        }
         .stButton button,
         .stForm button[type="submit"] {
             height: 38px !important;
             min-height: 38px !important;
             max-height: 38px !important;
             width: 100% !important;
-            white-space: nowrap !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            line-height: 1.2 !important;
-            font-size: 14px !important;
+            padding: 0 4px !important;
             text-align: center !important;
+        }
+        .stButton {
+            height: 38px !important;
+            display: flex !important;
+            align-items: center !important;
         }
         .stButton {
             height: 38px !important;
