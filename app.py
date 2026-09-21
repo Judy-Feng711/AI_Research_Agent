@@ -243,13 +243,11 @@ st.markdown(
             content: none !important;
             display: none !important;
         }
-        [data-testid="stHorizontalBlock"] .stColumn .stButton {
-            border: none !important;
-        }
 
-        /* 按钮样式 */
-        .stButton button,
-        .stForm button[type="submit"] {
+        /* ========== 按钮统一风格 ========== */
+        .stButton > button,
+        .stForm button[type="submit"],
+        .stDownloadButton > button {
             height: 38px !important;
             min-height: 38px !important;
             max-height: 38px !important;
@@ -258,11 +256,21 @@ st.markdown(
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
+            padding: 0 12px !important;
             line-height: 1.2 !important;
             font-size: 14px !important;
             text-align: center !important;
+            border: 1px solid #d0d7de !important;
+            border-radius: 8px !important;
+            background-color: #f6f8fa !important;
+            color: #24292f !important;
+            box-shadow: none !important;
+        }
+        .stButton > button:hover,
+        .stForm button[type="submit"]:hover,
+        .stDownloadButton > button:hover {
+            background-color: #eef1f4 !important;
+            border-color: #b8c0c8 !important;
         }
         .stButton {
             height: 38px !important;
@@ -537,17 +545,6 @@ st.markdown(
             padding: 18px !important;
             margin-left: 12px !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-        }
-        /* 兜底：确保左右栏内的按钮不被卡片边框"串到" */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stButton,
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stButton button,
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stForm button,
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stDownloadButton button {
-            border: none !important;
-            border-right: none !important;
-            border-left: none !important;
-            border-top: none !important;
-            border-bottom: none !important;
         }
     </style>
     """,
