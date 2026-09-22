@@ -548,6 +548,27 @@ st.markdown(
         .st-key-task4_text textarea { background-color: #f5e6ff; }
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
+        /* 五个行为按钮的文字样式完全统一 */
+        .st-key-main_row
+        .stForm
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:nth-child(5))
+        button[type="submit"],
+        .st-key-main_row
+        .stForm
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:nth-child(5))
+        button[type="submit"] p,
+        .st-key-main_row
+        .stForm
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:nth-child(5))
+        button[type="submit"] span {
+            font-family: inherit !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.2 !important;
+            letter-spacing: normal !important;
+            white-space: nowrap !important;
+            text-overflow: clip !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
