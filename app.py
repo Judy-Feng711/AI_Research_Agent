@@ -566,7 +566,7 @@ st.markdown(
             white-space: nowrap !important;
         }
         [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {
-            font-size: 15px !important;
+            font-size: 16px !important;
             line-height: 1.6 !important;
         }
         [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] h1 {
