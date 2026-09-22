@@ -91,6 +91,9 @@ def save_participant_state(pid, messages, round_count):
         "messages": json.dumps(messages, ensure_ascii=False),
         "updated_at": datetime.datetime.now().isoformat()
     }
+    # 如果 session_state 里有开始时间，一并写入，保证跨刷新保留
+    if st.session_state.get("experiment_start_time"):
+        data["experiment_start_time"] = st.session_state.experiment_start_time
     try:
         supabase.table("participant_state").upsert(data, on_conflict="participant_id").execute()
         return True
@@ -103,6 +106,28 @@ def get_initial_messages():
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "assistant", "content": INITIAL_GREETING}
     ]
+
+def load_experiment_start_time(pid):
+    """从 participant_state 表读取该被试的实验开始时间"""
+    try:
+        resp = supabase.table("participant_state").select("experiment_start_time").eq("participant_id", pid).execute()
+        if resp.data and resp.data[0].get("experiment_start_time"):
+            return resp.data[0]["experiment_start_time"]
+    except Exception:
+        pass
+    return None
+
+def save_experiment_start_time(pid, start_time_iso):
+    """把实验开始时间写入 participant_state 表"""
+    try:
+        supabase.table("participant_state").upsert(
+            {"participant_id": pid, "experiment_start_time": start_time_iso},
+            on_conflict="participant_id"
+        ).execute()
+        return True
+    except Exception as e:
+        st.error(f"开始时间保存失败：{e}")
+        return False
 
 CONSENT_TEXT = """研究主题：人工智能辅助教育研究的特征与机制研究
 
@@ -207,6 +232,10 @@ if "user_role" not in st.session_state:
     st.session_state.user_role = None
 if "export_authorized" not in st.session_state:
     st.session_state.export_authorized = False
+if "experiment_start_time" not in st.session_state:
+    st.session_state.experiment_start_time = None
+if "time_reminder_shown" not in st.session_state:
+    st.session_state.time_reminder_shown = False
 
 query_params = st.query_params
 if "mode" in query_params and query_params["mode"] == "admin":
@@ -548,8 +577,6 @@ st.markdown(
         .st-key-task4_text textarea { background-color: #f5e6ff; }
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
-        /* 五个行为按钮的文字样式完全统一 */
-        /* 强制第4、第5个行为按钮文字样式一致 */
         .st-key-btn_rebuild_plan button,
         .st-key-btn_expand_idea button,
         .st-key-btn_rebuild_plan button p,
@@ -672,6 +699,8 @@ else:
                 st.session_state.round_count = 0
                 st.session_state.show_exit_dialog = False
                 st.session_state.experiment_completed = False
+                st.session_state.experiment_start_time = None
+                st.session_state.time_reminder_shown = False
                 st.rerun()
         st.stop()
 
@@ -690,6 +719,10 @@ else:
             if pid_input and pid_input.strip():
                 st.session_state.participant_id = pid_input.strip()
                 st.session_state.messages, st.session_state.round_count = load_participant_state(st.session_state.participant_id)
+                # 从数据库读取该被试的已有开始时间（跨刷新累计）
+                existing_start = load_experiment_start_time(st.session_state.participant_id)
+                if existing_start:
+                    st.session_state.experiment_start_time = existing_start
                 st.rerun()
         st.stop()
 
@@ -813,6 +846,8 @@ else:
                 st.session_state.round_count = 0
                 st.session_state.show_exit_dialog = False
                 st.session_state.experiment_completed = False
+                st.session_state.experiment_start_time = None
+                st.session_state.time_reminder_shown = False
                 st.rerun()
         with col_no:
             if st.button("取消", key="confirm_exit_no", use_container_width=True):
@@ -825,6 +860,34 @@ else:
             loaded_msgs, loaded_round = load_participant_state(st.session_state.participant_id)
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
+
+        # ========== 时间提醒逻辑（跨刷新累计） ==========
+        # 如果 session_state 里没有开始时间，尝试从数据库读
+        if st.session_state.experiment_start_time is None:
+            db_start = load_experiment_start_time(st.session_state.participant_id)
+            if db_start:
+                st.session_state.experiment_start_time = db_start
+
+        # 如果数据库也没有 → 这是第一次进入，记录当前时间为开始时间，并写入数据库
+        if st.session_state.experiment_start_time is None:
+            now_iso = datetime.datetime.now().isoformat()
+            st.session_state.experiment_start_time = now_iso
+            save_experiment_start_time(st.session_state.participant_id, now_iso)
+
+        # 计算已用分钟数
+        try:
+            start_dt = datetime.datetime.fromisoformat(st.session_state.experiment_start_time)
+            elapsed_minutes = (datetime.datetime.now() - start_dt).total_seconds() / 60
+        except Exception:
+            elapsed_minutes = 0
+
+        # 时间阈值：测试用 1 分钟；正式改成 90
+        REMINDER_THRESHOLD_MINUTES = 1
+
+        if elapsed_minutes >= REMINDER_THRESHOLD_MINUTES and not st.session_state.time_reminder_shown:
+            st.warning("⏰ 提示：您已进行约 90 分钟。请合理安排剩余时间。")
+            st.session_state.time_reminder_shown = True
+        # ========== 时间提醒逻辑结束 ==========
 
         with st.container(key="main_row"):
             col_left, col_right = st.columns([50, 50], gap="large")
