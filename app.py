@@ -592,7 +592,7 @@ if st.session_state.user_role == "研究者":
                 if response_plan.data:
                     df_plan = pd.DataFrame(response_plan.data)
                     csv_plan = df_plan.to_csv(index=False, encoding='utf-8-sig')
-                    c1, c2, c3 = st.columns([4, 1, 4])
+                    c1, c2, c3 = st.columns([7, 4, 7])
                     with c2:
                         st.download_button(label="📥 下载方案数据", data=csv_plan.encode('utf-8-sig'), file_name="research_plans.csv", mime="text/csv", key="dl_plans", use_container_width=True)
             except Exception as e:
@@ -602,12 +602,12 @@ if st.session_state.user_role == "研究者":
                 if response_consent.data:
                     df_consent = pd.DataFrame(response_consent.data)
                     csv_consent = df_consent.to_csv(index=False, encoding='utf-8-sig')
-                    c1, c2, c3 = st.columns([4, 1, 4])
+                    c1, c2, c3 = st.columns([7, 4, 7])
                     with c2:
                         st.download_button(label="📥 下载知情同意记录", data=csv_consent.encode('utf-8-sig'), file_name="consent_records.csv", mime="text/csv", key="dl_consent", use_container_width=True)
             except Exception as e:
                 st.warning(f"读取同意记录失败：{e}")
-            c1, c2, c3 = st.columns([4, 1, 4])
+            c1, c2, c3 = st.columns([7, 4, 7])
             with c2:
                 if st.button("退出研究者模式", use_container_width=True):
                     st.session_state.export_authorized = False
