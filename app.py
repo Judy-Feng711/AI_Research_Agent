@@ -650,7 +650,7 @@ else:
             """,
             unsafe_allow_html=True
         )
-        col_btn_left, col_btn_center, col_btn_right = st.columns([1, 1, 1])
+        col_btn_left, col_btn_center, col_btn_right = st.columns([7, 4, 4])
         with col_btn_center:
             if st.button("🏠 返回首页", use_container_width=True):
                 st.session_state.consent_given = False
