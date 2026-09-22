@@ -775,7 +775,9 @@ else:
         st.stop()
 
     if st.session_state.show_exit_dialog:
-        st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
+        w1, w2, w3 = st.columns([1, 2, 1])
+        with w2:
+            st.warning("您确定要退出实验吗？退出后，您本次实验的所有数据将不会被纳入最终数据分析。")
         col_l, col_yes, col_no, col_r = st.columns([4, 1, 1, 4])
         with col_yes:
             if st.button("确认退出", key="confirm_exit_yes", use_container_width=True):
