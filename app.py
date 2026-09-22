@@ -882,7 +882,7 @@ else:
             elapsed_minutes = 0
 
         # 时间阈值：测试用 1 分钟；正式改成 90
-        REMINDER_THRESHOLD_MINUTES = 1
+        REMINDER_THRESHOLD_MINUTES = 0
 
         if elapsed_minutes >= REMINDER_THRESHOLD_MINUTES and not st.session_state.time_reminder_shown:
             st.toast("⏰ 提示：您已进行约 90 分钟。请合理安排剩余时间。", icon="⏰")
