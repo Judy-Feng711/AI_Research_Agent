@@ -885,7 +885,7 @@ else:
         REMINDER_THRESHOLD_MINUTES = 1
 
         if elapsed_minutes >= REMINDER_THRESHOLD_MINUTES and not st.session_state.time_reminder_shown:
-            st.warning("⏰ 提示：您已进行约 90 分钟。请合理安排剩余时间。")
+            st.toast("⏰ 提示：您已进行约 90 分钟。请合理安排剩余时间。", icon="⏰")
             st.session_state.time_reminder_shown = True
         # ========== 时间提醒逻辑结束 ==========
 
