@@ -565,6 +565,19 @@ st.markdown(
             letter-spacing: 0 !important;
             white-space: nowrap !important;
         }
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+        }
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] h1 {
+            font-size: 20px !important;
+        }
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] h2 {
+            font-size: 18px !important;
+        }
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] h3 {
+            font-size: 16px !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
