@@ -791,7 +791,7 @@ else:
                 }
                 try:
                     supabase.table("research_logs").insert(exit_log).execute()
-                    st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="✅")
+                    st.toast("✅ 已记录退出实验，您的数据将不会被纳入分析。", icon="")
                 except Exception as e:
                     st.error(f"记录退出失败：{e}")
                 st.session_state.consent_given = False
