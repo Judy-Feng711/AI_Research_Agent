@@ -498,12 +498,19 @@ st.markdown(
         .st-key-main_row .stForm button[type="submit"] {
             min-width: 0 !important;
             width: 100% !important;
-            padding-left: 3px !important;
-            padding-right: 3px !important;
+            height: 38px !important;
+            font-size: 13px !important;
+            line-height: 1.2 !important;
+            padding-left: 2px !important;
+            padding-right: 2px !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
         }
         .st-key-main_row .stForm button[type="submit"] p,
         .st-key-main_row .stForm button[type="submit"] span,
         .st-key-main_row .stForm button[type="submit"] div {
+            font-size: 13px !important;
             max-width: none !important;
             overflow: visible !important;
             text-overflow: clip !important;
