@@ -549,25 +549,21 @@ st.markdown(
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
         /* 五个行为按钮的文字样式完全统一 */
-        .st-key-main_row
-        .stForm
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:nth-child(5))
-        button[type="submit"],
-        .st-key-main_row
-        .stForm
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:nth-child(5))
-        button[type="submit"] p,
-        .st-key-main_row
-        .stForm
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:nth-child(5))
-        button[type="submit"] span {
-            font-family: inherit !important;
+        /* 强制第4、第5个行为按钮文字样式一致 */
+        .st-key-btn_rebuild_plan button,
+        .st-key-btn_expand_idea button,
+        .st-key-btn_rebuild_plan button p,
+        .st-key-btn_expand_idea button p,
+        .st-key-btn_rebuild_plan button span,
+        .st-key-btn_expand_idea button span,
+        .st-key-btn_rebuild_plan button div,
+        .st-key-btn_expand_idea button div {
+            font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif !important;
             font-size: 14px !important;
             font-weight: 400 !important;
             line-height: 1.2 !important;
-            letter-spacing: normal !important;
+            letter-spacing: 0 !important;
             white-space: nowrap !important;
-            text-overflow: clip !important;
         }
     </style>
     """,
