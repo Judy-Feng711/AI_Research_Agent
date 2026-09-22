@@ -582,7 +582,7 @@ if st.session_state.user_role == "研究者":
                 if response.data:
                     df = pd.DataFrame(response.data)
                     csv_data = df.to_csv(index=False, encoding='utf-8-sig')
-                    c1, c2, c3 = st.columns([4, 1, 4])
+                    c1, c2, c3 = st.columns([7, 4, 7])
                     with c2:
                         st.download_button(label="📥 下载交互日志", data=csv_data.encode('utf-8-sig'), file_name="research_logs.csv", mime="text/csv", key="dl_logs", use_container_width=True)
             except Exception as e:
