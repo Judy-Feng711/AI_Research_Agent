@@ -456,36 +456,43 @@ st.markdown(
             opacity: 0 !important;
         }
 
+        /* ========== 左右大块：灰色边框 + 等高对齐，底边到灰线距离一致 ========== */
+        .st-key-main_row {
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+        }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3) {
-            align-items: flex-start !important;
+            align-items: stretch !important;
             height: auto !important;
             overflow: visible !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn {
+            height: calc(100vh - 180px) !important;
             max-height: calc(100vh - 180px) !important;
+            min-height: calc(100vh - 180px) !important;
             overflow-y: auto !important;
-            padding: 10px !important;
-            border: none !important;
+            overflow-x: hidden !important;
+            padding: 10px 14px 10px 14px !important;
+            border: 1px solid #cfd6e3 !important;
             border-radius: 12px !important;
             box-sizing: border-box !important;
+            margin-bottom: 0 !important;
+            align-self: stretch !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
-            padding-right: 14px !important;
             background-color: #f8fbff !important;
-            box-shadow: 0 2px 8px rgba(21, 101, 192, 0.04) !important;
+            box-shadow: 0 2px 10px rgba(21, 101, 192, 0.07) !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:last-child {
-            padding-left: 14px !important;
             background-color: #f9fdf9 !important;
-            border-left: none !important;
-            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.04) !important;
+            box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
@@ -515,12 +522,15 @@ st.markdown(
         [data-testid="stHorizontalBlock"]
         > div.stColumn {
             max-height: none !important;
+            min-height: 0 !important;
+            height: auto !important;
             overflow: visible !important;
             padding: 0 1px !important;
             background: transparent !important;
             border: none !important;
             border-radius: 0 !important;
             box-shadow: none !important;
+            align-self: auto !important;
         }
 
         .st-key-main_row .stForm button[type="submit"] {
