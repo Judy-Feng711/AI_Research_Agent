@@ -246,16 +246,11 @@ else:
 st.markdown(
     """
     <style>
-        /* ===== 1. 压缩浏览器上下留白 ===== */
-        [data-testid="stHeader"] {
-            height: 0 !important;
-            min-height: 0 !important;
-        }
-        .block-container, [data-testid="stMainBlockContainer"] {
-            padding-top: 0.4rem !important;
-            padding-bottom: 0.3rem !important;
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
+        /* ========== 1. 压缩浏览器最顶端与最底端的内边距 ========== */
+        [data-testid="stAppViewContainer"] > .main .block-container {
+            padding-top: 0.6rem !important;
+            padding-bottom: 0.5rem !important;
+            max-width: 98% !important;
         }
 
         .top-fixed {
@@ -263,18 +258,10 @@ st.markdown(
             top: 0;
             background-color: white;
             z-index: 100;
-            padding: 0.05rem 1rem 0.05rem 0.5rem;
+            padding: 0rem 1rem 0.2rem 0.5rem;
+            margin-top: -10px !important;
             border-bottom: none !important;
             box-shadow: none !important;
-        }
-        .top-fixed h1 {
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-            line-height: 1.15 !important;
-        }
-        .top-fixed p {
-            margin-top: 2px !important;
-            margin-bottom: 2px !important;
         }
         .top-fixed .stColumn {
             border-right: none !important;
@@ -477,43 +464,40 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ===== 2. 左右大块：边框加深 + 强制等高，底边到灰线距离一致 ===== */
-        .st-key-main_row {
-            padding-bottom: 0 !important;
-            margin-bottom: 0 !important;
-        }
+        /* ========== 2. 左右大区块等高拉伸与深色边框设置 ========== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3) {
-            align-items: stretch !important;
+            align-items: stretch !important;  /* 左右拉伸对齐，确保底边高度一致 */
             height: auto !important;
             overflow: visible !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn {
-            height: calc(100vh - 155px) !important;
-            max-height: calc(100vh - 155px) !important;
-            min-height: calc(100vh - 155px) !important;
+            max-height: calc(100vh - 130px) !important;  /* 扩大可视区域，减少上下浪费 */
             overflow-y: auto !important;
-            overflow-x: hidden !important;
-            padding: 10px 14px 6px 14px !important;
-            border: 1px solid #64748b !important;
+            padding: 14px !important;
             border-radius: 12px !important;
             box-sizing: border-box !important;
-            margin-bottom: 0 !important;
-            align-self: stretch !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
+            padding-right: 14px !important;
             background-color: #f8fbff !important;
-            box-shadow: 0 2px 10px rgba(21, 101, 192, 0.07) !important;
+            box-shadow: 0 2px 8px rgba(21, 101, 192, 0.04) !important;
+            border: 1.5px solid #6c7a89 !important;  /* 深灰色边框 */
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:last-child {
+            padding-left: 14px !important;
             background-color: #f9fdf9 !important;
-            box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
+            border: 1.5px solid #6c7a89 !important;  /* 深灰色边框 */
+            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.04) !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
@@ -543,47 +527,21 @@ st.markdown(
         [data-testid="stHorizontalBlock"]
         > div.stColumn {
             max-height: none !important;
-            min-height: 0 !important;
-            height: auto !important;
             overflow: visible !important;
             padding: 0 1px !important;
             background: transparent !important;
             border: none !important;
             border-radius: 0 !important;
             box-shadow: none !important;
-            align-self: auto !important;
         }
 
-        /* ===== 左列内部flex：输入表单贴底，消除表单下方留白 ===== */
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child > div[data-testid="stVerticalBlock"] {
-            height: 100% !important;
-            display: flex !important;
-            flex-direction: column !important;
-            flex: 1 !important;
-        }
-        .st-key-left_chat_wrap {
-            display: flex !important;
-            flex-direction: column !important;
-            flex: 1 !important;
-            min-height: 0 !important;
-        }
-        .st-key-left_form_wrap {
-            margin-top: auto !important;
-            padding-bottom: 0 !important;
-            margin-bottom: 0 !important;
-        }
-        .st-key-main_row .stForm {
-            margin-bottom: 0 !important;
-            padding-bottom: 0 !important;
-        }
-
+        /* 统一表单提交按钮的字体与大小（确保5个行为按钮等大等字号） */
         .st-key-main_row .stForm button[type="submit"] {
             min-width: 0 !important;
             width: 100% !important;
             height: 38px !important;
-            font-size: 13px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
             line-height: 1.2 !important;
             padding-left: 2px !important;
             padding-right: 2px !important;
@@ -594,7 +552,8 @@ st.markdown(
         .st-key-main_row .stForm button[type="submit"] p,
         .st-key-main_row .stForm button[type="submit"] span,
         .st-key-main_row .stForm button[type="submit"] div {
-            font-size: 13px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
             max-width: none !important;
             overflow: visible !important;
             text-overflow: clip !important;
@@ -602,59 +561,44 @@ st.markdown(
             word-break: keep-all !important;
         }
 
-        /* 左侧五个行为按钮统一字号 */
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"],
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] p,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] span,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] div {
-            font-size: 14px !important;
-            font-weight: 500 !important;
-            white-space: nowrap !important;
-            word-break: keep-all !important;
-        }
-
-        /* ===== 3. 右下三按钮依次加深 ===== */
-        .st-key-btn_exit_bottom button {
-            background: #f1f3f5 !important;
-            color: #495057 !important;
-            border: 1px solid #adb5bd !important;
-            font-weight: 500 !important;
-        }
-        .st-key-btn_exit_bottom button:hover {
-            background: #e9ecef !important;
-            border-color: #868e96 !important;
-        }
-        .st-key-btn_temp_save button {
-            background: #e7f1ff !important;
-            color: #1565c0 !important;
-            border: 1px solid #74a9e6 !important;
+        /* ========== 3. 底部三个操作按钮的渐进视觉层级 (Progressive Hierarchy) ========== */
+        /* 退出实验 (警示/弱化): 浅红底 + 红字 + 红边框 */
+        .st-key-box_btn_exit button {
+            background-color: #fef2f2 !important;
+            color: #dc2626 !important;
+            border: 1px solid #fca5a5 !important;
             font-weight: 600 !important;
         }
-        .st-key-btn_temp_save button:hover {
-            background: #d0e4ff !important;
+        .st-key-box_btn_exit button:hover {
+            background-color: #fee2e2 !important;
+            border-color: #f87171 !important;
+            color: #b91c1c !important;
         }
-        .st-key-btn_submit_final button {
-            background: #2e7d32 !important;
+
+        /* 暂存方案 (次要/辅助): 浅绿底 + 绿字 + 绿边框 */
+        .st-key-box_btn_draft button {
+            background-color: #f0fdf4 !important;
+            color: #166534 !important;
+            border: 1px solid #86efac !important;
+            font-weight: 600 !important;
+        }
+        .st-key-box_btn_draft button:hover {
+            background-color: #dcfce7 !important;
+            border-color: #4ade80 !important;
+            color: #14532d !important;
+        }
+
+        /* 提交方案 (主要/焦点): 纯深绿实心底 + 纯白粗体字 */
+        .st-key-box_btn_submit button {
+            background-color: #2e7d32 !important;
             color: #ffffff !important;
-            border: 1px solid #2e7d32 !important;
+            border: 1px solid #1b5e20 !important;
             font-weight: 700 !important;
         }
-        .st-key-btn_submit_final button:hover {
-            background: #1b5e20 !important;
-            border-color: #1b5e20 !important;
-        }
-        .st-key-btn_exit_bottom button p, .st-key-btn_exit_bottom button span,
-        .st-key-btn_temp_save button p, .st-key-btn_temp_save button span,
-        .st-key-btn_submit_final button p, .st-key-btn_submit_final button span {
-            font-size: 14px !important;
+        .st-key-box_btn_submit button:hover {
+            background-color: #1b5e20 !important;
+            border-color: #0d3c10 !important;
+            color: #ffffff !important;
         }
 
         ::-webkit-scrollbar {
@@ -687,6 +631,21 @@ st.markdown(
         .st-key-task4_text textarea { background-color: #f5e6ff; }
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
+        .st-key-btn_rebuild_plan button,
+        .st-key-btn_expand_idea button,
+        .st-key-btn_rebuild_plan button p,
+        .st-key-btn_expand_idea button p,
+        .st-key-btn_rebuild_plan button span,
+        .st-key-btn_expand_idea button span,
+        .st-key-btn_rebuild_plan button div,
+        .st-key-btn_expand_idea button div {
+            font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.2 !important;
+            letter-spacing: 0 !important;
+            white-space: nowrap !important;
+        }
         [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {
             font-size: 16px !important;
             line-height: 1.6 !important;
@@ -701,12 +660,13 @@ st.markdown(
             font-size: 16px !important;
         }
 
+        /* ========== 时间提醒横幅样式 ========== */
         .time-reminder-banner {
             background-color: #fff4e5;
             border: 2px solid #ff9800;
             border-radius: 12px;
-            padding: 10px 24px;
-            margin: 4px auto 8px auto;
+            padding: 16px 24px;
+            margin: 10px auto 14px auto;
             max-width: 1100px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15);
@@ -973,6 +933,7 @@ else:
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
+        # ========== 时间提醒逻辑（跨刷新累计） ==========
         if st.session_state.experiment_start_time is None:
             db_start = load_experiment_start_time(st.session_state.participant_id)
             if db_start:
@@ -989,7 +950,7 @@ else:
         except Exception:
             elapsed_minutes = 0
 
-        REMINDER_THRESHOLD_MINUTES = 1  # 测试用 1 分钟；正式改成 90
+        REMINDER_THRESHOLD_MINUTES = 90  # 90分钟提醒
 
         if (elapsed_minutes >= REMINDER_THRESHOLD_MINUTES
                 and not st.session_state.time_reminder_dismissed):
@@ -1013,8 +974,8 @@ else:
                 st.subheader("💬 研究人机交互区")
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
-                with st.container(key="left_chat_wrap"):
-                    with st.container(height=500, border=False):
+                with st.container():
+                    with st.container(height=560, border=False):
                         has_dialogue = False
                         for msg in st.session_state.messages:
                             if msg["role"] == "system":
@@ -1026,7 +987,7 @@ else:
                                 st.markdown(msg["content"])
                         if not has_dialogue:
                             st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
-                    with st.container(key="left_form_wrap"):
+                    with st.container():
                         with st.form(key="prompt_form", clear_on_submit=True):
                             with st.container(key="input_wrapper"):
                                 user_input = st.text_area(
@@ -1138,7 +1099,6 @@ else:
                     task2_text = st.text_area("填写区", value=existing_plan["task2_text"] if existing_plan else "", height=160, key="task2_text", label_visibility="collapsed")
                     st.divider()
                     st.markdown("**子任务3：实施与数据采集**")
-                    st.markdown("可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）")
                     task3_text = st.text_area("填写区", value=existing_plan["task3_text"] if existing_plan else "", height=160, key="task3_text", label_visibility="collapsed")
                     st.divider()
                     st.markdown("**子任务4：数据分析与阐释**")
@@ -1150,20 +1110,26 @@ else:
                     task5_text = st.text_area("填写区", value=existing_plan["task5_text"] if existing_plan else "", height=300, key="task5_text", label_visibility="collapsed")
                     st.divider()
                     st.markdown("**子任务6：传播、评估与伦理**")
-                    st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
                     task6_text = st.text_area("填写区", value=existing_plan["task6_text"] if existing_plan else "", height=160, key="task6_text", label_visibility="collapsed")
-                    col_exit_inplan, col_spacer, col_temp, col_submit = st.columns([1, 1.2, 1, 1])
-                    with col_exit_inplan:
-                        exit_inplan = st.form_submit_button("🚪 退出实验", use_container_width=True, key="btn_exit_bottom")
-                    with col_temp:
-                        temp_saved = st.form_submit_button("💾 暂存方案", use_container_width=True, key="btn_temp_save")
-                    with col_submit:
-                        submitted = st.form_submit_button("📤 提交方案", use_container_width=True, key="btn_submit_final")
-                    if exit_inplan:
+                    
+                    # 重新布局表单底部的三个按钮：退出实验（居左警示红）、暂存方案（次要浅绿）、提交方案（主要深绿）
+                    col_plan_b1, col_plan_b2, col_plan_b3, col_plan_b4 = st.columns([3, 2, 2.5, 2.5])
+                    with col_plan_b1:
+                        with st.container(key="box_btn_exit"):
+                            btn_exit = st.form_submit_button("🚪 退出实验", use_container_width=True)
+                    with col_plan_b3:
+                        with st.container(key="box_btn_draft"):
+                            btn_draft = st.form_submit_button("💾 暂存方案", use_container_width=True)
+                    with col_plan_b4:
+                        with st.container(key="box_btn_submit"):
+                            submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
+
+                    if btn_exit:
                         st.session_state.show_exit_dialog = True
                         st.rerun()
-                    elif temp_saved:
-                        success_temp = save_plan(
+
+                    if btn_draft:
+                        success = save_plan(
                             st.session_state.participant_id,
                             task1_text.strip(),
                             task2_text.strip(),
@@ -1172,11 +1138,12 @@ else:
                             task5_text.strip(),
                             task6_text.strip()
                         )
-                        if success_temp:
-                            st.toast("✅ 已暂存方案，可继续编辑。", icon="✅")
+                        if success:
+                            st.toast("💾 方案已成功暂存！", icon="✅")
                         else:
-                            st.toast("❌ 暂存失败，请检查数据库字段。", icon="❌")
-                    elif submitted:
+                            st.toast("❌ 暂存失败，请检查数据库。", icon="❌")
+
+                    if submitted:
                         if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
                                     task4_text.strip(), task5_text.strip(), task6_text.strip()]):
                             st.warning("建议填写所有子任务，以完善研究方案。")
