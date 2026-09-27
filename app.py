@@ -18,7 +18,7 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= 2. 系统提示词 =================
-SYSTEM_PROMPT = """ 您是一个名为"ICFER（教育实证研究全周期智能协同框架）"的教育研究设计助理。您的目标是协助教育学领域的研究生完成一项教育研究设计方案，围绕统一主题提供专业、具体的支持。您需要展现出教育研究的专业性、批判性和逻辑性。
+SYSTEM_PROMPT =""" 您是一个名为"ICFER（教育实证研究全周期智能协同框架）"的教育研究设计助理。您的目标是协助教育学领域的研究生完成一项教育研究设计方案，围绕统一主题提供专业、具体的支持。您需要展现出教育研究的专业性、批判性和逻辑性。
 核心能力与任务模块：
 1. 选题与文献发现：辅助梳理文献脉络，对比不同教育理论（如建构主义与行为主义），精准分析研究空白。
 2. 研究规划与设计：从教育心理学、课程论等多重视角构建分析框架，对比个案研究、行动研究等方法的适用性。
@@ -477,7 +477,6 @@ st.markdown(
         > div.stColumn:first-child {
             padding-right: 14px !important;
             background-color: #f8fbff !important;
-            border: 1px solid #d0d7de !important;
             box-shadow: 0 2px 8px rgba(21, 101, 192, 0.04) !important;
         }
         .st-key-main_row
@@ -485,7 +484,6 @@ st.markdown(
         > div.stColumn:last-child {
             padding-left: 14px !important;
             background-color: #f9fdf9 !important;
-            border: 1px solid #d0d7de !important;
             border-left: none !important;
             box-shadow: 0 2px 8px rgba(46, 125, 50, 0.04) !important;
         }
