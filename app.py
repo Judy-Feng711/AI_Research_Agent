@@ -456,7 +456,7 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ========== 左右大块：灰色边框 + 等高对齐，底边到灰线距离一致 ========== */
+        /* ========== 左右大块：灰色边框加深 + 等高对齐，底边到灰线距离一致 ========== */
         .st-key-main_row {
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
@@ -476,7 +476,7 @@ st.markdown(
             overflow-y: auto !important;
             overflow-x: hidden !important;
             padding: 10px 14px 10px 14px !important;
-            border: 1px solid #cfd6e3 !important;
+            border: 1px solid #8a95ad !important;
             border-radius: 12px !important;
             box-sizing: border-box !important;
             margin-bottom: 0 !important;
@@ -552,6 +552,25 @@ st.markdown(
             max-width: none !important;
             overflow: visible !important;
             text-overflow: clip !important;
+            white-space: nowrap !important;
+            word-break: keep-all !important;
+        }
+
+        /* 左侧五个行为按钮统一字号，避免前四小、最后一个大 */
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"],
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] p,
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] span,
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] div {
+            font-size: 14px !important;
+            font-weight: 500 !important;
             white-space: nowrap !important;
             word-break: keep-all !important;
         }
@@ -1072,10 +1091,32 @@ else:
                     st.markdown("**子任务6：传播、评估与伦理**")
                     st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
                     task6_text = st.text_area("填写区", value=existing_plan["task6_text"] if existing_plan else "", height=160, key="task6_text", label_visibility="collapsed")
-                    col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
-                    with col_submit_btn_right:
+                    # 底部一排：退出居左，暂存+提交居右
+                    col_exit_inplan, col_spacer, col_temp, col_submit = st.columns([1, 1.2, 1, 1])
+                    with col_exit_inplan:
+                        exit_inplan = st.form_submit_button("🚪 退出实验", use_container_width=True)
+                    with col_temp:
+                        temp_saved = st.form_submit_button("💾 暂存方案", use_container_width=True)
+                    with col_submit:
                         submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
-                    if submitted:
+                    if exit_inplan:
+                        st.session_state.show_exit_dialog = True
+                        st.rerun()
+                    elif temp_saved:
+                        success_temp = save_plan(
+                            st.session_state.participant_id,
+                            task1_text.strip(),
+                            task2_text.strip(),
+                            task3_text.strip(),
+                            task4_text.strip(),
+                            task5_text.strip(),
+                            task6_text.strip()
+                        )
+                        if success_temp:
+                            st.toast("✅ 已暂存方案，可继续编辑。", icon="✅")
+                        else:
+                            st.toast("❌ 暂存失败，请检查数据库字段。", icon="❌")
+                    elif submitted:
                         if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
                                     task4_text.strip(), task5_text.strip(), task6_text.strip()]):
                             st.warning("建议填写所有子任务，以完善研究方案。")
@@ -1093,10 +1134,3 @@ else:
                             st.rerun()
                         else:
                             st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
-
-        st.divider()
-        col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
-        with col_exit_center:
-            if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
-                st.session_state.show_exit_dialog = True
-                st.rerun()
