@@ -403,13 +403,14 @@ st.markdown(
             border-top: 1px dashed #b0c4de;
         }
 
+        /* 优化分割线（灰线）间距，防止灰线粘连 */
         .stDivider hr {
-            margin-top: 1px !important;
-            margin-bottom: 1px !important;
+            margin-top: 10px !important;
+            margin-bottom: 10px !important;
         }
         hr {
-            margin-top: 4px !important;
-            margin-bottom: 4px !important;
+            margin-top: 10px !important;
+            margin-bottom: 10px !important;
         }
 
         [data-testid="stVerticalBlock"] > .stMarkdown {
@@ -482,7 +483,7 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ===== 2. 左右大块：边框与精细化底部内边距设置 ===== */
+        /* ===== 2. 左右大块：边框与底部留白精致化调整 ===== */
         .st-key-main_row {
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
@@ -501,27 +502,27 @@ st.markdown(
             min-height: calc(100vh - 165px) !important;
             overflow-y: auto !important;
             overflow-x: hidden !important;
-            border: 1.5px solid #6c7a89 !important;
+            border: 1.5px solid #6c7a89 !important; /* 深灰色外边框 */
             border-radius: 12px !important;
             box-sizing: border-box !important;
             margin-bottom: 0 !important;
             align-self: stretch !important;
         }
 
-        /* 左侧列：底部10px，内灰线离外灰线10px，不远 */
+        /* 左侧列Padding：底部保留 12px，避免 5 个按钮贴在底边 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
-            padding: 12px 14px 10px 14px !important;
+            padding: 12px 14px 12px 14px !important;
             background-color: #f8fbff !important;
             box-shadow: 0 2px 10px rgba(21, 101, 192, 0.07) !important;
         }
 
-        /* 右侧列：底部12px，内灰线离外灰线12px，不远不贴 */
+        /* 右侧列Padding：表单底部加内衬，使 3 个按钮不紧贴底线 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:last-child {
-            padding: 12px 16px 12px 16px !important;
+            padding: 12px 16px 20px 16px !important;
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
@@ -565,7 +566,7 @@ st.markdown(
             align-self: auto !important;
         }
 
-        /* ===== 左列内部Flex ===== */
+        /* ===== 3. 左列内部 Flex 布局：消除尴尬大片空白，实现输入区顺畅贴底 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child > div[data-testid="stVerticalBlock"] {
@@ -581,45 +582,31 @@ st.markdown(
             height: 100% !important;
             justify-content: space-between !important;
         }
+        /* 强制聊天对话区自适应拉伸吃满上半空间 */
         .st-key-left_chat_wrap > div[data-testid="stElementContainer"]:first-child,
         .st-key-left_chat_wrap > div[data-testid="stElementContainer"]:first-child > div[data-testid="stVerticalBlockBorderWrapper"] {
             height: 100% !important;
             max-height: none !important;
             flex: 1 1 auto !important;
-            min-height: 200px !important;
+            min-height: 180px !important;
         }
         .st-key-left_form_wrap {
-            margin-top: 8px !important;
+            margin-top: 6px !important;
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
         }
         .st-key-left_form_wrap form[data-testid="stForm"] {
             margin-bottom: 0 !important;
-            padding-bottom: 0 !important;
+            padding-bottom: 16px !important; /* 给左侧表单加 16px 底部内边距，使 5 个按钮不贴表单灰线 */
         }
         .st-key-main_row .stForm {
             margin-bottom: 0 !important;
-            padding-bottom: 0 !important;
         }
 
-        /* 左侧输入内框：按钮离内灰线16px，不紧贴；内灰线离外灰线10px，不远 */
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child [data-testid="stForm"] {
-            background: #ffffff !important;
-            border: 1px solid #dfe5ee !important;
-            border-radius: 10px !important;
-            padding: 12px 12px 16px 12px !important;
-            margin: 8px 0 0 0 !important;
-            box-shadow: none !important;
-        }
-
-        /* 右侧表单：按钮离内灰线14px，不紧贴；内灰线离外灰线12px */
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:last-child .stForm {
-            padding-bottom: 14px !important;
-            margin-bottom: 0 !important;
+        /* 右侧方案表单底部增加 16px 内边距，确保 3 个按钮不紧贴表单灰线 */
+        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child form[data-testid="stForm"] {
+            padding-bottom: 16px !important;
+            margin-bottom: 6px !important;
         }
 
         .st-key-main_row .stForm button[type="submit"] {
@@ -645,7 +632,7 @@ st.markdown(
             word-break: keep-all !important;
         }
 
-        /* ===== 3. 左侧五个行为按钮 ===== */
+        /* ===== 4. 左侧五个行为按钮：统一字号与 Hover/Click 反馈 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"] {
@@ -689,7 +676,7 @@ st.markdown(
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.12) !important;
         }
 
-        /* ===== 4. 右下三按钮 ===== */
+        /* ===== 5. 右下三按钮渐进色彩与强烈 Hover/Click 视觉反馈 ===== */
         .st-key-btn_exit_bottom button {
             background: #fdf2f2 !important;
             color: #dc2626 !important;
@@ -710,6 +697,7 @@ st.markdown(
             transform: translateY(1px) !important;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.15) !important;
         }
+
         .st-key-btn_temp_save button {
             background: #e7f1ff !important;
             color: #1565c0 !important;
@@ -730,6 +718,7 @@ st.markdown(
             transform: translateY(1px) !important;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.15) !important;
         }
+
         .st-key-btn_submit_final button {
             background: #2e7d32 !important;
             color: #ffffff !important;
