@@ -1133,7 +1133,7 @@ else:
                             with st.container(key="input_wrapper"):
                                 user_input = st.text_area(
                                     "在这里输入您的提示词 (Prompt)：",
-                                    height=210,
+                                    height=190,
                                     key="prompt_input",
                                     label_visibility="collapsed",
                                     placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
