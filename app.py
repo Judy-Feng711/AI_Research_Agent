@@ -403,7 +403,7 @@ st.markdown(
             border-top: 1px dashed #b0c4de;
         }
 
-        /* 优化分割线（灰线）间距，防止灰线粘连 */
+        /* 优化分割线（灰线）间距 */
         .stDivider hr {
             margin-top: 10px !important;
             margin-bottom: 10px !important;
@@ -483,7 +483,7 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ===== 2. 左右大块：边框与底部留白精致化调整 ===== */
+        /* ===== 2. 左右大块：外层高与内边距精细控制 ===== */
         .st-key-main_row {
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
@@ -509,20 +509,20 @@ st.markdown(
             align-self: stretch !important;
         }
 
-        /* 左侧列：底部2px，输入内灰框紧贴外大灰框 */
+        /* 【重点修改位置 1】左侧列：缩小底部内边距为 4px，使输入框灰框与外层大灰框底边距离贴近 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
-            padding: 12px 14px 2px 14px !important;
+            padding: 12px 14px 4px 14px !important;
             background-color: #f8fbff !important;
             box-shadow: 0 2px 10px rgba(21, 101, 192, 0.07) !important;
         }
 
-        /* 右侧列：底部38px，子任务内灰框远离外大灰框 */
+        /* 【重点修改位置 2】右侧列：增大底部内边距为 40px，使右侧表单灰框与外层大灰框底边拉开明显距离 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:last-child {
-            padding: 12px 16px 38px 16px !important;
+            padding: 12px 16px 40px 16px !important;
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
@@ -566,7 +566,7 @@ st.markdown(
             align-self: auto !important;
         }
 
-        /* ===== 3. 左列内部 Flex 布局 ===== */
+        /* ===== 3. 表单与按钮内边距精细控制 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child > div[data-testid="stVerticalBlock"] {
@@ -594,17 +594,20 @@ st.markdown(
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
         }
+        
+        /* 【重点修改位置 3】左侧表单：设为 margin-bottom: 2px，但内保留 12px 让 5 个按钮不粘表单内部灰线 */
         .st-key-left_form_wrap form[data-testid="stForm"] {
-            margin-bottom: 0 !important;
-            padding-bottom: 16px !important;
+            margin-bottom: 2px !important;
+            padding-bottom: 12px !important;
         }
         .st-key-main_row .stForm {
             margin-bottom: 0 !important;
         }
 
+        /* 【重点修改位置 4】右侧表单：设置 margin-bottom: 25px 和 padding-bottom: 16px，拉开与底部的距离 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child form[data-testid="stForm"] {
             padding-bottom: 16px !important;
-            margin-bottom: 10px !important;
+            margin-bottom: 25px !important;
         }
 
         .st-key-main_row .stForm button[type="submit"] {
@@ -630,7 +633,7 @@ st.markdown(
             word-break: keep-all !important;
         }
 
-        /* ===== 4. 左侧五个行为按钮 ===== */
+        /* ===== 4. 左侧五个行为按钮：统一字号与 Hover/Click 反馈 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"] {
@@ -674,7 +677,7 @@ st.markdown(
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.12) !important;
         }
 
-        /* ===== 5. 右下三按钮 ===== */
+        /* ===== 5. 右下三按钮渐进色彩与强烈 Hover/Click 视觉反馈 ===== */
         .st-key-btn_exit_bottom button {
             background: #fdf2f2 !important;
             color: #dc2626 !important;
@@ -802,26 +805,6 @@ st.markdown(
             font-size: 18px;
             font-weight: 600;
             color: #b45309;
-        }
-        /* === 兜底覆盖：左紧右松，一定生效 === */
-        /* 左列外大框：底部只留2px，输入内灰框就会贴着外大灰框 */
-        .st-key-main_row [data-testid="stColumn"]:nth-child(1) {
-            padding: 12px 14px 2px 14px !important;
-        }
-        /* 右列外大框：底部留38px，子任务/三按钮就会远离外大灰框 */
-        .st-key-main_row [data-testid="stColumn"]:nth-child(2) {
-            padding: 12px 16px 38px 16px !important;
-        }
-        
-        /* 左侧内表单：按钮离自己灰线16px */
-        .st-key-main_row [data-testid="stColumn"]:nth-child(1) [data-testid="stForm"] {
-            margin-bottom: 0px !important;
-            padding-bottom: 16px !important;
-        }
-        /* 右侧内表单：按钮离自己灰线16px，离外框再+10px */
-        .st-key-main_row [data-testid="stColumn"]:nth-child(2) [data-testid="stForm"] {
-            margin-bottom: 10px !important;
-            padding-bottom: 16px !important;
         }
     </style>
     """,
