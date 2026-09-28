@@ -607,7 +607,7 @@ st.markdown(
         /* 【重点修改位置 4】右侧表单：设置 margin-bottom: 25px 和 padding-bottom: 16px，拉开与底部的距离 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child form[data-testid="stForm"] {
             padding-bottom: 16px !important;
-            margin-bottom: 25px !important;
+            margin-bottom: 40px !important;
         }
 
         .st-key-main_row .stForm button[type="submit"] {
