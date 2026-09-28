@@ -803,6 +803,26 @@ st.markdown(
             font-weight: 600;
             color: #b45309;
         }
+        /* === 兜底覆盖：左紧右松，一定生效 === */
+        /* 左列外大框：底部只留2px，输入内灰框就会贴着外大灰框 */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) {
+            padding: 12px 14px 2px 14px !important;
+        }
+        /* 右列外大框：底部留38px，子任务/三按钮就会远离外大灰框 */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(2) {
+            padding: 12px 16px 38px 16px !important;
+        }
+        
+        /* 左侧内表单：按钮离自己灰线16px */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) [data-testid="stForm"] {
+            margin-bottom: 0px !important;
+            padding-bottom: 16px !important;
+        }
+        /* 右侧内表单：按钮离自己灰线16px，离外框再+10px */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(2) [data-testid="stForm"] {
+            margin-bottom: 10px !important;
+            padding-bottom: 16px !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
