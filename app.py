@@ -246,14 +246,35 @@ else:
 st.markdown(
     """
     <style>
+        /* ===== 1. 压缩顶部留白 + 底部留出呼吸感（借鉴顶部效果） ===== */
+        [data-testid="stHeader"] {
+            height: 0 !important;
+            min-height: 0 !important;
+        }
+        .block-container, [data-testid="stMainBlockContainer"] {
+            padding-top: 0.4rem !important;
+            padding-bottom: 16px !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+
         .top-fixed {
             position: sticky;
             top: 0;
             background-color: white;
             z-index: 100;
-            padding: 0.2rem 1rem 0.2rem 0.5rem;
+            padding: 0.05rem 1rem 0.05rem 0.5rem;
             border-bottom: none !important;
             box-shadow: none !important;
+        }
+        .top-fixed h1 {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            line-height: 1.15 !important;
+        }
+        .top-fixed p {
+            margin-top: 2px !important;
+            margin-bottom: 2px !important;
         }
         .top-fixed .stColumn {
             border-right: none !important;
@@ -456,27 +477,28 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ========== 左右大块：灰色边框 + 等高对齐，底边到灰线距离一致 ========== */
+        /* ===== 2. 左右大块：边框加深 + 强制等高 + 底部留白 ===== */
         .st-key-main_row {
-            padding-bottom: 0 !important;
-            margin-bottom: 0 !important;
+            padding-bottom: 12px !important;
+            margin-bottom: 8px !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3) {
             align-items: stretch !important;
             height: auto !important;
             overflow: visible !important;
+            margin-bottom: 6px !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn {
-            height: calc(100vh - 180px) !important;
-            max-height: calc(100vh - 180px) !important;
-            min-height: calc(100vh - 180px) !important;
+            height: calc(100vh - 175px) !important;
+            max-height: calc(100vh - 175px) !important;
+            min-height: calc(100vh - 175px) !important;
             overflow-y: auto !important;
             overflow-x: hidden !important;
-            padding: 10px 14px 10px 14px !important;
-            border: 1px solid #cfd6e3 !important;
+            padding: 10px 14px 16px 14px !important;
+            border: 1px solid #64748b !important;
             border-radius: 12px !important;
             box-sizing: border-box !important;
             margin-bottom: 0 !important;
@@ -493,6 +515,12 @@ st.markdown(
         > div.stColumn:last-child {
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
+        }
+        /* 左列单独：外框底部收紧，让输入内框贴近外框 */
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child {
+            padding-bottom: 4px !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
@@ -533,6 +561,58 @@ st.markdown(
             align-self: auto !important;
         }
 
+        /* ===== 左列内部flex：输入表单贴底 ===== */
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child > div[data-testid="stVerticalBlock"] {
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 !important;
+        }
+        .st-key-left_chat_wrap {
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 !important;
+            min-height: 0 !important;
+        }
+        .st-key-left_form_wrap {
+            margin-top: auto !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+        }
+        .st-key-main_row .stForm {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        /* 左侧输入内框：整体贴近外框，但按钮远离内框底边 */
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child [data-testid="stForm"] {
+            background: #ffffff !important;
+            border: 1px solid #dfe5ee !important;
+            border-radius: 10px !important;
+            padding: 12px 12px 14px 12px !important;
+            margin: 8px 0 2px 0 !important;
+            box-shadow: none !important;
+        }
+        .st-key-left_form_wrap [data-testid="stVerticalBlock"] {
+            gap: 0.5rem !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+        }
+        .st-key-left_form_wrap [data-testid="stHorizontalBlock"] {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        /* 右列表单底部留白，让三按钮离框线远一点 */
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:last-child .stForm {
+            padding-bottom: 12px !important;
+            margin-bottom: 4px !important;
+        }
+
         .st-key-main_row .stForm button[type="submit"] {
             min-width: 0 !important;
             width: 100% !important;
@@ -554,6 +634,132 @@ st.markdown(
             text-overflow: clip !important;
             white-space: nowrap !important;
             word-break: keep-all !important;
+        }
+
+        /* 左侧五个行为按钮统一字号 */
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"],
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] p,
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] span,
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] div {
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            white-space: nowrap !important;
+            word-break: keep-all !important;
+        }
+
+        /* ===== 3. 右下三按钮依次加深 ===== */
+        .st-key-btn_exit_bottom button {
+            background: #f1f3f5 !important;
+            color: #495057 !important;
+            border: 1px solid #adb5bd !important;
+            font-weight: 500 !important;
+        }
+        .st-key-btn_temp_save button {
+            background: #e7f1ff !important;
+            color: #1565c0 !important;
+            border: 1px solid #74a9e6 !important;
+            font-weight: 600 !important;
+        }
+        .st-key-btn_submit_final button {
+            background: #2e7d32 !important;
+            color: #ffffff !important;
+            border: 1px solid #2e7d32 !important;
+            font-weight: 700 !important;
+        }
+        .st-key-btn_exit_bottom button p, .st-key-btn_exit_bottom button span,
+        .st-key-btn_temp_save button p, .st-key-btn_temp_save button span,
+        .st-key-btn_submit_final button p, .st-key-btn_submit_final button span {
+            font-size: 14px !important;
+        }
+
+        /* ===== 4. 所有按钮悬停/点击反馈增强，被试能明确感知 ===== */
+        .st-key-main_row .stForm button[type="submit"],
+        .stButton button {
+            transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease, filter 0.15s ease !important;
+            cursor: pointer !important;
+        }
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] {
+            background: #ffffff !important;
+            border: 1px solid #b9c6dc !important;
+            color: #1a2a3a !important;
+        }
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"]:hover {
+            background: #e3edff !important;
+            border-color: #1565c0 !important;
+            color: #0d47a1 !important;
+            box-shadow: 0 2px 8px rgba(21,101,192,0.28) !important;
+            transform: translateY(-1px) !important;
+            filter: brightness(1.02) !important;
+        }
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"]:active {
+            background: #c9deff !important;
+            border-color: #0d47a1 !important;
+            transform: translateY(1px) scale(0.98) !important;
+            box-shadow: inset 0 2px 4px rgba(21,101,192,0.3) !important;
+            filter: brightness(0.96) !important;
+        }
+        .stButton button:hover {
+            filter: brightness(0.93) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
+            transform: translateY(-1px) !important;
+        }
+        .stButton button:active {
+            filter: brightness(0.85) !important;
+            transform: translateY(1px) scale(0.98) !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
+        .st-key-btn_exit_bottom button:hover {
+            background: #dee2e6 !important;
+            border-color: #868e96 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+            transform: translateY(-1px) !important;
+        }
+        .st-key-btn_exit_bottom button:active {
+            background: #ced4da !important;
+            transform: translateY(1px) scale(0.98) !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
+        .st-key-btn_temp_save button:hover {
+            background: #c2dfff !important;
+            border-color: #1565c0 !important;
+            color: #0d47a1 !important;
+            box-shadow: 0 2px 8px rgba(21,101,192,0.35) !important;
+            transform: translateY(-1px) !important;
+        }
+        .st-key-btn_temp_save button:active {
+            background: #a8d0ff !important;
+            transform: translateY(1px) scale(0.98) !important;
+            box-shadow: inset 0 2px 4px rgba(21,101,192,0.35) !important;
+        }
+        .st-key-btn_submit_final button:hover {
+            background: #1b5e20 !important;
+            border-color: #1b5e20 !important;
+            box-shadow: 0 3px 10px rgba(46,125,50,0.45) !important;
+            transform: translateY(-1px) !important;
+            filter: brightness(1.05) !important;
+        }
+        .st-key-btn_submit_final button:hover p,
+        .st-key-btn_submit_final button:hover span {
+            color: #ffffff !important;
+        }
+        .st-key-btn_submit_final button:active {
+            background: #144a18 !important;
+            transform: translateY(1px) scale(0.98) !important;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.35) !important;
         }
 
         ::-webkit-scrollbar {
@@ -586,21 +792,6 @@ st.markdown(
         .st-key-task4_text textarea { background-color: #f5e6ff; }
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
-        .st-key-btn_rebuild_plan button,
-        .st-key-btn_expand_idea button,
-        .st-key-btn_rebuild_plan button p,
-        .st-key-btn_expand_idea button p,
-        .st-key-btn_rebuild_plan button span,
-        .st-key-btn_expand_idea button span,
-        .st-key-btn_rebuild_plan button div,
-        .st-key-btn_expand_idea button div {
-            font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif !important;
-            font-size: 14px !important;
-            font-weight: 400 !important;
-            line-height: 1.2 !important;
-            letter-spacing: 0 !important;
-            white-space: nowrap !important;
-        }
         [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {
             font-size: 16px !important;
             line-height: 1.6 !important;
@@ -615,13 +806,12 @@ st.markdown(
             font-size: 16px !important;
         }
 
-        /* ========== 时间提醒横幅样式 ========== */
         .time-reminder-banner {
             background-color: #fff4e5;
             border: 2px solid #ff9800;
             border-radius: 12px;
-            padding: 16px 24px;
-            margin: 10px auto 14px auto;
+            padding: 10px 24px;
+            margin: 4px auto 8px auto;
             max-width: 1100px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15);
@@ -888,7 +1078,6 @@ else:
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
-        # ========== 时间提醒逻辑（跨刷新累计） ==========
         if st.session_state.experiment_start_time is None:
             db_start = load_experiment_start_time(st.session_state.participant_id)
             if db_start:
@@ -906,12 +1095,9 @@ else:
             elapsed_minutes = 0
 
         REMINDER_THRESHOLD_MINUTES = 1  # 测试用 1 分钟；正式改成 90
-        # ========== 时间提醒逻辑结束 ==========
 
-        # ========== 居中横幅提醒（放在两栏之上） ==========
         if (elapsed_minutes >= REMINDER_THRESHOLD_MINUTES
                 and not st.session_state.time_reminder_dismissed):
-            # 用 CSS 做醒目横幅 + 关闭按钮
             st.markdown(
                 """
                 <div class="time-reminder-banner">
@@ -925,7 +1111,6 @@ else:
                 if st.button("关闭提示", key="dismiss_reminder", use_container_width=True):
                     st.session_state.time_reminder_dismissed = True
                     st.rerun()
-        # ========== 居中横幅提醒结束 ==========
 
         with st.container(key="main_row"):
             col_left, col_right = st.columns([50, 50], gap="large")
@@ -933,7 +1118,7 @@ else:
                 st.subheader("💬 研究人机交互区")
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
-                with st.container():
+                with st.container(key="left_chat_wrap"):
                     with st.container(height=500, border=False):
                         has_dialogue = False
                         for msg in st.session_state.messages:
@@ -946,7 +1131,7 @@ else:
                                 st.markdown(msg["content"])
                         if not has_dialogue:
                             st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
-                    with st.container():
+                    with st.container(key="left_form_wrap"):
                         with st.form(key="prompt_form", clear_on_submit=True):
                             with st.container(key="input_wrapper"):
                                 user_input = st.text_area(
@@ -1072,10 +1257,34 @@ else:
                     st.markdown("**子任务6：传播、评估与伦理**")
                     st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
                     task6_text = st.text_area("填写区", value=existing_plan["task6_text"] if existing_plan else "", height=160, key="task6_text", label_visibility="collapsed")
-                    col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
-                    with col_submit_btn_right:
-                        submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
-                    if submitted:
+                    col_exit_inplan, col_spacer, col_temp, col_submit = st.columns([1, 1.2, 1, 1])
+                    with col_exit_inplan:
+                        with st.container(key="btn_exit_bottom"):
+                            exit_inplan = st.form_submit_button("🚪 退出实验", use_container_width=True)
+                    with col_temp:
+                        with st.container(key="btn_temp_save"):
+                            temp_saved = st.form_submit_button("💾 暂存方案", use_container_width=True)
+                    with col_submit:
+                        with st.container(key="btn_submit_final"):
+                            submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
+                    if exit_inplan:
+                        st.session_state.show_exit_dialog = True
+                        st.rerun()
+                    elif temp_saved:
+                        success_temp = save_plan(
+                            st.session_state.participant_id,
+                            task1_text.strip(),
+                            task2_text.strip(),
+                            task3_text.strip(),
+                            task4_text.strip(),
+                            task5_text.strip(),
+                            task6_text.strip()
+                        )
+                        if success_temp:
+                            st.toast("✅ 已暂存方案，可继续编辑。", icon="✅")
+                        else:
+                            st.toast("❌ 暂存失败，请检查数据库字段。", icon="❌")
+                    elif submitted:
                         if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
                                     task4_text.strip(), task5_text.strip(), task6_text.strip()]):
                             st.warning("建议填写所有子任务，以完善研究方案。")
@@ -1093,10 +1302,3 @@ else:
                             st.rerun()
                         else:
                             st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
-
-        st.divider()
-        col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
-        with col_exit_center:
-            if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
-                st.session_state.show_exit_dialog = True
-                st.rerun()
