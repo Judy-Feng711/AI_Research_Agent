@@ -509,20 +509,20 @@ st.markdown(
             align-self: stretch !important;
         }
 
-        /* 左侧列Padding：底部缩小到6px，内灰线离外灰线更近 */
+        /* 左侧列Padding：底部缩小至 4px，缩小表单灰线框与最下灰线框距离 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
-            padding: 12px 14px 6px 14px !important;
+            padding: 12px 14px 4px 14px !important;
             background-color: #f8fbff !important;
             box-shadow: 0 2px 10px rgba(21, 101, 192, 0.07) !important;
         }
 
-        /* 右侧列Padding：底部增大到30px，内灰线离外灰线更远 */
+        /* 右侧列Padding：底部增大至 36px，增大表单灰线框与最下灰线框距离 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:last-child {
-            padding: 12px 16px 30px 16px !important;
+            padding: 12px 16px 36px 16px !important;
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
