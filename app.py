@@ -516,11 +516,11 @@ st.markdown(
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
-        /* 左侧单独压缩底部，让5个按钮贴近灰色边框 */
+        /* 左列单独：外框底部收紧，让输入内框贴近外框 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
-            padding-bottom: 6px !important;
+            padding-bottom: 4px !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
@@ -561,7 +561,7 @@ st.markdown(
             align-self: auto !important;
         }
 
-        /* ===== 左列内部flex：输入表单贴底，消除表单下方留白 ===== */
+        /* ===== 左列内部flex：输入表单贴底 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child > div[data-testid="stVerticalBlock"] {
@@ -585,10 +585,19 @@ st.markdown(
             margin-bottom: 0 !important;
             padding-bottom: 0 !important;
         }
-        /* 左侧表单内部压缩，按钮贴边 */
-        .st-key-left_form_wrap [data-testid="stVerticalBlock"],
-        .st-key-left_form_wrap .stForm > div {
-            gap: 0.35rem !important;
+        /* 左侧输入内框：整体贴近外框，但按钮远离内框底边 */
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child [data-testid="stForm"] {
+            background: #ffffff !important;
+            border: 1px solid #dfe5ee !important;
+            border-radius: 10px !important;
+            padding: 12px 12px 14px 12px !important;
+            margin: 8px 0 2px 0 !important;
+            box-shadow: none !important;
+        }
+        .st-key-left_form_wrap [data-testid="stVerticalBlock"] {
+            gap: 0.5rem !important;
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
         }
@@ -677,7 +686,6 @@ st.markdown(
             transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease, filter 0.15s ease !important;
             cursor: pointer !important;
         }
-        /* 左侧5按钮默认白底，hover变蓝上浮，active下沉压暗 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"] {
@@ -704,7 +712,6 @@ st.markdown(
             box-shadow: inset 0 2px 4px rgba(21,101,192,0.3) !important;
             filter: brightness(0.96) !important;
         }
-        /* 通用 stButton hover/active */
         .stButton button:hover {
             filter: brightness(0.93) !important;
             box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
@@ -715,7 +722,6 @@ st.markdown(
             transform: translateY(1px) scale(0.98) !important;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
         }
-        /* 右下三按钮 hover/active 加深 */
         .st-key-btn_exit_bottom button:hover {
             background: #dee2e6 !important;
             border-color: #868e96 !important;
