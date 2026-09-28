@@ -590,7 +590,7 @@ st.markdown(
             min-height: 180px !important;
         }
         .st-key-left_form_wrap {
-            margin-top: 70px !important;
+            margin-top: 6px !important;
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
         }
