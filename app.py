@@ -509,20 +509,20 @@ st.markdown(
             align-self: stretch !important;
         }
 
-        /* 左侧列Padding：底部保留 12px，避免 5 个按钮贴在底边 */
+        /* 左侧列Padding：底部缩小到6px，内灰线离外灰线更近 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
-            padding: 12px 14px 12px 14px !important;
+            padding: 12px 14px 6px 14px !important;
             background-color: #f8fbff !important;
             box-shadow: 0 2px 10px rgba(21, 101, 192, 0.07) !important;
         }
 
-        /* 右侧列Padding：表单底部加内衬，使 3 个按钮不紧贴底线 */
+        /* 右侧列Padding：底部增大到30px，内灰线离外灰线更远 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:last-child {
-            padding: 12px 16px 20px 16px !important;
+            padding: 12px 16px 30px 16px !important;
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
