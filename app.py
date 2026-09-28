@@ -246,36 +246,14 @@ else:
 st.markdown(
     """
     <style>
-        /* ===== 1. 页面整体边距与通用按钮设定 ===== */
-        [data-testid="stHeader"] {
-            height: 0 !important;
-            min-height: 0 !important;
-        }
-        .block-container, [data-testid="stMainBlockContainer"] {
-            padding-top: 0.4rem !important;
-            padding-bottom: 1.8rem !important;
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-        }
-
         .top-fixed {
             position: sticky;
             top: 0;
             background-color: white;
             z-index: 100;
-            padding: 0.05rem 1rem 0.05rem 0.5rem;
-            margin-top: -10px !important;
+            padding: 0.2rem 1rem 0.2rem 0.5rem;
             border-bottom: none !important;
             box-shadow: none !important;
-        }
-        .top-fixed h1 {
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-            line-height: 1.15 !important;
-        }
-        .top-fixed p {
-            margin-top: 2px !important;
-            margin-bottom: 2px !important;
         }
         .top-fixed .stColumn {
             border-right: none !important;
@@ -315,7 +293,6 @@ st.markdown(
             font-size: 16px !important;
             line-height: 1.2 !important;
             white-space: nowrap !important;
-            transition: all 0.18s ease-in-out !important;
         }
         .stButton button,
         .stForm button[type="submit"] {
@@ -328,8 +305,6 @@ st.markdown(
             justify-content: center !important;
             padding: 0 4px !important;
             text-align: center !important;
-            cursor: pointer !important;
-            transition: all 0.18s ease-in-out !important;
         }
         .stButton {
             height: 38px !important;
@@ -342,13 +317,6 @@ st.markdown(
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child h3 {
             color: #2e7d32 !important;
-        }
-
-        /* 说明文字调柔调优 */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stCaption p {
-            color: #64748b !important;
-            font-size: 13.5px !important;
-            line-height: 1.5 !important;
         }
 
         .consent-card {
@@ -488,7 +456,7 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ===== 2. 左右大区块：深色边框与结构定义 ===== */
+        /* ========== 左右大块：灰色边框 + 等高对齐，底边到灰线距离一致 ========== */
         .st-key-main_row {
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
@@ -502,36 +470,30 @@ st.markdown(
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn {
-            height: calc(100vh - 165px) !important;
-            max-height: calc(100vh - 165px) !important;
-            min-height: calc(100vh - 165px) !important;
+            height: calc(100vh - 180px) !important;
+            max-height: calc(100vh - 180px) !important;
+            min-height: calc(100vh - 180px) !important;
             overflow-y: auto !important;
             overflow-x: hidden !important;
-            border: 1.5px solid #6c7a89 !important; /* 深灰色外边框 */
+            padding: 10px 14px 10px 14px !important;
+            border: 1px solid #cfd6e3 !important;
             border-radius: 12px !important;
             box-sizing: border-box !important;
             margin-bottom: 0 !important;
             align-self: stretch !important;
         }
-
-        /* 左侧列特有Padding：精简底部内边距为 12px */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
-            padding: 12px 14px 12px 14px !important;
             background-color: #f8fbff !important;
             box-shadow: 0 2px 10px rgba(21, 101, 192, 0.07) !important;
         }
-
-        /* 右侧列特有Padding：保持适宜的 20px 底部内边距 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:last-child {
-            padding: 12px 16px 20px 16px !important;
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
-
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn::-webkit-scrollbar {
@@ -571,189 +533,27 @@ st.markdown(
             align-self: auto !important;
         }
 
-        /* ===== 3. 左侧人机交互区：聊天对话与输入区域布局优化 ===== */
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child > div[data-testid="stVerticalBlock"] {
-            height: 100% !important;
-            display: flex !important;
-            flex-direction: column !important;
-            flex: 1 1 auto !important;
+        .st-key-main_row .stForm button[type="submit"] {
+            min-width: 0 !important;
+            width: 100% !important;
+            height: 38px !important;
+            font-size: 13px !important;
+            line-height: 1.2 !important;
+            padding-left: 2px !important;
+            padding-right: 2px !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
         }
-        .st-key-left_chat_wrap {
-            display: flex !important;
-            flex-direction: column !important;
-            flex: 1 1 auto !important;
-            height: 100% !important;
-            justify-content: space-between !important;
-        }
-        .st-key-left_chat_wrap > div[data-testid="stElementContainer"]:first-child,
-        .st-key-left_chat_wrap > div[data-testid="stElementContainer"]:first-child > div[data-testid="stVerticalBlockBorderWrapper"] {
-            height: 100% !important;
-            max-height: none !important;
-            flex: 1 1 auto !important;
-            min-height: 200px !important;
-        }
-
-        /* 对话气泡现代风格化 (建议1) */
-        /* 用户气泡：靠右、浅蓝底色 */
-        [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
-            background-color: #e3f2fd !important;
-            border: 1px solid #90caf9 !important;
-            border-radius: 14px 14px 2px 14px !important;
-            margin-left: auto !important;
-            max-width: 88% !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-        }
-        /* AI气泡：靠左、纯白卡片底色 */
-        [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {
-            background-color: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 14px 14px 14px 2px !important;
-            margin-right: auto !important;
-            max-width: 88% !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
-        }
-
-        /* 复合卡片：输入框 + 行为按钮融合一体 (建议3) */
-        .st-key-left_form_card {
-            background-color: #f4f6f8 !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 12px !important;
-            padding: 10px 12px 6px 12px !important;
-            margin-top: 6px !important;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.02) !important;
-        }
-        .st-key-left_form_card form[data-testid="stForm"] {
-            margin-bottom: 0 !important;
-            padding-bottom: 0 !important;
-            background: transparent !important;
-            border: none !important;
-        }
-
-        /* 左侧 5 个行为按钮样式 */
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] {
-            background-color: #ffffff !important;
-            color: #1565c0 !important;
-            border: 1px solid #90caf9 !important;
-            font-size: 14px !important;
-            font-weight: 500 !important;
+        .st-key-main_row .stForm button[type="submit"] p,
+        .st-key-main_row .stForm button[type="submit"] span,
+        .st-key-main_row .stForm button[type="submit"] div {
+            font-size: 13px !important;
+            max-width: none !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
             white-space: nowrap !important;
             word-break: keep-all !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-        }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] p,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] span,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] div {
-            font-size: 14px !important;
-            font-weight: 500 !important;
-            white-space: nowrap !important;
-            word-break: keep-all !important;
-        }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"]:hover {
-            background-color: #e3f2fd !important;
-            border-color: #1565c0 !important;
-            color: #0d47a1 !important;
-            transform: translateY(-1px) !important;
-            box-shadow: 0 3px 6px rgba(21, 101, 192, 0.15) !important;
-        }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"]:active {
-            background-color: #bbdefb !important;
-            transform: translateY(1px) !important;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.12) !important;
-        }
-
-        /* ===== 4. 右侧 6 个子任务微卡片结构 (建议2) ===== */
-        .st-key-subtask1_box, .st-key-subtask2_box, .st-key-subtask3_box,
-        .st-key-subtask4_box, .st-key-subtask5_box, .st-key-subtask6_box {
-            background-color: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 10px !important;
-            padding: 12px 14px 8px 14px !important;
-            margin-bottom: 10px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
-        }
-
-        /* ===== 5. 右下三按钮渐进色彩与 Hover/Click 视觉反馈 ===== */
-        .st-key-btn_exit_bottom button {
-            background: #fdf2f2 !important;
-            color: #dc2626 !important;
-            border: 1px solid #fca5a5 !important;
-            font-weight: 600 !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-        }
-        .st-key-btn_exit_bottom button:hover {
-            background: #fee2e2 !important;
-            color: #b91c1c !important;
-            border-color: #f87171 !important;
-            transform: translateY(-1px) !important;
-            box-shadow: 0 3px 8px rgba(220, 38, 38, 0.18) !important;
-        }
-        .st-key-btn_exit_bottom button:active {
-            background: #fca5a5 !important;
-            color: #7f1d1d !important;
-            transform: translateY(1px) !important;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15) !important;
-        }
-
-        .st-key-btn_temp_save button {
-            background: #e7f1ff !important;
-            color: #1565c0 !important;
-            border: 1px solid #74a9e6 !important;
-            font-weight: 600 !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-        }
-        .st-key-btn_temp_save button:hover {
-            background: #d0e4ff !important;
-            color: #0d47a1 !important;
-            border-color: #1565c0 !important;
-            transform: translateY(-1px) !important;
-            box-shadow: 0 3px 8px rgba(21, 101, 192, 0.2) !important;
-        }
-        .st-key-btn_temp_save button:active {
-            background: #a6c8ff !important;
-            color: #0a337a !important;
-            transform: translateY(1px) !important;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15) !important;
-        }
-
-        .st-key-btn_submit_final button {
-            background: #2e7d32 !important;
-            color: #ffffff !important;
-            border: 1px solid #1b5e20 !important;
-            font-weight: 700 !important;
-            box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2) !important;
-        }
-        .st-key-btn_submit_final button:hover {
-            background: #1b5e20 !important;
-            border-color: #0e3a13 !important;
-            color: #ffffff !important;
-            transform: translateY(-1px) !important;
-            box-shadow: 0 4px 10px rgba(27, 94, 32, 0.35) !important;
-        }
-        .st-key-btn_submit_final button:active {
-            background: #0e3a13 !important;
-            border-color: #051d07 !important;
-            color: #ffffff !important;
-            transform: translateY(1px) !important;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.25) !important;
-        }
-        .st-key-btn_exit_bottom button p, .st-key-btn_exit_bottom button span,
-        .st-key-btn_temp_save button p, .st-key-btn_temp_save button span,
-        .st-key-btn_submit_final button p, .st-key-btn_submit_final button span {
-            font-size: 14px !important;
         }
 
         ::-webkit-scrollbar {
@@ -786,6 +586,21 @@ st.markdown(
         .st-key-task4_text textarea { background-color: #f5e6ff; }
         .st-key-task5_text textarea { background-color: #e6f3ff; }
         .st-key-task6_text textarea { background-color: #f5e6ff; }
+        .st-key-btn_rebuild_plan button,
+        .st-key-btn_expand_idea button,
+        .st-key-btn_rebuild_plan button p,
+        .st-key-btn_expand_idea button p,
+        .st-key-btn_rebuild_plan button span,
+        .st-key-btn_expand_idea button span,
+        .st-key-btn_rebuild_plan button div,
+        .st-key-btn_expand_idea button div {
+            font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.2 !important;
+            letter-spacing: 0 !important;
+            white-space: nowrap !important;
+        }
         [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {
             font-size: 16px !important;
             line-height: 1.6 !important;
@@ -800,12 +615,13 @@ st.markdown(
             font-size: 16px !important;
         }
 
+        /* ========== 时间提醒横幅样式 ========== */
         .time-reminder-banner {
             background-color: #fff4e5;
             border: 2px solid #ff9800;
             border-radius: 12px;
-            padding: 10px 24px;
-            margin: 4px auto 8px auto;
+            padding: 16px 24px;
+            margin: 10px auto 14px auto;
             max-width: 1100px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15);
@@ -1072,6 +888,7 @@ else:
             st.session_state.messages = loaded_msgs
             st.session_state.round_count = loaded_round
 
+        # ========== 时间提醒逻辑（跨刷新累计） ==========
         if st.session_state.experiment_start_time is None:
             db_start = load_experiment_start_time(st.session_state.participant_id)
             if db_start:
@@ -1088,10 +905,13 @@ else:
         except Exception:
             elapsed_minutes = 0
 
-        REMINDER_THRESHOLD_MINUTES = 90  # 90分钟提醒
+        REMINDER_THRESHOLD_MINUTES = 1  # 测试用 1 分钟；正式改成 90
+        # ========== 时间提醒逻辑结束 ==========
 
+        # ========== 居中横幅提醒（放在两栏之上） ==========
         if (elapsed_minutes >= REMINDER_THRESHOLD_MINUTES
                 and not st.session_state.time_reminder_dismissed):
+            # 用 CSS 做醒目横幅 + 关闭按钮
             st.markdown(
                 """
                 <div class="time-reminder-banner">
@@ -1105,6 +925,7 @@ else:
                 if st.button("关闭提示", key="dismiss_reminder", use_container_width=True):
                     st.session_state.time_reminder_dismissed = True
                     st.rerun()
+        # ========== 居中横幅提醒结束 ==========
 
         with st.container(key="main_row"):
             col_left, col_right = st.columns([50, 50], gap="large")
@@ -1112,7 +933,7 @@ else:
                 st.subheader("💬 研究人机交互区")
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
-                with st.container(key="left_chat_wrap"):
+                with st.container():
                     with st.container(height=500, border=False):
                         has_dialogue = False
                         for msg in st.session_state.messages:
@@ -1125,103 +946,102 @@ else:
                                 st.markdown(msg["content"])
                         if not has_dialogue:
                             st.caption("暂无对话记录，请在下方输入框开始您的第一轮提问～")
-                    with st.container(key="left_form_wrap"):
-                        with st.container(key="left_form_card"):
-                            with st.form(key="prompt_form", clear_on_submit=True):
-                                with st.container(key="input_wrapper"):
-                                    user_input = st.text_area(
-                                        "在这里输入您的提示词 (Prompt)：",
-                                        height=150,
-                                        key="prompt_input",
-                                        label_visibility="collapsed",
-                                        placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
-                                    )
-                                    uploaded_file = st.file_uploader(
-                                        "上传文档",
-                                        type=["pdf", "docx"],
-                                        key="file_uploader_simple",
-                                        label_visibility="collapsed"
-                                    )
-                                if uploaded_file is not None:
-                                    st.caption(f"📎 已附加文档：{uploaded_file.name}")
-                                st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
-                                col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
-                                clicked_behavior = None
-                                if col_b1.form_submit_button("获取基础信息", use_container_width=True):
-                                    clicked_behavior = "获取基础信息"
-                                elif col_b2.form_submit_button("规范语言/格式", use_container_width=True):
-                                    clicked_behavior = "规范语言/格式"
-                                elif col_b3.form_submit_button("微调研究逻辑", use_container_width=True):
-                                    clicked_behavior = "微调研究逻辑"
-                                elif col_b4.form_submit_button("重构研究方案", use_container_width=True):
-                                    clicked_behavior = "重构研究方案"
-                                elif col_b5.form_submit_button("拓展研究思路", use_container_width=True):
-                                    clicked_behavior = "拓展研究思路"
+                    with st.container():
+                        with st.form(key="prompt_form", clear_on_submit=True):
+                            with st.container(key="input_wrapper"):
+                                user_input = st.text_area(
+                                    "在这里输入您的提示词 (Prompt)：",
+                                    height=150,
+                                    key="prompt_input",
+                                    label_visibility="collapsed",
+                                    placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
+                                )
+                                uploaded_file = st.file_uploader(
+                                    "上传文档",
+                                    type=["pdf", "docx"],
+                                    key="file_uploader_simple",
+                                    label_visibility="collapsed"
+                                )
+                            if uploaded_file is not None:
+                                st.caption(f"📎 已附加文档：{uploaded_file.name}")
+                            st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
+                            col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
+                            clicked_behavior = None
+                            if col_b1.form_submit_button("获取基础信息", use_container_width=True):
+                                clicked_behavior = "获取基础信息"
+                            elif col_b2.form_submit_button("规范语言/格式", use_container_width=True):
+                                clicked_behavior = "规范语言/格式"
+                            elif col_b3.form_submit_button("微调研究逻辑", use_container_width=True):
+                                clicked_behavior = "微调研究逻辑"
+                            elif col_b4.form_submit_button("重构研究方案", use_container_width=True):
+                                clicked_behavior = "重构研究方案"
+                            elif col_b5.form_submit_button("拓展研究思路", use_container_width=True):
+                                clicked_behavior = "拓展研究思路"
 
-                                if clicked_behavior:
-                                    if not user_input or user_input.strip() == "":
-                                        st.warning("⚠️ 请先输入提示词！")
-                                        st.stop()
-                                    file_content = ""
-                                    if uploaded_file is not None:
-                                        file_name = uploaded_file.name
-                                        if file_name.endswith(".pdf"):
-                                            try:
-                                                reader = PdfReader(uploaded_file)
-                                                for page in reader.pages:
-                                                    text = page.extract_text()
-                                                    if text:
-                                                        file_content += text + "\n"
-                                            except Exception as e:
-                                                st.error(f"PDF 解析失败：{e}")
-                                        elif file_name.endswith(".docx"):
-                                            try:
-                                                doc = docx.Document(uploaded_file)
-                                                for para in doc.paragraphs:
-                                                    file_content += para.text + "\n"
-                                            except Exception as e:
-                                                st.error(f"Word 解析失败：{e}")
-                                        if file_content and len(file_content) > 5000:
-                                            file_content = file_content[:5000] + "\n...[内容已截断]"
-                                    full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
-                                    with st.chat_message("user"):
-                                        if file_content:
-                                            st.markdown(f"📎 **已附加文档**，提问：{user_input}")
-                                        else:
-                                            st.markdown(f"**[{clicked_behavior}]** {user_input}")
-                                    st.session_state.messages.append({"role": "user", "content": full_user_message})
-                                    with st.chat_message("assistant"):
-                                        with st.spinner("思考中..."):
-                                            try:
-                                                response = client.chat.completions.create(
-                                                    model="deepseek-v4-pro",
-                                                    messages=st.session_state.messages
-                                                )
-                                                ai_reply = response.choices[0].message.content
-                                                st.markdown(ai_reply)
-                                            except Exception as e:
-                                                st.error(f"AI 调用失败：{e}")
-                                                st.stop()
-                                    st.session_state.messages.append({"role": "assistant", "content": ai_reply})
-                                    st.session_state.round_count += 1
-                                    log_data = {
-                                        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                        "participant_id": st.session_state.participant_id,
-                                        "round": st.session_state.round_count,
-                                        "user_prompt": user_input,
-                                        "behavior_button": clicked_behavior,
-                                        "ai_response": ai_reply
-                                    }
-                                    try:
-                                        supabase.table("research_logs").insert(log_data).execute()
-                                    except Exception as e:
-                                        st.error(f"日志保存失败：{e}")
-                                    save_participant_state(
-                                        st.session_state.participant_id,
-                                        st.session_state.messages,
-                                        st.session_state.round_count
-                                    )
-                                    st.rerun()
+                            if clicked_behavior:
+                                if not user_input or user_input.strip() == "":
+                                    st.warning("⚠️ 请先输入提示词！")
+                                    st.stop()
+                                file_content = ""
+                                if uploaded_file is not None:
+                                    file_name = uploaded_file.name
+                                    if file_name.endswith(".pdf"):
+                                        try:
+                                            reader = PdfReader(uploaded_file)
+                                            for page in reader.pages:
+                                                text = page.extract_text()
+                                                if text:
+                                                    file_content += text + "\n"
+                                        except Exception as e:
+                                            st.error(f"PDF 解析失败：{e}")
+                                    elif file_name.endswith(".docx"):
+                                        try:
+                                            doc = docx.Document(uploaded_file)
+                                            for para in doc.paragraphs:
+                                                file_content += para.text + "\n"
+                                        except Exception as e:
+                                            st.error(f"Word 解析失败：{e}")
+                                    if file_content and len(file_content) > 5000:
+                                        file_content = file_content[:5000] + "\n...[内容已截断]"
+                                full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
+                                with st.chat_message("user"):
+                                    if file_content:
+                                        st.markdown(f"📎 **已附加文档**，提问：{user_input}")
+                                    else:
+                                        st.markdown(f"**[{clicked_behavior}]** {user_input}")
+                                st.session_state.messages.append({"role": "user", "content": full_user_message})
+                                with st.chat_message("assistant"):
+                                    with st.spinner("思考中..."):
+                                        try:
+                                            response = client.chat.completions.create(
+                                                model="deepseek-v4-pro",
+                                                messages=st.session_state.messages
+                                            )
+                                            ai_reply = response.choices[0].message.content
+                                            st.markdown(ai_reply)
+                                        except Exception as e:
+                                            st.error(f"AI 调用失败：{e}")
+                                            st.stop()
+                                st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+                                st.session_state.round_count += 1
+                                log_data = {
+                                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    "participant_id": st.session_state.participant_id,
+                                    "round": st.session_state.round_count,
+                                    "user_prompt": user_input,
+                                    "behavior_button": clicked_behavior,
+                                    "ai_response": ai_reply
+                                }
+                                try:
+                                    supabase.table("research_logs").insert(log_data).execute()
+                                except Exception as e:
+                                    st.error(f"日志保存失败：{e}")
+                                save_participant_state(
+                                    st.session_state.participant_id,
+                                    st.session_state.messages,
+                                    st.session_state.round_count
+                                )
+                                st.rerun()
 
             with col_right:
                 st.subheader("📝 研究方案填写区")
@@ -1229,67 +1049,32 @@ else:
                 st.markdown("**AI协同研究方案撰写**")
                 st.caption("任务共分为 6 个递进环节，请根据您与AI的完整对话，将各环节的核心成果填入下方对应模块。您可以在交互过程中随时记录，或最后集中整理。")
                 with st.form(key="plan_form"):
-                    with st.container(key="subtask1_box"):
-                        st.markdown("**子任务1：选题与文献发现**")
-                        st.markdown("可围绕后面内容进行填写：1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）")
-                        task1_text = st.text_area("填写区", value=existing_plan["task1_text"] if existing_plan else "", height=160, key="task1_text", label_visibility="collapsed")
-                    
-                    with st.container(key="subtask2_box"):
-                        st.markdown("**子任务2：研究规划与设计**")
-                        st.markdown("可围绕后面内容进行填写：1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）")
-                        task2_text = st.text_area("填写区", value=existing_plan["task2_text"] if existing_plan else "", height=160, key="task2_text", label_visibility="collapsed")
-                    
-                    with st.container(key="subtask3_box"):
-                        st.markdown("**子任务3：实施与数据采集**")
-                        st.markdown("可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）")
-                        task3_text = st.text_area("填写区", value=existing_plan["task3_text"] if existing_plan else "", height=160, key="task3_text", label_visibility="collapsed")
-                    
-                    with st.container(key="subtask4_box"):
-                        st.markdown("**子任务4：数据分析与阐释**")
-                        st.markdown("可围绕后面内容进行填写：1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）")
-                        task4_text = st.text_area("填写区", value=existing_plan["task4_text"] if existing_plan else "", height=160, key="task4_text", label_visibility="collapsed")
-                    
-                    with st.container(key="subtask5_box"):
-                        st.markdown("**子任务5：论文撰写与润色**")
-                        st.markdown("可围绕后面内容进行填写：1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）")
-                        task5_text = st.text_area("填写区", value=existing_plan["task5_text"] if existing_plan else "", height=300, key="task5_text", label_visibility="collapsed")
-                    
-                    with st.container(key="subtask6_box"):
-                        st.markdown("**子任务6：传播、评估与伦理**")
-                        st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
-                        task6_text = st.text_area("填写区", value=existing_plan["task6_text"] if existing_plan else "", height=160, key="task6_text", label_visibility="collapsed")
-                    
-                    # 重新布局表单底部的三个按钮：退出实验（居左）、暂存方案、提交方案（居右）
-                    col_plan_b1, col_plan_b2, col_plan_b3, col_plan_b4 = st.columns([3, 2, 2.5, 2.5])
-                    with col_plan_b1:
-                        with st.container(key="btn_exit_bottom"):
-                            exit_inplan = st.form_submit_button("🚪 退出实验", use_container_width=True)
-                    with col_plan_b3:
-                        with st.container(key="btn_temp_save"):
-                            temp_saved = st.form_submit_button("💾 暂存方案", use_container_width=True)
-                    with col_plan_b4:
-                        with st.container(key="btn_submit_final"):
-                            submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
-
-                    if exit_inplan:
-                        st.session_state.show_exit_dialog = True
-                        st.rerun()
-
-                    if temp_saved:
-                        success_temp = save_plan(
-                            st.session_state.participant_id,
-                            task1_text.strip(),
-                            task2_text.strip(),
-                            task3_text.strip(),
-                            task4_text.strip(),
-                            task5_text.strip(),
-                            task6_text.strip()
-                        )
-                        if success_temp:
-                            st.toast("✅ 已暂存方案，可继续编辑。", icon="✅")
-                        else:
-                            st.toast("❌ 暂存失败，请检查数据库字段。", icon="❌")
-
+                    st.markdown("**子任务1：选题与文献发现**")
+                    st.markdown("可围绕后面内容进行填写：1.选题依据（现实痛点与文献空白）；2.核心研究问题；3.拟借鉴的核心理论视角。（建议150字左右）")
+                    task1_text = st.text_area("填写区", value=existing_plan["task1_text"] if existing_plan else "", height=160, key="task1_text", label_visibility="collapsed")
+                    st.divider()
+                    st.markdown("**子任务2：研究规划与设计**")
+                    st.markdown("可围绕后面内容进行填写：1.研究类型（量化/实验/质性/混合等）；2.具体的研究实施步骤及研究方法。（建议150字左右）")
+                    task2_text = st.text_area("填写区", value=existing_plan["task2_text"] if existing_plan else "", height=160, key="task2_text", label_visibility="collapsed")
+                    st.divider()
+                    st.markdown("**子任务3：实施与数据采集**")
+                    st.markdown("可围绕后面内容进行填写：1.研究对象与选取策略；2.数据收集工具（如问卷维度、访谈提纲、观察指标等）及采集过程。（建议150字左右）")
+                    task3_text = st.text_area("填写区", value=existing_plan["task3_text"] if existing_plan else "", height=160, key="task3_text", label_visibility="collapsed")
+                    st.divider()
+                    st.markdown("**子任务4：数据分析与阐释**")
+                    st.markdown("可围绕后面内容进行填写：1.数据分析工具或方法；2.各项数据分析的具体目的（即每一项分析分别用于说明或解决什么问题）。（建议150字左右）")
+                    task4_text = st.text_area("填写区", value=existing_plan["task4_text"] if existing_plan else "", height=160, key="task4_text", label_visibility="collapsed")
+                    st.divider()
+                    st.markdown("**子任务5：论文撰写与润色**")
+                    st.markdown("可围绕后面内容进行填写：1.研究的创新点（2-3项）；2.研究存在的不足（2-3项）。（建议300-500字左右）")
+                    task5_text = st.text_area("填写区", value=existing_plan["task5_text"] if existing_plan else "", height=300, key="task5_text", label_visibility="collapsed")
+                    st.divider()
+                    st.markdown("**子任务6：传播、评估与伦理**")
+                    st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
+                    task6_text = st.text_area("填写区", value=existing_plan["task6_text"] if existing_plan else "", height=160, key="task6_text", label_visibility="collapsed")
+                    col_submit_btn_left, col_submit_btn_right = st.columns([3, 1])
+                    with col_submit_btn_right:
+                        submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
                     if submitted:
                         if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
                                     task4_text.strip(), task5_text.strip(), task6_text.strip()]):
@@ -1308,3 +1093,10 @@ else:
                             st.rerun()
                         else:
                             st.toast("❌ 提交失败，请检查数据库字段。", icon="❌")
+
+        st.divider()
+        col_exit1, col_exit_center, col_exit2 = st.columns([4, 1, 4])
+        with col_exit_center:
+            if st.button("🚪 退出实验", key="exit_button_bottom", use_container_width=True):
+                st.session_state.show_exit_dialog = True
+                st.rerun()
