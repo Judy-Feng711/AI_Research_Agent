@@ -1104,7 +1104,7 @@ else:
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
                 with st.container(key="left_chat_wrap"):
-                    with st.container(height=500, border=False):
+                    with st.container(height=570, border=False):
                         has_dialogue = False
                         for msg in st.session_state.messages:
                             if msg["role"] == "system":
