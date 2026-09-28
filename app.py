@@ -509,20 +509,20 @@ st.markdown(
             align-self: stretch !important;
         }
 
-        /* 左侧列：缩小底部Padding为4px，使输入框灰框与外层大灰框贴近 */
+        /* 左侧列：底部2px，输入内灰框紧贴外大灰框 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
-            padding: 12px 14px 4px 14px !important;
+            padding: 12px 14px 2px 14px !important;
             background-color: #f8fbff !important;
             box-shadow: 0 2px 10px rgba(21, 101, 192, 0.07) !important;
         }
 
-        /* 右侧列：增大底部Padding为36px，使子任务表单灰框与外层大灰框分开 */
+        /* 右侧列：底部38px，子任务内灰框远离外大灰框 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:last-child {
-            padding: 12px 16px 36px 16px !important;
+            padding: 12px 16px 38px 16px !important;
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
@@ -566,7 +566,7 @@ st.markdown(
             align-self: auto !important;
         }
 
-        /* ===== 3. 左列内部 Flex 布局：消除尴尬大片空白，实现输入区顺畅贴底 ===== */
+        /* ===== 3. 左列内部 Flex 布局 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child > div[data-testid="stVerticalBlock"] {
@@ -582,7 +582,6 @@ st.markdown(
             height: 100% !important;
             justify-content: space-between !important;
         }
-        /* 强制聊天对话区自适应拉伸吃满上半空间 */
         .st-key-left_chat_wrap > div[data-testid="stElementContainer"]:first-child,
         .st-key-left_chat_wrap > div[data-testid="stElementContainer"]:first-child > div[data-testid="stVerticalBlockBorderWrapper"] {
             height: 100% !important;
@@ -597,16 +596,15 @@ st.markdown(
         }
         .st-key-left_form_wrap form[data-testid="stForm"] {
             margin-bottom: 0 !important;
-            padding-bottom: 8px !important;
+            padding-bottom: 16px !important;
         }
         .st-key-main_row .stForm {
             margin-bottom: 0 !important;
         }
 
-        /* 右侧方案表单底部保留 12px 外边距 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child form[data-testid="stForm"] {
-            padding-bottom: 12px !important;
-            margin-bottom: 12px !important;
+            padding-bottom: 16px !important;
+            margin-bottom: 10px !important;
         }
 
         .st-key-main_row .stForm button[type="submit"] {
@@ -632,7 +630,7 @@ st.markdown(
             word-break: keep-all !important;
         }
 
-        /* ===== 4. 左侧五个行为按钮：统一字号与 Hover/Click 反馈 ===== */
+        /* ===== 4. 左侧五个行为按钮 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"] {
@@ -676,7 +674,7 @@ st.markdown(
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.12) !important;
         }
 
-        /* ===== 5. 右下三按钮渐进色彩与强烈 Hover/Click 视觉反馈 ===== */
+        /* ===== 5. 右下三按钮 ===== */
         .st-key-btn_exit_bottom button {
             background: #fdf2f2 !important;
             color: #dc2626 !important;
