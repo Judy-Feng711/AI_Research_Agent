@@ -516,11 +516,11 @@ st.markdown(
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
-        /* 左列单独：外框底部收紧，让输入内框贴近外框 */
+        /* 左列底部与右侧保持一致 16px，按钮不再贴边 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
-            padding-bottom: 4px !important;
+            padding-bottom: 16px !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
@@ -561,7 +561,7 @@ st.markdown(
             align-self: auto !important;
         }
 
-        /* ===== 左列内部flex：输入表单贴底 ===== */
+        /* ===== 左列内部：聊天区占满上部，输入区收拢到底部，间距8px ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child > div[data-testid="stVerticalBlock"] {
@@ -578,6 +578,7 @@ st.markdown(
         }
         .st-key-left_form_wrap {
             margin-top: auto !important;
+            padding-top: 8px !important;
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
         }
