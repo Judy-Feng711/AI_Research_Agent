@@ -806,6 +806,18 @@ st.markdown(
             font-weight: 600;
             color: #b45309;
         }
+        /* 收紧输入框到提示语的距离 */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .st-key-left_form_wrap [data-testid="stVerticalBlock"] {
+            gap: 4px !important;
+        }
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .st-key-input_wrapper {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) [data-testid="stTextArea"] {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
