@@ -1292,7 +1292,7 @@ else:
                     task6_text = st.text_area("填写区", value=existing_plan["task6_text"] if existing_plan else "", height=160, key="task6_text", label_visibility="collapsed")
                     
                     # 重新布局表单底部的三个按钮：退出实验（居左）、暂存方案、提交方案（居右）
-                    col_plan_b1, col_plan_b2, col_plan_b3, col_plan_b4 = st.columns([3, 2, 2.5, 2.5])
+                    col_plan_b1, col_plan_b2, col_plan_b3, col_plan_b4 = st.columns([1, 2, 1, 1])
                     with col_plan_b1:
                         with st.container(key="btn_exit_bottom"):
                             exit_inplan = st.form_submit_button("退出实验", use_container_width=True)
