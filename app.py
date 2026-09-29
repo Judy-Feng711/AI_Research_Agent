@@ -1,35 +1,3 @@
-这两个地方的文字目前字体大小是 **13.5px**（比标准文字略小，且颜色偏浅）。
-而“**子任务1：选题与文献发现**”的字号大小是 **16px**。
-
----
-
-### 📍 修改位置与原理说明
-
-修改 **CSS 样式表** 中控制提示说明文字（`.stCaption p`）的规则即可（大约在代码的第 **115 行** 左右）。
-
-#### 🔴 原 CSS 代码：
-```css
-.st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stCaption p {
-    color: #64748b !important;
-    font-size: 13.5px !important; /* 👈 目前是 13.5px */
-    line-height: 1.5 !important;
-}
-```
-
-#### 🟢 修改为：
-```css
-.st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stCaption p {
-    color: #334155 !important;   /* 调深颜色，提高可读性 */
-    font-size: 16px !important;  /* 👈 修改处：统一调大为 16px，与“子任务1”完全一致 */
-    line-height: 1.6 !important;
-}
-```
-
----
-
-### 👇 修改后的完整代码
-
-```python
 from pypdf import PdfReader
 import docx
 import streamlit as st
