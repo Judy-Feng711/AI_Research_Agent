@@ -854,6 +854,18 @@ st.markdown(
           margin-bottom: 13px !important;
           padding-bottom: 16px !important;
         }
+        /* 左侧5个强制统一14px，一定一样大 */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"],
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] p,
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] span,
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] div {
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          line-height: 1.2 !important;
+          letter-spacing: 0 !important;
+          white-space: nowrap !important;
+          word-break: keep-all !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
