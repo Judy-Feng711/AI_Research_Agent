@@ -892,6 +892,14 @@ st.markdown(
             display: none !important;
             visibility: hidden !important;
         }
+        /* 去掉 Streamlit 自带顶栏/水印/右下角 */
+        #MainMenu {visibility: hidden !important;}
+        footer {visibility: hidden !important;}
+        header[data-testid="stHeader"] {visibility: hidden !important;}
+        [data-testid="stToolbar"] {display: none !important;}
+        [data-testid="stDecoration"] {display: none !important;}
+        [data-testid="stStatusWidget"] {display: none !important;}
+        .stAppDeployButton {display: none !important;}
     </style>
     """,
     unsafe_allow_html=True
