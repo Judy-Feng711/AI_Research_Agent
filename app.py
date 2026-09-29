@@ -304,7 +304,7 @@ st.markdown(
             border: none !important;
         }
 
-        /* ===== 通用按钮基础与过渡效果 ===== */
+        /* ===== 通用按钮基础：左右统一高度38px/圆角8px/字号14px ===== */
         .stButton button,
         .stButton button p,
         .stButton button div,
@@ -314,6 +314,7 @@ st.markdown(
         .stForm button[type="submit"] div,
         .stForm button[type="submit"] span {
             font-size: 16px !important;
+            font-weight: 500 !important;
             line-height: 1.2 !important;
             white-space: nowrap !important;
             transition: all 0.18s ease-in-out !important;
@@ -330,6 +331,7 @@ st.markdown(
             padding: 0 4px !important;
             text-align: center !important;
             cursor: pointer !important;
+            border-radius: 8px !important;
             transition: all 0.18s ease-in-out !important;
         }
         .stButton {
@@ -343,13 +345,6 @@ st.markdown(
         }
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child h3 {
             color: #2e7d32 !important;
-        }
-
-        /* 重点修改：调大左右两边的说明文字（从 13.5px 增大到 16px，与“子任务1”完全一致） */
-        .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn .stCaption p {
-            color: #334155 !important;
-            font-size: 16px !important;
-            line-height: 1.6 !important;
         }
 
         .consent-card {
@@ -429,7 +424,6 @@ st.markdown(
 
         .st-key-input_wrapper {
             position: relative;
-            margin-bottom: 2px !important;
         }
         .st-key-input_wrapper textarea {
             padding-right: 46px !important;
@@ -491,7 +485,7 @@ st.markdown(
             opacity: 0 !important;
         }
 
-        /* ===== 2. 左右大块：外层高与内边距配置 ===== */
+        /* ===== 2. 左右大块：外层高与内边距精细控制 ===== */
         .st-key-main_row {
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
@@ -510,14 +504,12 @@ st.markdown(
             min-height: calc(100vh - 165px) !important;
             overflow-y: auto !important;
             overflow-x: hidden !important;
-            border: 1.5px solid #6c7a89 !important; /* 深灰色外边框 */
+            border: 1.5px solid #6c7a89 !important;
             border-radius: 12px !important;
             box-sizing: border-box !important;
             margin-bottom: 0 !important;
             align-self: stretch !important;
         }
-
-        /* 左侧列Padding */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child {
@@ -525,12 +517,10 @@ st.markdown(
             background-color: #f8fbff !important;
             box-shadow: 0 2px 10px rgba(21, 101, 192, 0.07) !important;
         }
-
-        /* 右侧列Padding */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:last-child {
-            padding: 12px 16px 36px 16px !important;
+            padding: 12px 16px 80px 16px !important;
             background-color: #f9fdf9 !important;
             box-shadow: 0 2px 10px rgba(46, 125, 50, 0.07) !important;
         }
@@ -574,7 +564,19 @@ st.markdown(
             align-self: auto !important;
         }
 
-        /* ===== 3. 左列内部 Flex 布局与间距调整 ===== */
+        /* ===== 左右按钮行间距：左密右疏 ===== */
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm [data-testid="stHorizontalBlock"] {
+            gap: 8px !important;
+        }
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:last-child .stForm [data-testid="stHorizontalBlock"] {
+            gap: 12px !important;
+        }
+
+        /* ===== 3. 表单与按钮内边距精细控制 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child > div[data-testid="stVerticalBlock"] {
@@ -598,7 +600,7 @@ st.markdown(
             min-height: 180px !important;
         }
         .st-key-left_form_wrap {
-            margin-top: 4px !important;
+            margin-top: 6px !important;
             padding-bottom: 0 !important;
             margin-bottom: 0 !important;
         }
@@ -609,19 +611,41 @@ st.markdown(
         .st-key-main_row .stForm {
             margin-bottom: 0 !important;
         }
-
-        .st-key-left_form_wrap [data-testid="stMarkdownContainer"] p {
-            margin-top: 2px !important;
-            margin-bottom: 4px !important;
-        }
-
-        /* 右侧方案表单底部增加适当间距 */
         .st-key-main_row [data-testid="stHorizontalBlock"] > div.stColumn:last-child form[data-testid="stForm"] {
             padding-bottom: 16px !important;
-            margin-bottom: 28px !important;
+            margin-bottom: 40px !important;
         }
 
-        /* ===== 4. 左侧五个行为按钮：完全同级白底灰边深灰字 ===== */
+        /* ===== 统一按钮尺寸：左右高度38px/字号14px完全一致 ===== */
+        .st-key-main_row .stForm button[type="submit"] {
+            min-width: 0 !important;
+            width: 100% !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            border-radius: 8px !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
+            line-height: 1.2 !important;
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: clip !important;
+        }
+        .st-key-main_row .stForm button[type="submit"] p,
+        .st-key-main_row .stForm button[type="submit"] span,
+        .st-key-main_row .stForm button[type="submit"] div {
+            font-size: 16px !important;
+            font-weight: 500 !important;
+            max-width: none !important;
+            overflow: hidden !important;
+            text-overflow: clip !important;
+            white-space: nowrap !important;
+            word-break: keep-all !important;
+        }
+
+        /* ===== 左侧五个：完全同级白底灰边深灰字 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"] {
@@ -629,6 +653,17 @@ st.markdown(
             color: #334155 !important;
             border: 1px solid #cbd5e1 !important;
             box-shadow: none !important;
+        }
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] p,
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] span,
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"] div {
+            color: #334155 !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
@@ -641,13 +676,21 @@ st.markdown(
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"]:hover p,
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+        > div.stColumn:first-child .stForm button[type="submit"]:hover span {
+            color: #1e40af !important;
+        }
+        .st-key-main_row
+        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"]:active {
             background-color: #dbeafe !important;
             transform: translateY(1px) !important;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.12) !important;
         }
 
-        /* ===== 5. 右下三按钮：弱-中-强 三级学理统一范式 ===== */
+        /* ===== 右侧三个：同语言三级弱-中-强，不用红绿蓝大色块 ===== */
         .st-key-btn_exit_bottom button {
             background: #ffffff !important;
             color: #64748b !important;
@@ -655,12 +698,19 @@ st.markdown(
             font-weight: 500 !important;
             box-shadow: none !important;
         }
+        .st-key-btn_exit_bottom button p, .st-key-btn_exit_bottom button span {
+            color: #64748b !important;
+            font-size: 16px !important;
+        }
         .st-key-btn_exit_bottom button:hover {
             background: #f8fafc !important;
             color: #334155 !important;
             border-color: #94a3b8 !important;
             transform: translateY(-1px) !important;
             box-shadow: 0 3px 8px rgba(100, 116, 139, 0.18) !important;
+        }
+        .st-key-btn_exit_bottom button:hover p, .st-key-btn_exit_bottom button:hover span {
+            color: #334155 !important;
         }
         .st-key-btn_exit_bottom button:active {
             background: #e2e8f0 !important;
@@ -675,12 +725,19 @@ st.markdown(
             font-weight: 500 !important;
             box-shadow: none !important;
         }
+        .st-key-btn_temp_save button p, .st-key-btn_temp_save button span {
+            color: #334155 !important;
+            font-size: 16px !important;
+        }
         .st-key-btn_temp_save button:hover {
             background: #eff6ff !important;
             color: #1e40af !important;
             border-color: #3b82f6 !important;
             transform: translateY(-1px) !important;
             box-shadow: 0 3px 8px rgba(59, 130, 246, 0.18) !important;
+        }
+        .st-key-btn_temp_save button:hover p, .st-key-btn_temp_save button:hover span {
+            color: #1e40af !important;
         }
         .st-key-btn_temp_save button:active {
             background: #dbeafe !important;
@@ -697,6 +754,7 @@ st.markdown(
         }
         .st-key-btn_submit_final button p, .st-key-btn_submit_final button span {
             color: #ffffff !important;
+            font-size: 16px !important;
             font-weight: 600 !important;
         }
         .st-key-btn_submit_final button:hover {
@@ -705,6 +763,9 @@ st.markdown(
             color: #ffffff !important;
             transform: translateY(-1px) !important;
             box-shadow: 0 4px 10px rgba(30, 41, 59, 0.30) !important;
+        }
+        .st-key-btn_submit_final button:hover p, .st-key-btn_submit_final button:hover span {
+            color: #ffffff !important;
         }
         .st-key-btn_submit_final button:active {
             background: #0f172a !important;
@@ -771,6 +832,39 @@ st.markdown(
             font-size: 18px;
             font-weight: 600;
             color: #b45309;
+        }
+        /* 收紧输入框到提示语的距离 */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .st-key-left_form_wrap [data-testid="stVerticalBlock"] {
+            gap: 4px !important;
+        }
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .st-key-input_wrapper {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) [data-testid="stTextArea"] {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        /* 右外大框底部留白 */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(2) {
+          padding: 12px 16px 50px 16px !important;
+        }
+        /* 右内表单 */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(2) [data-testid="stForm"] {
+          margin-bottom: 13px !important;
+          padding-bottom: 16px !important;
+        }
+        /* 左侧5个强制统一14px，一定一样大 */
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"],
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] p,
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] span,
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] div {
+          font-size: 16px !important;
+          font-weight: 500 !important;
+          line-height: 1.2 !important;
+          letter-spacing: 0 !important;
+          white-space: nowrap !important;
+          word-break: keep-all !important;
         }
     </style>
     """,
@@ -1070,7 +1164,7 @@ else:
                 st.markdown("**AI 学术助手对话**")
                 st.caption(INITIAL_GREETING)
                 with st.container(key="left_chat_wrap"):
-                    with st.container(height=500, border=False):
+                    with st.container(height=570, border=False):
                         has_dialogue = False
                         for msg in st.session_state.messages:
                             if msg["role"] == "system":
@@ -1087,7 +1181,7 @@ else:
                             with st.container(key="input_wrapper"):
                                 user_input = st.text_area(
                                     "在这里输入您的提示词 (Prompt)：",
-                                    height=150,
+                                    height=190,
                                     key="prompt_input",
                                     label_visibility="collapsed",
                                     placeholder="请输入您的提示词，可点击右下角 📎 上传 PDF / Word 文档"
@@ -1209,17 +1303,17 @@ else:
                     st.markdown("可围绕后面内容进行填写：1.成果发表与传播的计划（如学术期刊投稿计划、学术会议汇报、转化为教学实践指南等）；2.研究的伦理考量及其应对措施（如数据隐私、AI使用披露等）。（建议150字左右）")
                     task6_text = st.text_area("填写区", value=existing_plan["task6_text"] if existing_plan else "", height=160, key="task6_text", label_visibility="collapsed")
                     
-                    # 重新布局表单底部的三个按钮：按 [1, 2, 1, 1] 比例等宽分割
+                    # 重新布局表单底部的三个按钮：退出实验（居左）、暂存方案、提交方案（居右）
                     col_plan_b1, col_plan_b2, col_plan_b3, col_plan_b4 = st.columns([1, 2, 1, 1])
                     with col_plan_b1:
                         with st.container(key="btn_exit_bottom"):
-                            exit_inplan = st.form_submit_button("🚪 退出实验", use_container_width=True)
+                            exit_inplan = st.form_submit_button("退出实验", use_container_width=True)
                     with col_plan_b3:
                         with st.container(key="btn_temp_save"):
-                            temp_saved = st.form_submit_button("💾 暂存方案", use_container_width=True)
+                            temp_saved = st.form_submit_button("暂存方案", use_container_width=True)
                     with col_plan_b4:
                         with st.container(key="btn_submit_final"):
-                            submitted = st.form_submit_button("📤 提交方案", use_container_width=True)
+                            submitted = st.form_submit_button("提交方案", use_container_width=True)
 
                     if exit_inplan:
                         st.session_state.show_exit_dialog = True
