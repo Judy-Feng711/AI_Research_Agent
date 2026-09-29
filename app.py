@@ -624,7 +624,7 @@ st.markdown(
             min-height: 38px !important;
             max-height: 38px !important;
             border-radius: 8px !important;
-            font-size: 14px !important;
+            font-size: 16px !important;
             font-weight: 500 !important;
             line-height: 1.2 !important;
             padding-left: 4px !important;
@@ -636,7 +636,7 @@ st.markdown(
         .st-key-main_row .stForm button[type="submit"] p,
         .st-key-main_row .stForm button[type="submit"] span,
         .st-key-main_row .stForm button[type="submit"] div {
-            font-size: 14px !important;
+            font-size: 16px !important;
             font-weight: 500 !important;
             max-width: none !important;
             overflow: hidden !important;
@@ -700,7 +700,7 @@ st.markdown(
         }
         .st-key-btn_exit_bottom button p, .st-key-btn_exit_bottom button span {
             color: #64748b !important;
-            font-size: 14px !important;
+            font-size: 16px !important;
         }
         .st-key-btn_exit_bottom button:hover {
             background: #f8fafc !important;
@@ -727,7 +727,7 @@ st.markdown(
         }
         .st-key-btn_temp_save button p, .st-key-btn_temp_save button span {
             color: #334155 !important;
-            font-size: 14px !important;
+            font-size: 16px !important;
         }
         .st-key-btn_temp_save button:hover {
             background: #eff6ff !important;
@@ -754,7 +754,7 @@ st.markdown(
         }
         .st-key-btn_submit_final button p, .st-key-btn_submit_final button span {
             color: #ffffff !important;
-            font-size: 14px !important;
+            font-size: 16px !important;
             font-weight: 600 !important;
         }
         .st-key-btn_submit_final button:hover {
@@ -859,7 +859,7 @@ st.markdown(
         .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] p,
         .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] span,
         .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] div {
-          font-size: 14px !important;
+          font-size: 16px !important;
           font-weight: 500 !important;
           line-height: 1.2 !important;
           letter-spacing: 0 !important;
