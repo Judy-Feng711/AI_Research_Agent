@@ -827,6 +827,11 @@ st.markdown(
           margin-bottom: 13px !important;
           padding-bottom: 16px !important;
         }
+        .st-key-btn_exit_bottom button,
+        .st-key-btn_temp_save button,
+        .st-key-btn_submit_final button {
+            max-width: 130px !important; /* 👈 给三个按钮限定统一的最大像素宽度 */
+        }
     </style>
     """,
     unsafe_allow_html=True
