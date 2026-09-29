@@ -824,7 +824,7 @@ st.markdown(
         }
         /* 右内表单：自己离自己灰线16px，离外框再+20px */
         .st-key-main_row [data-testid="stColumn"]:nth-child(2) [data-testid="stForm"] {
-          margin-bottom: 15px !important;
+          margin-bottom: 13px !important;
           padding-bottom: 16px !important;
         }
     </style>
