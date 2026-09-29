@@ -313,7 +313,7 @@ st.markdown(
         .stForm button[type="submit"] p,
         .stForm button[type="submit"] div,
         .stForm button[type="submit"] span {
-            font-size: 14px !important;
+            font-size: 16px !important;
             font-weight: 500 !important;
             line-height: 1.2 !important;
             white-space: nowrap !important;
