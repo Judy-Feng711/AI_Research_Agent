@@ -820,7 +820,7 @@ st.markdown(
         }
         /* 右外大框底部留白，内灰框就会远离外灰框 */
         .st-key-main_row [data-testid="stColumn"]:nth-child(2) {
-          padding: 12px 16px 60px 16px !important;
+          padding: 12px 16px 50px 16px !important;
         }
         /* 右内表单：自己离自己灰线16px，离外框再+20px */
         .st-key-main_row [data-testid="stColumn"]:nth-child(2) [data-testid="stForm"] {
