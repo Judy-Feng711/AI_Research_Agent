@@ -1282,9 +1282,9 @@ else:
                             task6_text.strip()
                         )
                         if success_temp:
-                            st.toast("✅ 已暂存方案，可继续编辑。", icon="✅")
+                            st.toast("✅ 已暂存方案，可继续编辑。", icon="")
                         else:
-                            st.toast("❌ 暂存失败，请检查数据库字段。", icon="❌")
+                            st.toast("❌ 暂存失败，请检查数据库字段。", icon="")
 
                     if submitted:
                         if not all([task1_text.strip(), task2_text.strip(), task3_text.strip(),
