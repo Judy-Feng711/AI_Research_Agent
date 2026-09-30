@@ -890,6 +890,18 @@ st.markdown(
         [data-testid="stDecoration"] {display:none !important;}
         [data-testid="stStatusWidget"] {display:none !important;}
         [data-testid="stAppDeployButton"] {display:none !important;}
+        /* 藏 Built with Streamlit 页脚 + Fullscreen */
+        footer, div[data-testid="stAppFooter"], div[data-testid="stFooter"] {
+          display: none !important;
+          visibility: hidden !important;
+          height: 0 !important;
+        }
+        button[data-testid="stFullscreenButton"],
+        [data-testid="stElementToolbar"],
+        [data-testid="stElementToolbarButton"] {
+          display: none !important;
+          visibility: hidden !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
