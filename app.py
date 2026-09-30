@@ -616,7 +616,7 @@ st.markdown(
             margin-bottom: 40px !important;
         }
 
-        /* ===== 统一按钮尺寸：左右高度38px/字号14px完全一致 ===== */
+        /* ===== 统一按钮尺寸 ===== */
         .st-key-main_row .stForm button[type="submit"] {
             min-width: 0 !important;
             width: 100% !important;
@@ -645,7 +645,7 @@ st.markdown(
             word-break: keep-all !important;
         }
 
-        /* ===== 左侧五个：完全同级白底灰边深灰字 ===== */
+        /* ===== 左侧五个 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"] {
@@ -690,7 +690,7 @@ st.markdown(
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.12) !important;
         }
 
-        /* ===== 右侧三个：同语言三级弱-中-强，不用红绿蓝大色块 ===== */
+        /* ===== 右侧三个 ===== */
         .st-key-btn_exit_bottom button {
             background: #ffffff !important;
             color: #64748b !important;
@@ -868,7 +868,7 @@ st.markdown(
         }
         /* ===== 隐藏 Streamlit 默认菜单、被试端右下角悬浮按钮，其他功能不变 ===== */
         #MainMenu { visibility: hidden !important; display: none !important; }
-        footer { visibility: hidden !important; display: none !important; }
+        footer { visibility: hidden !important; display: none !important; height: 0 !important; }
         header { visibility: hidden !important; }
         [data-testid="stHeader"] { display: none !important; }
         [data-testid="stToolbar"] { display: none !important; }
@@ -876,11 +876,16 @@ st.markdown(
         [data-testid="stStatusWidget"] { display: none !important; }
         [data-testid="stBottom"] { display: none !important; }
         [data-testid="stBottomBlockContainer"] { display: none !important; }
+        div[data-testid="stAppFooter"], div[data-testid="stFooter"] { display: none !important; visibility: hidden !important; height: 0 !important; }
+        button[data-testid="stFullscreenButton"],
+        [data-testid="stElementToolbar"],
+        [data-testid="stElementToolbarButton"] { display: none !important; visibility: hidden !important; }
         [class*="viewerBadge"],
         [class*="ViewerBadge"],
         [data-testid="stViewerBadge"],
         [data-testid="stAppDeployButton"],
         [class*="stAppDeployButton"],
+        .stAppDeployButton,
         div[class*="styles_viewerBadge"],
         .viewerBadge_container__1613n,
         a[href*="streamlit.io"],
