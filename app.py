@@ -1224,6 +1224,8 @@ else:
                                 )
                             if uploaded_file is not None:
                                 st.caption(f"📎 已附加文档：{uploaded_file.name}")
+                            # 【修改1】在按钮上方预留提示位置，空输入提示将显示在此处
+                            warn_placeholder = st.empty()
                             st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
                             clicked_behavior = None
                             # 修复：5个按钮必须全部无条件创建，再判断谁被点击
@@ -1252,7 +1254,8 @@ else:
 
                             if clicked_behavior:
                                 if not user_input or user_input.strip() == "":
-                                    st.warning("⚠️ 请先输入提示词！")
+                                    # 【修改2】提示写入按钮上方的预留位置
+                                    warn_placeholder.warning("⚠️ 请先输入提示词！")
                                 else:
                                     file_content = ""
                                     if uploaded_file is not None:
