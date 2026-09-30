@@ -865,13 +865,13 @@ st.markdown(
             color: #b45309;
         }
         /* 整个输入+5按钮块上移 */
-.st-key-main_row [data-testid="stColumn"]:nth-child(1) .st-key-left_form_wrap {
-  margin-top: 0px !important; /* 6px -> 0px，和上面贴紧 */
-}
-.st-key-main_row [data-testid="stColumn"]:nth-child(1) [data-testid="stForm"] {
-  margin-top: 0px !important;
-  transform: translateY(-8px) !important; /* -8px就是上移8px，想更上改-12/-16 */
-}
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .st-key-left_form_wrap {
+          margin-top: 0px !important; /* 6px -> 0px，和上面贴紧 */
+        }
+        .st-key-main_row [data-testid="stColumn"]:nth-child(1) [data-testid="stForm"] {
+          margin-top: 0px !important;
+          transform: translateY(-8px) !important; /* -8px就是上移8px，想更上改-12/-16 */
+        }
     </style>
     """,
     unsafe_allow_html=True
