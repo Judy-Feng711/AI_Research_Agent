@@ -6,3 +6,4 @@ python-dotenv
 pypdf
 python-docx
 streamlit-autorefresh
+starlette<1.4.0
