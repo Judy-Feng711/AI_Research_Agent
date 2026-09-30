@@ -645,15 +645,14 @@ st.markdown(
             word-break: keep-all !important;
         }
 
-        /* ===== 左侧五个：统一学术深蓝（五个按钮视觉完全同质，避免显著性偏差） ===== */
-        /* 默认状态：白底 + 深蓝描边 + 深蓝加粗文字 */
+        /* ===== 左侧五个 ===== */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"] {
             background-color: #ffffff !important;
-            color: #1e3a8a !important;
-            border: 1.5px solid #1e3a8a !important;
-            box-shadow: 0 1px 3px rgba(30, 58, 138, 0.12) !important;
+            color: #334155 !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: none !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
@@ -664,74 +663,31 @@ st.markdown(
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"] div {
-            color: #1e3a8a !important;
-            font-weight: 600 !important;
+            color: #334155 !important;
         }
-        /* 悬停：深蓝实心 + 白字 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"]:hover {
-            background-color: #1e3a8a !important;
-            border-color: #1e3a8a !important;
-            color: #ffffff !important;
+            background-color: #eff6ff !important;
+            border-color: #3b82f6 !important;
+            color: #1e40af !important;
             transform: translateY(-1px) !important;
-            box-shadow: 0 4px 10px rgba(30, 58, 138, 0.25) !important;
+            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.18) !important;
         }
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"]:hover p,
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"]:hover span,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"]:hover div {
-            color: #ffffff !important;
+        > div.stColumn:first-child .stForm button[type="submit"]:hover span {
+            color: #1e40af !important;
         }
-        /* 按下 */
         .st-key-main_row
         [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
         > div.stColumn:first-child .stForm button[type="submit"]:active {
-            background-color: #172554 !important;
-            border-color: #172554 !important;
+            background-color: #dbeafe !important;
             transform: translateY(1px) !important;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.22) !important;
-        }
-        /* 已输入提示词：五个按钮统一变为深蓝实心（可提交状态） */
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .st-key-left_form_wrap:has(textarea:not(:placeholder-shown)) .stForm button[type="submit"] {
-            background-color: #1e3a8a !important;
-            border-color: #1e3a8a !important;
-            color: #ffffff !important;
-            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.22) !important;
-        }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .st-key-left_form_wrap:has(textarea:not(:placeholder-shown)) .stForm button[type="submit"] p,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .st-key-left_form_wrap:has(textarea:not(:placeholder-shown)) .stForm button[type="submit"] span,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .st-key-left_form_wrap:has(textarea:not(:placeholder-shown)) .stForm button[type="submit"] div {
-            color: #ffffff !important;
-        }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .st-key-left_form_wrap:has(textarea:not(:placeholder-shown)) .stForm button[type="submit"]:hover {
-            background-color: #172554 !important;
-            border-color: #172554 !important;
-            transform: translateY(-1px) !important;
-            box-shadow: 0 4px 10px rgba(23, 37, 84, 0.30) !important;
-        }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .st-key-left_form_wrap:has(textarea:not(:placeholder-shown)) .stForm button[type="submit"]:active {
-            background-color: #0f1a3d !important;
-            border-color: #0f1a3d !important;
-            transform: translateY(1px) !important;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.28) !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.12) !important;
         }
 
         /* ===== 右侧三个 ===== */
@@ -943,6 +899,78 @@ st.markdown(
             width: 0 !important;
             height: 0 !important;
         }
+        /* =====================================================
+   左侧五个行为分类按钮：统一浅蓝底，提升可见性
+   仅作用于“获取基础信息”等五个提交按钮
+   ===================================================== */
+
+/* 默认状态：低饱和浅蓝底，专业且醒目 */
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"] {
+    background-color: #e8f1fa !important;
+    color: #1f4e79 !important;
+    border: 1px solid #8fb3d1 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 3px rgba(31, 78, 121, 0.12) !important;
+}
+
+/* 按钮内部文字颜色同步 */
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"] p,
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"] span,
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"] div {
+    color: #1f4e79 !important;
+    font-weight: 600 !important;
+}
+
+/* 鼠标悬停：颜色略加深，提供明确可点击反馈 */
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"]:hover {
+    background-color: #d5e7f7 !important;
+    border-color: #4d86b8 !important;
+    color: #123a5b !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(31, 78, 121, 0.18) !important;
+}
+
+/* 悬停时内部文字同步 */
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"]:hover p,
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"]:hover span,
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"]:hover div {
+    color: #123a5b !important;
+}
+
+/* 点击状态：给用户清晰但不过度的操作反馈 */
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"]:active {
+    background-color: #c4ddf2 !important;
+    border-color: #356f9f !important;
+    transform: translateY(1px) !important;
+    box-shadow: inset 0 2px 4px rgba(31, 78, 121, 0.16) !important;
+}
+
+/* 键盘聚焦状态：增强可访问性，不影响普通视觉效果 */
+.st-key-main_row
+[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
+> div.stColumn:first-child .stForm button[type="submit"]:focus-visible {
+    outline: 3px solid rgba(77, 134, 184, 0.45) !important;
+    outline-offset: 2px !important;
+}
     </style>
     """,
     unsafe_allow_html=True
