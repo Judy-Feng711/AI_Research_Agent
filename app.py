@@ -884,6 +884,12 @@ st.markdown(
             display: none !important;
             visibility: hidden !important;
         }
+        #MainMenu {visibility:hidden !important;}
+        footer {visibility:hidden !important;}
+        [data-testid="stToolbar"] {display:none !important;}
+        [data-testid="stDecoration"] {display:none !important;}
+        [data-testid="stStatusWidget"] {display:none !important;}
+        [data-testid="stAppDeployButton"] {display:none !important;}
     </style>
     """,
     unsafe_allow_html=True
