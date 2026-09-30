@@ -645,49 +645,58 @@ st.markdown(
             word-break: keep-all !important;
         }
 
-        /* ===== 左侧五个 ===== */
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] {
-            background-color: #ffffff !important;
-            color: #334155 !important;
-            border: 1px solid #cbd5e1 !important;
+        /* ===== 左侧五个行为按钮：与"提交方案"同款主操作样式（五个完全同质） ===== */
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button {
+            background: #334155 !important;
+            background-color: #334155 !important;
+            color: #ffffff !important;
+            border: 1px solid #334155 !important;
+            font-weight: 600 !important;
             box-shadow: none !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            width: 100% !important;
+            border-radius: 8px !important;
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+            transition: all 0.18s ease-in-out !important;
         }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] p,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] span,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"] div {
-            color: #334155 !important;
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button p,
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button span,
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button div {
+            color: #ffffff !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+            letter-spacing: 0 !important;
+            white-space: nowrap !important;
+            word-break: keep-all !important;
         }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"]:hover {
-            background-color: #eff6ff !important;
-            border-color: #3b82f6 !important;
-            color: #1e40af !important;
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button:hover {
+            background: #1e293b !important;
+            background-color: #1e293b !important;
+            border-color: #1e293b !important;
+            color: #ffffff !important;
             transform: translateY(-1px) !important;
-            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.18) !important;
+            box-shadow: 0 4px 10px rgba(30, 41, 59, 0.30) !important;
         }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"]:hover p,
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"]:hover span {
-            color: #1e40af !important;
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button:hover p,
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button:hover span,
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button:hover div {
+            color: #ffffff !important;
         }
-        .st-key-main_row
-        [data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-        > div.stColumn:first-child .stForm button[type="submit"]:active {
-            background-color: #dbeafe !important;
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button:active {
+            background: #0f172a !important;
+            background-color: #0f172a !important;
+            border-color: #0f172a !important;
             transform: translateY(1px) !important;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.12) !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.25) !important;
+        }
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button:focus,
+        .st-key-main_row .st-key-left_form_wrap .st-key-behavior_btns button:focus-visible {
+            color: #ffffff !important;
+            outline: none !important;
         }
 
         /* ===== 右侧三个 ===== */
@@ -854,18 +863,6 @@ st.markdown(
           margin-bottom: 13px !important;
           padding-bottom: 16px !important;
         }
-        /* 左侧5个强制统一14px，一定一样大 */
-        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"],
-        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] p,
-        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] span,
-        .st-key-main_row [data-testid="stColumn"]:nth-child(1) .stForm button[type="submit"] div {
-          font-size: 16px !important;
-          font-weight: 500 !important;
-          line-height: 1.2 !important;
-          letter-spacing: 0 !important;
-          white-space: nowrap !important;
-          word-break: keep-all !important;
-        }
         /* ===== 隐藏 Streamlit 默认菜单、被试端右下角悬浮按钮，其他功能不变 ===== */
         #MainMenu { visibility: hidden !important; display: none !important; }
         footer { visibility: hidden !important; display: none !important; height: 0 !important; }
@@ -899,78 +896,6 @@ st.markdown(
             width: 0 !important;
             height: 0 !important;
         }
-        /* =====================================================
-   左侧五个行为分类按钮：统一浅蓝底，提升可见性
-   仅作用于“获取基础信息”等五个提交按钮
-   ===================================================== */
-
-/* 默认状态：低饱和浅蓝底，专业且醒目 */
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"] {
-    background-color: #e8f1fa !important;
-    color: #1f4e79 !important;
-    border: 1px solid #8fb3d1 !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    box-shadow: 0 1px 3px rgba(31, 78, 121, 0.12) !important;
-}
-
-/* 按钮内部文字颜色同步 */
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"] p,
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"] span,
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"] div {
-    color: #1f4e79 !important;
-    font-weight: 600 !important;
-}
-
-/* 鼠标悬停：颜色略加深，提供明确可点击反馈 */
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"]:hover {
-    background-color: #d5e7f7 !important;
-    border-color: #4d86b8 !important;
-    color: #123a5b !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 3px 8px rgba(31, 78, 121, 0.18) !important;
-}
-
-/* 悬停时内部文字同步 */
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"]:hover p,
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"]:hover span,
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"]:hover div {
-    color: #123a5b !important;
-}
-
-/* 点击状态：给用户清晰但不过度的操作反馈 */
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"]:active {
-    background-color: #c4ddf2 !important;
-    border-color: #356f9f !important;
-    transform: translateY(1px) !important;
-    box-shadow: inset 0 2px 4px rgba(31, 78, 121, 0.16) !important;
-}
-
-/* 键盘聚焦状态：增强可访问性，不影响普通视觉效果 */
-.st-key-main_row
-[data-testid="stHorizontalBlock"]:has(> div.stColumn:first-child h3):has(> div.stColumn:last-child h3)
-> div.stColumn:first-child .stForm button[type="submit"]:focus-visible {
-    outline: 3px solid rgba(77, 134, 184, 0.45) !important;
-    outline-offset: 2px !important;
-}
     </style>
     """,
     unsafe_allow_html=True
@@ -1300,19 +1225,20 @@ else:
                             if uploaded_file is not None:
                                 st.caption(f"📎 已附加文档：{uploaded_file.name}")
                             st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
-                            col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                             clicked_behavior = None
                             # 修复：5个按钮必须全部无条件创建，再判断谁被点击
-                            with col_b1:
-                                b1 = st.form_submit_button("获取基础信息", use_container_width=True)
-                            with col_b2:
-                                b2 = st.form_submit_button("规范语言/格式", use_container_width=True)
-                            with col_b3:
-                                b3 = st.form_submit_button("微调研究逻辑", use_container_width=True)
-                            with col_b4:
-                                b4 = st.form_submit_button("重构研究方案", use_container_width=True)
-                            with col_b5:
-                                b5 = st.form_submit_button("拓展研究思路", use_container_width=True)
+                            with st.container(key="behavior_btns"):
+                                col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
+                                with col_b1:
+                                    b1 = st.form_submit_button("获取基础信息", use_container_width=True)
+                                with col_b2:
+                                    b2 = st.form_submit_button("规范语言/格式", use_container_width=True)
+                                with col_b3:
+                                    b3 = st.form_submit_button("微调研究逻辑", use_container_width=True)
+                                with col_b4:
+                                    b4 = st.form_submit_button("重构研究方案", use_container_width=True)
+                                with col_b5:
+                                    b5 = st.form_submit_button("拓展研究思路", use_container_width=True)
                             if b1:
                                 clicked_behavior = "获取基础信息"
                             elif b2:
