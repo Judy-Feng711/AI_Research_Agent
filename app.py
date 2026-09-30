@@ -1215,81 +1215,92 @@ else:
                             st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
                             col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
                             clicked_behavior = None
-                            if col_b1.form_submit_button("获取基础信息", use_container_width=True):
+                            # 修复：5个按钮必须全部无条件创建，再判断谁被点击
+                            with col_b1:
+                                b1 = st.form_submit_button("获取基础信息", use_container_width=True)
+                            with col_b2:
+                                b2 = st.form_submit_button("规范语言/格式", use_container_width=True)
+                            with col_b3:
+                                b3 = st.form_submit_button("微调研究逻辑", use_container_width=True)
+                            with col_b4:
+                                b4 = st.form_submit_button("重构研究方案", use_container_width=True)
+                            with col_b5:
+                                b5 = st.form_submit_button("拓展研究思路", use_container_width=True)
+                            if b1:
                                 clicked_behavior = "获取基础信息"
-                            elif col_b2.form_submit_button("规范语言/格式", use_container_width=True):
+                            elif b2:
                                 clicked_behavior = "规范语言/格式"
-                            elif col_b3.form_submit_button("微调研究逻辑", use_container_width=True):
+                            elif b3:
                                 clicked_behavior = "微调研究逻辑"
-                            elif col_b4.form_submit_button("重构研究方案", use_container_width=True):
+                            elif b4:
                                 clicked_behavior = "重构研究方案"
-                            elif col_b5.form_submit_button("拓展研究思路", use_container_width=True):
+                            elif b5:
                                 clicked_behavior = "拓展研究思路"
 
                             if clicked_behavior:
                                 if not user_input or user_input.strip() == "":
                                     st.warning("⚠️ 请先输入提示词！")
-                                    st.stop()
-                                file_content = ""
-                                if uploaded_file is not None:
-                                    file_name = uploaded_file.name
-                                    if file_name.endswith(".pdf"):
-                                        try:
-                                            reader = PdfReader(uploaded_file)
-                                            for page in reader.pages:
-                                                text = page.extract_text()
-                                                if text:
-                                                    file_content += text + "\n"
-                                        except Exception as e:
-                                            st.error(f"PDF 解析失败：{e}")
-                                    elif file_name.endswith(".docx"):
-                                        try:
-                                            doc = docx.Document(uploaded_file)
-                                            for para in doc.paragraphs:
-                                                file_content += para.text + "\n"
-                                        except Exception as e:
-                                            st.error(f"Word 解析失败：{e}")
-                                    if file_content and len(file_content) > 5000:
-                                        file_content = file_content[:5000] + "\n...[内容已截断]"
-                                full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
-                                with st.chat_message("user"):
-                                    if file_content:
-                                        st.markdown(f"📎 **已附加文档**，提问：{user_input}")
-                                    else:
-                                        st.markdown(f"**[{clicked_behavior}]** {user_input}")
-                                st.session_state.messages.append({"role": "user", "content": full_user_message})
-                                with st.chat_message("assistant"):
-                                    with st.spinner("思考中..."):
-                                        try:
-                                            response = client.chat.completions.create(
-                                                model="deepseek-v4-pro",
-                                                messages=st.session_state.messages
-                                            )
-                                            ai_reply = response.choices[0].message.content
-                                            st.markdown(ai_reply)
-                                        except Exception as e:
-                                            st.error(f"AI 调用失败：{e}")
-                                            st.stop()
-                                st.session_state.messages.append({"role": "assistant", "content": ai_reply})
-                                st.session_state.round_count += 1
-                                log_data = {
-                                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                    "participant_id": st.session_state.participant_id,
-                                    "round": st.session_state.round_count,
-                                    "user_prompt": user_input,
-                                    "behavior_button": clicked_behavior,
-                                    "ai_response": ai_reply
-                                }
-                                try:
-                                    supabase.table("research_logs").insert(log_data).execute()
-                                except Exception as e:
-                                    st.error(f"日志保存失败：{e}")
-                                save_participant_state(
-                                    st.session_state.participant_id,
-                                    st.session_state.messages,
-                                    st.session_state.round_count
-                                )
-                                st.rerun()
+                                else:
+                                    file_content = ""
+                                    if uploaded_file is not None:
+                                        file_name = uploaded_file.name
+                                        if file_name.endswith(".pdf"):
+                                            try:
+                                                reader = PdfReader(uploaded_file)
+                                                for page in reader.pages:
+                                                    text = page.extract_text()
+                                                    if text:
+                                                        file_content += text + "\n"
+                                            except Exception as e:
+                                                st.error(f"PDF 解析失败：{e}")
+                                        elif file_name.endswith(".docx"):
+                                            try:
+                                                doc = docx.Document(uploaded_file)
+                                                for para in doc.paragraphs:
+                                                    file_content += para.text + "\n"
+                                            except Exception as e:
+                                                st.error(f"Word 解析失败：{e}")
+                                        if file_content and len(file_content) > 5000:
+                                            file_content = file_content[:5000] + "\n...[内容已截断]"
+                                    full_user_message = f"【上传文档内容】\n{file_content}\n\n【我的问题】\n{user_input}" if file_content else user_input
+                                    with st.chat_message("user"):
+                                        if file_content:
+                                            st.markdown(f"📎 **已附加文档**，提问：{user_input}")
+                                        else:
+                                            st.markdown(f"**[{clicked_behavior}]** {user_input}")
+                                    st.session_state.messages.append({"role": "user", "content": full_user_message})
+                                    with st.chat_message("assistant"):
+                                        with st.spinner("思考中..."):
+                                            try:
+                                                response = client.chat.completions.create(
+                                                    model="deepseek-v4-pro",
+                                                    messages=st.session_state.messages
+                                                )
+                                                ai_reply = response.choices[0].message.content
+                                                st.markdown(ai_reply)
+                                            except Exception as e:
+                                                st.error(f"AI 调用失败：{e}")
+                                                st.stop()
+                                    st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+                                    st.session_state.round_count += 1
+                                    log_data = {
+                                        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                        "participant_id": st.session_state.participant_id,
+                                        "round": st.session_state.round_count,
+                                        "user_prompt": user_input,
+                                        "behavior_button": clicked_behavior,
+                                        "ai_response": ai_reply
+                                    }
+                                    try:
+                                        supabase.table("research_logs").insert(log_data).execute()
+                                    except Exception as e:
+                                        st.error(f"日志保存失败：{e}")
+                                    save_participant_state(
+                                        st.session_state.participant_id,
+                                        st.session_state.messages,
+                                        st.session_state.round_count
+                                    )
+                                    st.rerun()
 
             with col_right:
                 st.subheader("📝 研究方案填写区")
