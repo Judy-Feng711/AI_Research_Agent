@@ -866,40 +866,6 @@ st.markdown(
           white-space: nowrap !important;
           word-break: keep-all !important;
         }
-        /* 去掉 Streamlit 自带顶栏/水印/右下角 */
-        #MainMenu {visibility: hidden !important;}
-        footer {visibility: hidden !important;}
-        header[data-testid="stHeader"] {visibility: hidden !important;}
-        [data-testid="stToolbar"] {display: none !important;}
-        [data-testid="stDecoration"] {display: none !important;}
-        [data-testid="stStatusWidget"] {display: none !important;}
-        .stAppDeployButton {display: none !important;}
-        /* ===== 隐藏 Streamlit 默认菜单、页脚、Header、Toolbar 及右下角 Fork/Badge 浮动徽章 ===== */
-        #MainMenu { visibility: hidden !important; }
-        footer { visibility: hidden !important; }
-        header { visibility: hidden !important; }
-        [data-testid="stHeader"] { display: none !important; }
-        [data-testid="stToolbar"] { display: none !important; }
-        [data-testid="stDecoration"] { display: none !important; }
-        [data-testid="stStatusWidget"] { display: none !important; }
-        
-        /* 隐藏 Streamlit Cloud 平台的 Fork、Badge 及悬浮组件 */
-        [class*="viewerBadge"],
-        [data-testid="stViewerBadge"],
-        [class*="stAppDeployButton"],
-        div[class*="styles_viewerBadge"],
-        .viewerBadge_container__1613n {
-            display: none !important;
-            visibility: hidden !important;
-        }
-        /* 去掉 Streamlit 自带顶栏/水印/右下角 */
-        #MainMenu {visibility: hidden !important;}
-        footer {visibility: hidden !important;}
-        header[data-testid="stHeader"] {visibility: hidden !important;}
-        [data-testid="stToolbar"] {display: none !important;}
-        [data-testid="stDecoration"] {display: none !important;}
-        [data-testid="stStatusWidget"] {display: none !important;}
-        .stAppDeployButton {display: none !important;}
     </style>
     """,
     unsafe_allow_html=True
@@ -1229,40 +1195,23 @@ else:
                             if uploaded_file is not None:
                                 st.caption(f"📎 已附加文档：{uploaded_file.name}")
                             st.markdown("👇 **请点击以下按钮提交您的提示词（请选择最符合您当前意图的行为）：**")
-                            
                             col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
-                            # 1. 5个按钮必须每次都创建，不能用if/elif连着创建
-                            with col_b1:
-                                b1 = st.form_submit_button("获取基础信息", use_container_width=True)
-                            with col_b2:
-                                b2 = st.form_submit_button("规范语言/格式", use_container_width=True)
-                            with col_b3:
-                                b3 = st.form_submit_button("微调研究逻辑", use_container_width=True)
-                            with col_b4:
-                                b4 = st.form_submit_button("重构研究方案", use_container_width=True)
-                            with col_b5:
-                                b5 = st.form_submit_button("拓展研究思路", use_container_width=True)
-                            
-                            # 2. 创建完再判断
                             clicked_behavior = None
-                            if b1:
+                            if col_b1.form_submit_button("获取基础信息", use_container_width=True):
                                 clicked_behavior = "获取基础信息"
-                            elif b2:
+                            elif col_b2.form_submit_button("规范语言/格式", use_container_width=True):
                                 clicked_behavior = "规范语言/格式"
-                            elif b3:
+                            elif col_b3.form_submit_button("微调研究逻辑", use_container_width=True):
                                 clicked_behavior = "微调研究逻辑"
-                            elif b4:
+                            elif col_b4.form_submit_button("重构研究方案", use_container_width=True):
                                 clicked_behavior = "重构研究方案"
-                            elif b5:
+                            elif col_b5.form_submit_button("拓展研究思路", use_container_width=True):
                                 clicked_behavior = "拓展研究思路"
-                            
+
                             if clicked_behavior:
                                 if not user_input or user_input.strip() == "":
                                     st.warning("⚠️ 请先输入提示词！")
-                                    # 不要 st.stop()，让程序继续往下跑去渲染右列
-                                else:
-                                    # 下面放你原来的 file_content + AI调用 + supabase保存 + st.rerun() 全部逻辑
-                                
+                                    st.stop()
                                 file_content = ""
                                 if uploaded_file is not None:
                                     file_name = uploaded_file.name
