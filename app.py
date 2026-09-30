@@ -866,23 +866,33 @@ st.markdown(
           white-space: nowrap !important;
           word-break: keep-all !important;
         }
-        /* ===== 隐藏 Streamlit 默认菜单、页脚、Header、Toolbar 及右下角 Fork/Badge 浮动徽章 ===== */
-        #MainMenu { visibility: hidden !important; }
-        footer { visibility: hidden !important; }
+        /* ===== 隐藏 Streamlit 默认菜单、被试端右下角悬浮按钮，其他功能不变 ===== */
+        #MainMenu { visibility: hidden !important; display: none !important; }
+        footer { visibility: hidden !important; display: none !important; }
         header { visibility: hidden !important; }
         [data-testid="stHeader"] { display: none !important; }
         [data-testid="stToolbar"] { display: none !important; }
         [data-testid="stDecoration"] { display: none !important; }
         [data-testid="stStatusWidget"] { display: none !important; }
-        
-        /* 隐藏 Streamlit Cloud 平台的 Fork、Badge 及悬浮组件 */
+        [data-testid="stBottom"] { display: none !important; }
+        [data-testid="stBottomBlockContainer"] { display: none !important; }
         [class*="viewerBadge"],
+        [class*="ViewerBadge"],
         [data-testid="stViewerBadge"],
+        [data-testid="stAppDeployButton"],
         [class*="stAppDeployButton"],
         div[class*="styles_viewerBadge"],
-        .viewerBadge_container__1613n {
+        .viewerBadge_container__1613n,
+        a[href*="streamlit.io"],
+        a[href*="share.streamlit.io"],
+        iframe[title*="badge"],
+        iframe[title*="viewer"] {
             display: none !important;
             visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
     </style>
     """,
