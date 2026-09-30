@@ -866,6 +866,24 @@ st.markdown(
           white-space: nowrap !important;
           word-break: keep-all !important;
         }
+        /* ===== 隐藏 Streamlit 默认菜单、页脚、Header、Toolbar 及右下角 Fork/Badge 浮动徽章 ===== */
+        #MainMenu { visibility: hidden !important; }
+        footer { visibility: hidden !important; }
+        header { visibility: hidden !important; }
+        [data-testid="stHeader"] { display: none !important; }
+        [data-testid="stToolbar"] { display: none !important; }
+        [data-testid="stDecoration"] { display: none !important; }
+        [data-testid="stStatusWidget"] { display: none !important; }
+        
+        /* 隐藏 Streamlit Cloud 平台的 Fork、Badge 及悬浮组件 */
+        [class*="viewerBadge"],
+        [data-testid="stViewerBadge"],
+        [class*="stAppDeployButton"],
+        div[class*="styles_viewerBadge"],
+        .viewerBadge_container__1613n {
+            display: none !important;
+            visibility: hidden !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
